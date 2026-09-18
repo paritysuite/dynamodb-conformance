@@ -4,7 +4,7 @@
 [![Licence: Apache 2.0](https://img.shields.io/badge/licence-Apache%202.0-blue.svg)](LICENSE)
 [![Live results](https://img.shields.io/badge/live%20results-paritysuite.org-brightgreen)](https://paritysuite.org)
 
-An independent test suite that validates any DynamoDB-compatible endpoint against real DynamoDB behaviour. It works against DynamoDB, DynamoDB Local, Dynoxide, Dynoxide (wasm), Dynalite, LocalStack, ExtendDB, Floci, Ministack, or anything else that implements the DynamoDB HTTP API.
+An independent test suite that validates any DynamoDB-compatible endpoint against real DynamoDB behaviour. It works against DynamoDB, DynamoDB Local, Dynoxide, Dynoxide (wasm), Dynalite, LocalStack, ExtendDB, Floci, Ministack, Kumo, or anything else that implements the DynamoDB HTTP API.
 
 ## Why this exists
 
@@ -443,6 +443,14 @@ security posture, and these two rows are meant to differ only in storage engine.
 docker run -d --name floci -p 4566:4566 floci/floci:latest
 DYNAMODB_ENDPOINT=http://localhost:4566 npm test
 docker stop floci && docker rm floci
+```
+
+### Kumo
+
+```bash
+docker run -d --name kumo -p 4566:4566 ghcr.io/sivchari/kumo:latest
+DYNAMODB_ENDPOINT=http://localhost:4566 npm test
+docker stop kumo && docker rm kumo
 ```
 
 ### LocalStack

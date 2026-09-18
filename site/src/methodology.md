@@ -125,6 +125,6 @@ A score here is a useful signal, not a certificate. Worth keeping in mind:
 
 ## Trademarks and attribution
 
-Amazon DynamoDB, DynamoDB, and AWS are trademarks of Amazon.com, Inc. or its affiliates. This is an independent project and is not affiliated with, endorsed by, or sponsored by Amazon, and nothing here grants any right to use those names or marks. DynamoDB Local, Dynalite, LocalStack, Ministack, Floci, ExtendDB, and every other target named on this site are the trademarks or property of their respective owners.
+Amazon DynamoDB, DynamoDB, and AWS are trademarks of Amazon.com, Inc. or its affiliates. This is an independent project and is not affiliated with, endorsed by, or sponsored by Amazon, and nothing here grants any right to use those names or marks. DynamoDB Local, Dynalite, LocalStack, Ministack, Floci, ExtendDB, Kumo, and every other target named on this site are the trademarks or property of their respective owners.
 
 The conformance suite is the work of [Martin Hicks](https://martinhicks.dev) and its contributors, released under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0); see the [NOTICE](https://github.com/paritysuite/dynamodb-conformance/blob/main/NOTICE) for the full attribution. This site is built from the same repository, under the same licence, and is maintained by [Martin Hicks](https://martinhicks.dev). The fonts it uses, Inter and JetBrains Mono, are licensed separately under the SIL Open Font License 1.1.

@@ -9,8 +9,8 @@ others) contributing to this suite. Humans are welcome to read it too;
 An independent conformance test suite for DynamoDB-compatible
 endpoints. Tests are first run against real AWS DynamoDB to establish
 ground truth, then against any target (DynamoDB Local, Dynoxide,
-Dynoxide (wasm), Dynalite, LocalStack, ExtendDB, Floci, Ministack, or
-anything else implementing the DynamoDB HTTP API, or fronted by a shim
+Dynoxide (wasm), Dynalite, LocalStack, ExtendDB, Floci, Ministack, Kumo,
+or anything else implementing the DynamoDB HTTP API, or fronted by a shim
 that does).
 Ground truth is recorded per region - real DynamoDB
 disagrees with itself in a few places, and the admitted cases live in
@@ -128,7 +128,7 @@ Before opening a PR that adds or modifies a test:
 
 Regenerating the published results table across all tracked targets
 (DynamoDB, Dynoxide, Dynoxide (wasm), DynamoDB Local, Dynalite,
-LocalStack, ExtendDB, Floci, Ministack) is a maintainer task, not a
+LocalStack, ExtendDB, Floci, Ministack, Kumo) is a maintainer task, not a
 contributor requirement. Do not hold a PR for it.
 
 If a test is flaky against real DynamoDB (for example GSI

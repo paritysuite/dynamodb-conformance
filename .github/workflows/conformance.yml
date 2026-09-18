@@ -989,6 +989,51 @@ jobs:
           name: results-ministack
           path: results/
 
+  test-kumo:
+    name: Kumo
+    needs: changes
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    services:
+      kumo:
+        image: ghcr.io/sivchari/kumo:latest
+        ports:
+          - 4566:4566
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.changes.outputs.ref }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run conformance suite
+        continue-on-error: true
+        env:
+          CONFORMANCE_TARGET: kumo
+          DYNAMODB_ENDPOINT: http://localhost:4566
+          AWS_ACCESS_KEY_ID: fakeAccessKeyId
+          AWS_SECRET_ACCESS_KEY: fakeSecretAccessKey
+          AWS_REGION: us-east-1
+        run: npm test
+
+      - name: Record target version
+        continue-on-error: true
+        env:
+          TARGET_IMAGE: ghcr.io/sivchari/kumo:latest
+        run: scripts/record-version.sh kumo
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: results-kumo
+          path: results/
+
   test-dynalite:
     name: Dynalite
     needs: changes

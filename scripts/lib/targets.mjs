@@ -189,6 +189,18 @@ export const TARGETS = {
       { channel: 'jar', url: 'https://github.com/floci-io/floci-cli' },
     ],
   },
+  kumo: {
+    display: 'Kumo',
+    project: 'kumo',
+    reference: true,
+    url: 'https://github.com/sivchari/kumo',
+    requires: 'none - a single Go binary, or Docker for the image',
+    distribution: [
+      { channel: 'docker', url: 'https://github.com/sivchari/kumo/pkgs/container/kumo' },
+      { channel: 'binary', url: 'https://github.com/sivchari/kumo/releases/latest' },
+      { channel: 'source', url: 'https://github.com/sivchari/kumo' },
+    ],
+  },
   // ExtendDB's storage backend is pluggable, chosen at build time by Cargo
   // feature, and exactly one is compiled into a given binary. A backend is
   // therefore a different engine under one wire protocol, which is a variant of
