@@ -70,7 +70,7 @@ export function renderCapabilities(model) {
 
   const header = CAPABILITIES.map(
     (c, i) =>
-      `<div class="${divider(i)}border-b border-zinc-200 dark:border-white/10 px-2 py-3 self-end text-center text-xs font-medium leading-tight text-zinc-600 dark:text-zinc-300">${esc(c.label)}</div>`,
+      `<div class="${divider(i)}capability-heading border-b border-zinc-200 dark:border-white/10 px-2 py-3 self-end text-center text-xs font-medium leading-tight text-zinc-600 dark:text-zinc-300">${esc(c.label)}</div>`,
   ).join("");
 
   const body = rows
@@ -144,4 +144,17 @@ export function renderCapabilityCards(model) {
       </div>`;
     })
     .join("");
+}
+
+// A compact feature list for a project's directory entry. It consumes the
+// existing capability states; it does not derive a second support classifier.
+export function renderFeatureSummary(target, group = "core") {
+  const measured = new Map((target?.capabilities || []).map(c => [c.key, c]));
+  const capabilities = CAPABILITIES.filter(c => c.group === group);
+  return `<dl class="project-feature-list">${capabilities.map(cap => {
+    const c = measured.get(cap.key);
+    const state = STATE[c?.state] || FALLBACK;
+    const detail = c ? counts(c) : "";
+    return `<div><dt>${esc(cap.label)}</dt><dd class="${state.cls}"${detail ? ` title="${esc(detail)}"` : ""}><span aria-hidden="true">${state.glyph}</span> ${esc(state.label)}</dd></div>`;
+  }).join("")}</dl>`;
 }

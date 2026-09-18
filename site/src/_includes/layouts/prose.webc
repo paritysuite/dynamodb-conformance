@@ -1,7 +1,8 @@
 ---
 layout: layouts/base.webc
 ---
-<section class="max-w-6xl mx-auto px-6 py-16">
+<section class="reading-layout max-w-6xl mx-auto px-6 py-16">
+  <nav class="reading-nav" aria-label="On this page" hidden data-reading-nav><p class="eyebrow">On this page</p></nav>
   <article
     class="prose prose-zinc dark:prose-invert max-w-3xl prose-headings:tracking-tight prose-headings:font-semibold prose-a:text-brand-700 dark:prose-a:text-brand-300 prose-a:font-medium"
     @html="content"></article>

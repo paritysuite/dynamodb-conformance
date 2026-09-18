@@ -118,6 +118,12 @@ try {
   // one or two projects - which is what a disclosure rendering the wrong branch
   // could look like - passed silently, and the number needed maintaining every
   // time a target joined.
+  const emulatorDirectory = docs.find((d) => d.path === "/targets/index.html");
+  check(Boolean(emulatorDirectory), "builds the emulator directory");
+  check(
+    Boolean(emulatorDirectory) && !/href="\/targets\/dynamodb"/.test(emulatorDirectory.html),
+    "the emulator directory excludes the real DynamoDB baseline",
+  );
   const homeDoc = docs.find((d) => d.path === "/index.html");
   const linked = new Set([...(homeDoc?.html ?? "").matchAll(/href="\/targets\/([a-z0-9-]+)"/g)].map((m) => m[1]));
   const scored = JSON.parse(await readFile(join(out, "data", "latest.json"), "utf8"))

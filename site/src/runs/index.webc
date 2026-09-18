@@ -12,12 +12,13 @@
   },
 }
 ---
-<section class="max-w-6xl mx-auto px-6 py-12">
+<section class="runs-page max-w-6xl mx-auto px-6 py-12">
+  <p class="eyebrow">Measurement history</p>
   <h1 class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white mb-2">Runs</h1>
   <p class="text-zinc-600 dark:text-zinc-300 mb-8 max-w-2xl">
     Every recorded run, newest first. A run groups every result that shares a date; targets not re-tested that day are carried forward. Open one for the full results.
   </p>
-  <ol class="space-y-3">
+  <ol class="run-list">
     <li webc:for="r of $data.conformance.runs" class="group relative flex items-center justify-between gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50/70 dark:bg-white/[0.03] p-4 sm:p-5 hover:border-brand-300 dark:hover:border-brand-500/40 transition-colors">
       <div class="min-w-0">
         <div class="flex items-center gap-2">

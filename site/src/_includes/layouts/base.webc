@@ -2,9 +2,9 @@
 <html lang="en-GB" class="scroll-smooth">
   <head>
     <script webc:keep>
-      if (localStorage.theme === 'light') {
-        document.documentElement.classList.remove('dark');
-      } else {
+      try {
+        document.documentElement.classList.toggle('dark', localStorage.theme !== 'light');
+      } catch {
         document.documentElement.classList.add('dark');
       }
     </script>
@@ -79,10 +79,15 @@
       });
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
-          document.querySelectorAll('details[data-dismiss][open]').forEach(function (d) { d.open = false; });
+          document.querySelectorAll('details[data-dismiss][open]').forEach(function (d) {
+            const restoreFocus = d.contains(document.activeElement);
+            d.open = false;
+            if (restoreFocus) d.querySelector('summary').focus();
+          });
         }
       });
     </script>
+    <site-interactions></site-interactions>
     <script @raw="getBundle('js')" webc:keep></script>
   </body>
 </html>

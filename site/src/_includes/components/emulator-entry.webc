@@ -1,0 +1,21 @@
+<article class="project-entry" :id="'project-' + row.slug">
+  <div class="project-identity">
+    <h2><a :href="'/targets/' + row.slug" @text="row.display"></a></h2>
+    <p class="project-version"><span webc:if="configurationOf(row.slug)" @text="configurationOf(row.slug) + ' · '"></span><span @text="row.version"></span></p>
+    <target-links :links="targetLinks(row.slug, row.repoUrl)" :name="row.display"></target-links>
+    <p webc:if="isSelfMaintained(row.slug)" class="project-note">Disclosure: maintained by this board's author.</p>
+    <h3>What you need</h3>
+    <p class="project-requires" @text="requires(row.slug) || 'See project documentation.'"></p>
+    <p webc:if="runNote(row.slug)" class="project-note" @text="runNote(row.slug)"></p>
+    <h3>Installation routes</h3>
+    <ul class="project-channels"><li webc:for="c of channels(row.slug)"><a :href="c.url" target="_blank" rel="noopener noreferrer" :aria-label="row.display + ': ' + c.label + ' documentation (opens in a new tab)'"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path :d="c.path"></path></svg><span @text="c.label"></span><span aria-hidden="true">↗</span></a></li></ul>
+    <div webc:if="buildsOf(row).length" class="project-builds"><h3>Other measured builds</h3><a webc:for="v of buildsOf(row)" :href="'/targets/' + v.slug"><span @text="configurationOf(v.slug) || v.display"></span> <span aria-hidden="true">→</span></a></div>
+  </div>
+  <div class="project-support">
+    <div class="project-support-heading"><h3>Feature support</h3><a :href="'/targets/' + row.slug">Full results <span aria-hidden="true">→</span><span class="sr-only" @text="' for ' + row.display"></span></a></div>
+    <p class="project-measured">Measured <time :datetime="row.runDate" @text="dateLabel(row.runDate)"></time><span webc:if="row.carried"> · carried from an earlier run</span></p>
+    <div @html="featureSummary(target, 'core')"></div>
+    <details class="project-extra"><summary>Other AWS services</summary><div @html="featureSummary(target, 'wider')"></div></details>
+    <details webc:if="target.areas.length" class="project-extra project-operations"><summary>Operation-by-operation support</summary><p class="project-note">Measured divergence and coverage for each operation. <a :href="'/targets/' + row.slug + '#operations'" class="underline">Inspect the full evidence</a>.</p><div @html="targetOperations(target.areas)"></div></details>
+  </div>
+</article>

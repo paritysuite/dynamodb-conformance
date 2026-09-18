@@ -4,7 +4,7 @@ import anchor from "markdown-it-anchor";
 import syntaxHighlight from "@11ty/eleventy-plugin-syntaxhighlight";
 import { chartGeometry } from "./lib/chart.mjs";
 import { buildMatrix, renderSupportCards, renderTargetOperations } from "./lib/matrix.mjs";
-import { renderCapabilities, renderCapabilityCards } from "./lib/capabilities.mjs";
+import { renderCapabilities, renderCapabilityCards, renderFeatureSummary } from "./lib/capabilities.mjs";
 import { controlObservation, controlProvenance, controlSplit, regionCount, regionLabel, renderRegionGroups } from "./lib/summary.mjs";
 import { renderSplitEvidence, splitCoverageNote } from "./lib/splits.mjs";
 import { regionalSpread, renderCappedExamples, renderCheapestWithdrawal } from "./lib/worked-examples.mjs";
@@ -100,6 +100,8 @@ export default function (eleventyConfig) {
   // The phone view: the wide grid folds to one card per target below xl, where
   // 13 columns no longer fit without cramping.
   eleventyConfig.addFilter("capabilityCards", (conformance) => renderCapabilityCards(conformance));
+  eleventyConfig.addFilter("featureSummary", (target, group) => renderFeatureSummary(target, group));
+  eleventyConfig.addFilter("targetCapabilities", (target) => renderCapabilityCards({ targets: [target.slug], perTarget: { [target.slug]: target } }));
 
   // Newest-first views of a series without mutating the model.
   eleventyConfig.addFilter("reversed", (arr) => [...(arr || [])].reverse());

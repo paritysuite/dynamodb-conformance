@@ -19,16 +19,15 @@
     return mainDateOf(summary) && mainDateOf(summary) === latest.date ? latest.id : null;
   }
 </script>
-<section class="max-w-6xl mx-auto px-6 py-12 sm:py-16">
+<section id="results" class="results-section max-w-6xl mx-auto px-6 py-12 sm:py-16">
   <div class="mb-8">
-    <h1 class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">Latest results</h1>
+    <div class="results-heading"><div><p class="eyebrow">The conformance board</p><h2 class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">Latest results</h2></div><a :href="'/runs/' + $data.conformance.latest.id" class="run-date">Run <time :datetime="$data.conformance.latest.date" @text="dateLabel($data.conformance.latest.date)"></time><span aria-hidden="true">↗</span></a></div>
     <!-- One paragraph, not a methodology lecture: the grade carries the
          verdict, the two figures beside it carry the detail, and the full
          reasoning lives one click away. The old two-paragraph intro existed
          to explain a bar encoding that no longer needs explaining. -->
     <p class="mt-3 text-zinc-600 dark:text-zinc-300 max-w-2xl leading-relaxed">
-      Every emulator runs the same suite as live AWS DynamoDB and is scored against the region it
-      matches most closely. <strong>Divergence</strong> is the share of the suite it gets wrong and sets
+      Each emulator is scored against its closest matching AWS region. <strong>Divergence</strong> is the share of the suite it gets wrong and sets
       the letter; <strong>coverage</strong> is the share it implements, and can only lower the letter.
       <a href="/methodology#grading" class="underline hover:text-brand-700 dark:hover:text-brand-300">How grades are worked out</a>.
     </p>
@@ -89,7 +88,9 @@
 
   <!-- Region health lives in the status strip above; this block is purely
        how to read a grade. -->
-  <div class="mb-6 space-y-3">
+  <details class="grade-guide mb-6">
+    <summary>How to read these results <span>Grades, coverage &amp; movement</span></summary>
+    <div class="pt-4 space-y-3">
     <!-- The complete criteria, because a letter a reader cannot reproduce is a
          verdict asked to be taken on trust. The 5% and 25% boundaries carry
          over the numbers of the board's long-published colour bands, which sat
@@ -113,6 +114,8 @@
     </div>
   </div>
 
+  </details>
+
   <!-- Biggest movers since the previous run -->
   <div webc:if="$data.conformance.movers.length" class="mb-6 flex flex-wrap items-center gap-2 text-sm">
     <span class="text-zinc-500 dark:text-zinc-400">Biggest moves:</span>
@@ -134,7 +137,7 @@
     <a :href="'/runs/' + $data.conformance.latest.id" class="underline hover:text-brand-700 dark:hover:text-brand-300">run page</a> has the detail.
   </p>
 
-  <ol class="space-y-3">
+  <ol class="standings-list space-y-3">
     <!-- Builds of a project render inside their parent's row, so skip them
          here. They stay in `standings` because every other surface - the target
          index, the per-target pages, the JSON endpoints - needs the full list.

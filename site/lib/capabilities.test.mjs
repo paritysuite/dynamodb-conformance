@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { capabilityTallies, CAPABILITIES, CAPABILITY_GROUPS } from "./scoring.mjs";
-import { renderCapabilities, renderCapabilityCards } from "./capabilities.mjs";
+import { renderCapabilities, renderCapabilityCards, renderFeatureSummary } from "./capabilities.mjs";
 
 // A tag manifest like the suite publishes: (file, top-level describe title) -> tags,
 // plus schema 2's `tests` map for tags applied below the describe.
@@ -207,4 +207,23 @@ test("renderCapabilities escapes target names rather than injecting markup", () 
   const html = renderCapabilities(evil);
   assert.doesNotMatch(html, /<script>alert/);
   assert.match(html, /&lt;script&gt;/);
+});
+
+
+test("directory feature summaries preserve measured states and distinguish missing evidence", () => {
+  const target = { capabilities: [
+    { key: "gsi", state: "supported", passed: 10, failed: 0, skipped: 0 },
+    { key: "lsi", state: "partial", passed: 5, failed: 2, skipped: 0 },
+    { key: "partiql", state: "unsupported", passed: 0, failed: 0, skipped: 8 },
+    { key: "transactions", state: "failing", passed: 0, failed: 4, skipped: 0 },
+  ] };
+  const html = renderFeatureSummary(target);
+  assert.match(html, /10 pass/);
+  assert.match(html, /5 pass, 2 fail/);
+  assert.match(html, /partially supported/);
+  assert.match(html, /not supported/);
+  assert.match(html, /failing/);
+  assert.match(html, /not tested/);
+  assert.doesNotMatch(html, /Backups/);
+  assert.match(renderFeatureSummary(target, "wider"), /Backups/);
 });
