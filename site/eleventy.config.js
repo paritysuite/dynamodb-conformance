@@ -1,10 +1,11 @@
+import { formatNumber } from "./lib/numbers.mjs";
 import { RenderPlugin } from "@11ty/eleventy";
 import pluginWebc from "@11ty/eleventy-plugin-webc";
 import anchor from "markdown-it-anchor";
 import syntaxHighlight from "@11ty/eleventy-plugin-syntaxhighlight";
 import { chartGeometry } from "./lib/chart.mjs";
-import { buildMatrix, renderSupportCards, renderTargetOperations } from "./lib/matrix.mjs";
-import { renderCapabilities, renderCapabilityCards, renderFeatureSummary } from "./lib/capabilities.mjs";
+import { renderTargetOperations } from "./lib/matrix.mjs";
+import { renderFeatureSummary, renderTargetCapabilities } from "./lib/capabilities.mjs";
 import { controlObservation, controlProvenance, controlSplit, regionCount, regionLabel, renderRegionGroups } from "./lib/summary.mjs";
 import { renderSplitEvidence, splitCoverageNote } from "./lib/splits.mjs";
 import { regionalSpread, renderCappedExamples, renderCheapestWithdrawal } from "./lib/worked-examples.mjs";
@@ -62,6 +63,7 @@ export default function (eleventyConfig) {
   // Used across run and target pages.
   eleventyConfig.addFilter("dateLabel", (iso) => dateLabel(iso));
 
+  eleventyConfig.addFilter("formatNumber", (n) => formatNumber(n));
   eleventyConfig.addFilter("dump", (obj) => JSON.stringify(obj));
 
   // YYYY-MM-DD for sitemap <lastmod>. Degrades to "" on a bad/missing date
@@ -84,24 +86,16 @@ export default function (eleventyConfig) {
   // rendered as the same chart twice, with no error anywhere.
   eleventyConfig.addFilter("chartGeometry", (...args) => chartGeometry(...args));
 
-  // Area-by-target support grid for the /support page. The wide grid is the
-  // desktop view; supportCards is the phone view, one card per operation.
-  eleventyConfig.addFilter("supportMatrix", (conformance) => buildMatrix(conformance));
-  eleventyConfig.addFilter("supportCards", (conformance) => renderSupportCards(buildMatrix(conformance)));
-
   // A single target's per-operation scorecard (every area, grouped by tier, with
-  // state and pass rate) for its target page.
+  // state and divergence) for its target page and its directory entry.
   eleventyConfig.addFilter("targetOperations", (areas) => renderTargetOperations(areas));
 
-  // Cross-cutting capability grid (target x capability) for the /capabilities
-  // page: the chooser's at-a-glance view of features the operation matrix can't
-  // show as one line (GSI/LSI, legacy params, ...).
-  eleventyConfig.addFilter("capabilityGrid", (conformance) => renderCapabilities(conformance));
-  // The phone view: the wide grid folds to one card per target below xl, where
-  // 13 columns no longer fit without cramping.
-  eleventyConfig.addFilter("capabilityCards", (conformance) => renderCapabilityCards(conformance));
+  // Capability support, in the two shapes the redesign renders it: the compact
+  // per-group list on a project's directory entry, and the fuller card on the
+  // target's own page. The cross-target grids that backed /capabilities and
+  // /support went when those pages became redirects to the directory.
   eleventyConfig.addFilter("featureSummary", (target, group) => renderFeatureSummary(target, group));
-  eleventyConfig.addFilter("targetCapabilities", (target) => renderCapabilityCards({ targets: [target.slug], perTarget: { [target.slug]: target } }));
+  eleventyConfig.addFilter("targetCapabilities", (target) => renderTargetCapabilities(target));
 
   // Newest-first views of a series without mutating the model.
   eleventyConfig.addFilter("reversed", (arr) => [...(arr || [])].reverse());

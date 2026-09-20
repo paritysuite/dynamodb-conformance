@@ -31,8 +31,8 @@
         <a webc:if="row.unsupported > 0"
           href="/targets"
           class="shrink-0 text-xs text-zinc-500 dark:text-zinc-400 underline decoration-dotted underline-offset-2 hover:text-brand-700 dark:hover:text-brand-300 transition-colors"
-          :title="row.display + ' scores the ' + row.implemented + ' of ' + row.count + ' tests it implements; ' + row.unsupported + ' cover operations it does not support. ' + row.coverage + ' of the suite.'">
-          <span @text="row.unsupported + ' unsupported'"></span>
+          :title="row.display + ' scores the ' + formatNumber(row.implemented) + ' of ' + formatNumber(row.count) + ' tests it implements; ' + formatNumber(row.unsupported) + ' cover operations it does not support. ' + row.coverage + ' of the suite.'">
+          <span @text="formatNumber(row.unsupported) + ' unsupported'"></span>
           <span class="sr-only">; covers <span @text="row.coverage"></span> of the suite</span>
         </a>
         <!-- No "full coverage" counterpart: the coverage figure beside the
@@ -59,7 +59,7 @@
            maintained by the person who runs the board. Shown here so a reader
            sees it with the letter, not only on a page they might not open. -->
       <p webc:if="isSelfMaintained(row.slug)" class="basis-full mt-1 text-[0.7rem] leading-snug text-zinc-500 dark:text-zinc-400">
-        Disclosure: <a :href="'/targets/' + row.slug" class="underline decoration-dotted underline-offset-2 hover:text-brand-700 dark:hover:text-brand-300">maintained by this board's author</a>
+        <a :href="'/targets/' + row.slug" class="underline decoration-dotted underline-offset-2 hover:text-brand-700 dark:hover:text-brand-300">Maintained by the board’s author</a>
       </p>
     </div>
 
@@ -71,28 +71,20 @@
     <div class="flex-1 flex items-center gap-3 sm:gap-4">
       <grade-chip :row="row" :size="'text-xl'"></grade-chip>
       <div class="flex-1 min-w-0">
-        <!-- No per-region count here. "6 of 33" is the cohort a headline was
-             earned in, and the naive reading inverts it: a target failing
-             identically everywhere shows "33 of 33" while one that matches
-             six regions exactly - and only differs where real DynamoDB
-             differs from itself - shows "6 of 33". A scanning reader takes
-             the bigger number as the better target every time, and no
-             card-sized label survives that. The method is stated above the
-             board, and each target's page carries the per-region story. -->
-        <!-- The headline is a regional measurement, so the row states its
-             distribution rather than leaving a figure to read as universal:
-             a bare "no divergence" claimed more than the measurement does
-             for a target that is perfect in six regions and 0.3% out in the
-             rest. -->
-        <p class="text-sm leading-snug text-zinc-700 dark:text-zinc-200 mb-1.5">
-          <span class="font-medium" @text="gradeLine(row)"></span><span webc:if="regionClause(row)" class="text-zinc-500 dark:text-zinc-400" @text="' ' + regionClause(row)"></span><span class="text-zinc-500 dark:text-zinc-400"> · covers <span class="tnum" @text="row.coverage"></span> of the suite</span>
-          <!-- A cap in force says so where the letter is read, whether or not
-               it lowered it. "B" over "no divergence" is the cap doing its job;
-               "B" over 12.3% divergence and 80.0% coverage is the cap holding a
-               ceiling the letter happens to sit on already, and that row used to
-               be indistinguishable from one that earned its B outright. -->
-          <span webc:if="capClause(row)" class="text-xs text-zinc-500 dark:text-zinc-400" @text="'· ' + capClause(row)"></span>
-        </p>
+        <!-- Keep the headline figures scannable, with the regional distribution
+             and any coverage cap directly below them. -->
+        <div class="standing-metrics mb-1.5">
+          <div><span class="tnum font-medium" @text="row.divergence"></span><span class="standing-metric-label">Divergence</span></div>
+          <div><span class="tnum font-medium" @text="row.coverage"></span><span class="standing-metric-label">Coverage</span></div>
+        </div>
+        <!-- gradeLine, not the bare figure: it drops the percentage when
+             divergence is zero, because "0.0% in 6 regions" reads as a zero
+             while "no divergence in 6 regions" reads as the measurement. The
+             labelled pair above carries the number for anyone who wants it.
+             Same phrase as the nested build rows below and the target page,
+             so a build cannot read differently from the board. -->
+        <p webc:if="regionClause(row)" class="standing-regions text-xs text-zinc-500 dark:text-zinc-400 mb-1.5" @text="gradeLine(row) + ' ' + regionClause(row)"></p>
+        <p webc:if="capClause(row)" class="standing-cap text-xs text-zinc-500 dark:text-zinc-400 mb-1.5" @text="capClause(row)"></p>
         <!-- The bar draws coverage alone; the judgement lives in the chip.
              Its old fill was coloured by divergence, which made a broad,
              badly-diverging target read as a full bar of warning - length
@@ -136,7 +128,7 @@
        first question and this answers the second, one click away rather than
        always on. The full breakdown stays on the target page. -->
   <details class="mt-3 sm:pl-56 group">
-    <summary class="inline-flex items-center gap-1.5 cursor-pointer list-none text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-brand-700 dark:hover:text-brand-300 transition-colors rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:focus-visible:outline-brand-400">
+    <summary class="build-summary inline-flex flex-wrap items-center gap-1.5 cursor-pointer list-none text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-brand-700 dark:hover:text-brand-300 transition-colors rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:focus-visible:outline-brand-400">
       <svg class="w-3 h-3 transition-transform group-open:rotate-90 motion-reduce:transition-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
       Tier breakdown
     </summary>
@@ -160,7 +152,7 @@
        breakdown above it: a disclosure that needs script to open is one that
        hides figures from a reader without it. -->
   <details webc:if="buildsOf(row).length" :open="buildsStartOpen(row)" class="mt-4 pt-3 border-t border-zinc-200 dark:border-white/10 group">
-    <summary class="inline-flex items-center gap-1.5 cursor-pointer list-none text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-brand-700 dark:hover:text-brand-300 transition-colors rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:focus-visible:outline-brand-400">
+    <summary class="build-summary inline-flex flex-wrap items-center gap-1.5 cursor-pointer list-none text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-brand-700 dark:hover:text-brand-300 transition-colors rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:focus-visible:outline-brand-400">
       <svg class="w-3 h-3 transition-transform group-open:rotate-90 motion-reduce:transition-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
       <span @text="'Also built for ' + buildNames(row)"></span>
       <!-- Names the three it compared rather than "same figures". The row below

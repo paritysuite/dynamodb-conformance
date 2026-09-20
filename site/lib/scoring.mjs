@@ -121,9 +121,12 @@ export function regionClauseOf(row) {
   const observed = row.regionLabel?.observed;
   if (!cohort || !observed) return "";
   const rest = observed - cohort;
-  if (rest === 0) return `in all ${observed} regions`;
-  if (!row.divergenceWorstLabel) return `in ${cohort} of ${observed} regions`;
-  return `in ${cohort} regions · up to ${row.divergenceWorstLabel} in the other ${rest}`;
+  // A cohort of one is common - a target measured in a single region - and it
+  // reads as a typo rather than a measurement when the noun stays plural.
+  const regions = (n) => `${n} region${n === 1 ? "" : "s"}`;
+  if (rest === 0) return `in all ${regions(observed)}`;
+  if (!row.divergenceWorstLabel) return `in ${cohort} of ${regions(observed)}`;
+  return `in ${regions(cohort)} · up to ${row.divergenceWorstLabel} in the other ${rest}`;
 }
 
 // Targets maintained by the person who also runs this board. The conflict of
@@ -294,6 +297,7 @@ export function areaTallies(raw) {
 // emulates the surrounding services can, and some do. The group is surfaced
 // rather than hidden, so a high score can't imply a feature the suite skipped.
 export const CAPABILITIES = [
+  { key: "vector", label: "Vector search", group: "core" },
   { key: "gsi", label: "GSI", group: "core" },
   { key: "lsi", label: "LSI", group: "core" },
   { key: "partiql", label: "PartiQL", group: "core" },
@@ -301,7 +305,6 @@ export const CAPABILITIES = [
   { key: "streams", label: "Streams", group: "core" },
   { key: "ttl", label: "TTL", group: "core" },
   { key: "legacy", label: "Legacy params", group: "core" },
-  { key: "vector", label: "Vector search", group: "core" },
   { key: "backups", label: "Backups / PITR", group: "wider" },
   { key: "export-import", label: "Export / import", group: "wider" },
   { key: "kinesis", label: "Kinesis", group: "wider" },

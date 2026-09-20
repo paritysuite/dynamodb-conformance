@@ -64,3 +64,25 @@ test('changing reduced-motion preference settles a running disclosure', () => {
   assert.equal(ui.details.open, true);
   assert.equal(ui.details.style.height, '');
 });
+
+// The keyboard branch deliberately does NOT preventDefault, and two reviewers
+// read that as a bug. Encoding the decision so it is not re-litigated from a
+// comment: mid-animation, settle() puts the element on the animation's
+// destination and the native <summary> toggle then moves off it, which is the
+// reversal a toggle press during a transition means. Preventing the default
+// would leave keyboard sitting on the destination and disagreeing with pointer.
+test('a keyboard press during an animation settles, then lets the native toggle run', () => {
+  const ui = disclosure();
+  ui.click(1);                              // pointer: starts opening
+  assert.equal(ui.details.open, true);
+  const event = ui.click(0);                // keyboard, mid-animation
+  assert.equal(event.prevented, undefined, 'the native toggle must still run');
+  assert.equal(ui.animations[0].cancelled, true, 'the in-flight animation is cancelled');
+  assert.equal(ui.animations.length, 1, 'no second animation is started');
+  // settle() left it on the animation's destination; the browser's own default
+  // action - which the harness does not simulate - is what moves it off.
+  assert.equal(ui.details.open, true);
+  assert.equal(ui.details.style.height, '');
+  assert.equal(ui.details.style.overflow, '');
+});
+

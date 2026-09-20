@@ -68,7 +68,7 @@
         up to <span class="font-mono tnum" @text="$data.target.current.divergenceWorstLabel"></span> in the others<span webc:if="$data.target.current.divergenceValue === 0">, only on <a href="/ground-truth" class="underline decoration-dotted underline-offset-2 hover:text-brand-700 dark:hover:text-brand-300">behaviours where real DynamoDB itself disagrees between regions</a></span>
       </div>
       <div class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-        <span class="font-mono tnum" @text="$data.target.current.coverage"></span> of the suite implemented<span webc:if="$data.target.current.unsupported"> · <span class="tnum" @text="$data.target.current.unsupported"></span> tests it doesn't attempt</span>
+        <span class="font-mono tnum" @text="$data.target.current.coverage"></span> of the suite implemented<span webc:if="$data.target.current.unsupported"> · <span class="tnum" @text="formatNumber($data.target.current.unsupported)"></span> tests it doesn't attempt</span>
       </div>
     </div>
   </div>
@@ -266,8 +266,8 @@
               <span class="text-[0.65rem] uppercase tracking-wide rounded px-1.5 py-0.5 bg-zinc-200/70 dark:bg-white/10 text-zinc-600 dark:text-zinc-300" @text="a.tier.replace('tier', 'Tier ')"></span>
             </span>
             <span class="flex items-center gap-2 shrink-0 text-xs tnum">
-              <span class="count-failing font-medium" @text="a.failed + ' diverging'"></span>
-              <span webc:if="a.skipped" class="text-zinc-500 dark:text-zinc-400" @text="a.skipped + ' not attempted'"></span>
+              <span class="count-failing font-medium" @text="formatNumber(a.failed) + ' diverging'"></span>
+              <span webc:if="a.skipped" class="text-zinc-500 dark:text-zinc-400" @text="formatNumber(a.skipped) + ' not attempted'"></span>
             </span>
           </summary>
           <div class="px-4 pb-4">
@@ -321,7 +321,7 @@
                    old single list showed both as the same "unsupported" badge. -->
               <span webc:if="a.whole" class="inline-flex items-center rounded-full bg-zinc-200/70 dark:bg-white/10 px-2 py-0.5 text-[0.65rem] uppercase tracking-wide text-zinc-600 dark:text-zinc-300">none of it</span>
               <span webc:else class="inline-flex items-center rounded-full bg-zinc-200/70 dark:bg-white/10 px-2 py-0.5 text-[0.65rem] uppercase tracking-wide text-zinc-600 dark:text-zinc-300">partly</span>
-              <span class="text-zinc-500 dark:text-zinc-400" @text="a.skipped + ' not attempted'"></span>
+              <span class="text-zinc-500 dark:text-zinc-400" @text="formatNumber(a.skipped) + ' not attempted'"></span>
             </span>
           </summary>
           <div class="px-4 pb-4">

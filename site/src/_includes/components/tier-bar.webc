@@ -37,14 +37,14 @@
        until you know it attempts a fifth of the tier. -->
   <div class="mb-1 flex items-baseline justify-between gap-2 text-xs text-zinc-500 dark:text-zinc-400">
     <span class="font-mono tnum"><span @text="tier.coverage"></span> covered</span>
-    <span webc:if="tier.skipped" class="tnum" @text="tier.skipped + ' unsupported'"></span>
+    <span webc:if="tier.skipped" class="tnum" @text="formatNumber(tier.skipped) + ' unsupported'"></span>
   </div>
   <!-- Fails over what the tier actually attempts, on the detail pages only. A
        tier divergence is over the whole tier, so a thinly-attempted tier reads
        mild: Dynalite's Tier 2 shows 14.1% while getting 28 of the 40 tests it
        attempts wrong. -->
   <div webc:if="detail && tier.failed" class="mb-1 text-xs text-zinc-500 dark:text-zinc-400 tnum"
-    @text="tier.failed + ' of ' + (tier.passed + tier.failed) + ' attempted'"></div>
+    @text="formatNumber(tier.failed) + ' of ' + formatNumber(tier.passed + tier.failed) + ' attempted'"></div>
   <!-- The value this meter DRAWS is coverage, so that is what it reports.
        Reporting divergence here while rendering coverage as the width left
        assistive tech a number that contradicted the bar beside it, and

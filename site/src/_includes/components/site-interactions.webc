@@ -64,6 +64,11 @@
     }
     summary.addEventListener('click', event => {
       if (event.target.closest('a,button,input')) return;
+      // Keyboard, AT and reduced-motion activations toggle natively and
+      // instantly. No preventDefault here, deliberately: settle() restores the
+      // state the interrupted animation was heading for, and the native toggle
+      // that follows then moves off it, which is the toggle the user asked for.
+      // Preventing the default would settle and stop, swallowing the keypress.
       if (reduced.matches || event.detail === 0) {
         if (animation) settle();
         return;

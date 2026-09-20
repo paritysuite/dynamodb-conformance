@@ -92,7 +92,7 @@
 
     <p webc:if="!($data.point.findings || []).length" class="text-sm text-zinc-500 dark:text-zinc-400">
       <span webc:if="!$data.point.failed">Nothing failed in this run.</span>
-      <span webc:elseif="true">The <span class="tnum" @text="$data.point.failed"></span> failures this run recorded aren't itemised here, because per-test detail isn't retained for this snapshot.</span>
+      <span webc:elseif="true">The <span class="tnum" @text="formatNumber($data.point.failed)"></span> failures this run recorded aren't itemised here, because per-test detail isn't retained for this snapshot.</span>
     </p>
 
     <ul class="space-y-2">

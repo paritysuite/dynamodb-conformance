@@ -380,6 +380,27 @@ test("regionClauseOf pairs the cohort with its worst-region figure", () => {
   assert.equal(regionClauseOf(row), "in 6 regions · up to 0.3% in the other 26");
 });
 
+// A cohort of one is live on today's board - several rows match exactly one
+// region - and the plural read as a typo rather than as a measurement.
+test("regionClauseOf pluralises the region count", () => {
+  assert.equal(
+    regionClauseOf({
+      regionLabel: { regions: ["a"], observed: 33 },
+      divergenceWorstLabel: "2.0%",
+    }),
+    "in 1 region · up to 2.0% in the other 32",
+  );
+  assert.equal(
+    regionClauseOf({ regionLabel: { regions: ["a"], observed: 1 } }),
+    "in all 1 region",
+  );
+  // The plural stays plural: this is a singular special case, not a rewrite.
+  assert.equal(
+    regionClauseOf({ regionLabel: { regions: ["a", "b"], observed: 2 } }),
+    "in all 2 regions",
+  );
+});
+
 test("regionClauseOf says all regions only when the cohort is every one", () => {
   assert.equal(
     regionClauseOf({ regionLabel: { regions: Array(32).fill("r"), observed: 32 } }),

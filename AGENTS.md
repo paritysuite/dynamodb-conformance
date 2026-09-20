@@ -350,22 +350,24 @@ dropped.
 ### Templates
 
 Filters in `site/eleventy.config.js` that do real work (`chartGeometry`,
-`supportMatrix`, `supportCards`, `targetOperations`, `capabilityGrid`,
-`capabilityCards`, `regionGroups`, `splitEvidence`, `regionLabel`,
-`isSelfMaintained`, `targetLinks`, `targetRunHref`, `areaFailures`,
-`findingSource`) are one-line wrappers delegating to `lib/`, which is what
-keeps that logic testable outside 11ty. Anything genuinely trivial (date
-labels, title formatting, cache-busting) stays inline. The rest of the file is
-JSON-LD assembly.
+`targetOperations`, `featureSummary`, `targetCapabilities`, `regionGroups`,
+`splitEvidence`, `regionLabel`, `isSelfMaintained`, `targetLinks`,
+`targetRunHref`, `areaFailures`, `findingSource`, `formatNumber`) are one-line
+wrappers delegating to `lib/`, which is what keeps that logic testable outside
+11ty. Anything genuinely trivial (date labels, title formatting, cache-busting)
+stays inline. The rest of the file is JSON-LD assembly.
+
+A filter that needs to reshape data before delegating puts the adapter in
+`lib/` too, not in the config: `targetCapabilities` renders one target's card
+by handing the card renderer a model of one, and that adapter is
+`renderTargetCapabilities` so it can be tested like everything else.
 
 Three things look inconsistent with everything else and have reasons:
 
 - WebC can't nest a `webc:for` over a property of an outer loop variable. The
-  support matrix and capability grid both need that shape, so `lib/matrix.mjs`
-  and `lib/capabilities.mjs` export `render*` helpers returning HTML strings
-  for the card views, and `buildMatrix` returns the same data twice: a flat
-  `items` list for the one-loop desktop grid, and nested `sections` for the
-  helpers.
+  per-operation table and the capability views both need that shape, so
+  `lib/matrix.mjs` and `lib/capabilities.mjs` export `render*` helpers
+  returning HTML strings rather than components taking that nested loop.
 - Paginated pages (`src/targets/`, `src/runs/`) compute permalink, meta,
   breadcrumbs and `lastmod` in `*.11tydata.js` under `eleventyComputed`, not in
   WebC front matter. `webc:setup` runs once at parse time, so per-page

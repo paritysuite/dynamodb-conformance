@@ -1,7 +1,7 @@
 <footer class="site-footer mt-auto">
   <div class="max-w-6xl mx-auto px-6">
     <div class="footer-top">
-      <div class="footer-statement"><a href="/" class="footer-brand"><img src="/images/logo.svg" width="32" height="32" alt="">Parity Suite</a><p>Trust the evidence.<br>Know the differences.</p><span>Independent tests for a compatible world.</span></div>
+      <div class="footer-statement"><a href="/" class="footer-brand"><img src="/images/logo.svg" width="32" height="32" alt="">Parity Suite</a><p>DynamoDB compatibility,<br>measured against AWS.</p><span>Independent tests. Public results.</span></div>
       <nav class="footer-navigation" aria-label="Footer navigation">
         <div><h2>Explore</h2><a href="/">Latest results</a><a href="/targets">Emulators</a></div>
         <div><h2>Understand</h2><a href="/methodology">Methodology</a><a href="/ground-truth">Ground truth</a><a href="/runs">Run history</a><a href="/changelog">Changelog</a></div>

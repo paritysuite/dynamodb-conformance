@@ -136,6 +136,31 @@ try {
     `${linked.size} of ${scored.length} linked${missing.length ? `; missing ${missing.join(", ")}` : ""}`,
   );
 
+  // The same completeness question for the directory, which is now the page the
+  // nav, both retired routes and the methodology all point at. Asserting the
+  // page exists and keeps the baseline out says nothing about whether it lists
+  // anything: an empty directory satisfied both.
+  //
+  // Counted over project anchors rather than target links, because the directory
+  // deliberately nests a project's other builds inside its parent's entry - so
+  // the expected set is the scored slugs that reach a project entry of their own
+  // or are named as a build within one, which is every scored slug exactly once.
+  const entries = new Set(
+    [...(emulatorDirectory?.html ?? "").matchAll(/id="project-([a-z0-9-]+)"/g)].map((m) => m[1]),
+  );
+  const directoryLinks = new Set(
+    [...(emulatorDirectory?.html ?? "").matchAll(/href="\/targets\/([a-z0-9-]+)"/g)].map((m) => m[1]),
+  );
+  const unreached = scored.filter((slug) => !entries.has(slug) && !directoryLinks.has(slug));
+  check(
+    // `scored.length > 0` as well as the entry count: an empty expected set
+    // leaves `unreached` empty too, so without it a build that published no
+    // engines at all would satisfy this by having any entry whatsoever.
+    scored.length > 0 && entries.size > 0 && unreached.length === 0,
+    "the emulator directory reaches every scored engine, builds included",
+    `${entries.size} project entries covering ${scored.length - unreached.length} of ${scored.length} engines${unreached.length ? `; missing ${unreached.join(", ")}` : ""}`,
+  );
+
   // Every internal link has to resolve. This is the check that would have caught
   // 55 dead links when the synthesised baseline stopped getting dated pages but
   // two templates carried on linking to them.

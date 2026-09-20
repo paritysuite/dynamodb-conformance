@@ -37,9 +37,12 @@
   --color-brand-800: #115e59;
   --color-brand-900: #134e4a;
 
-  /* Surface: a teal-tinted near-black for dark mode, distinct from a flat zinc. */
-  --color-surface-950: #0b1f1d;
-  --color-surface-900: #0f2e2b;
+  /* Surface: the dark-mode page and panel colours. Defined here and nowhere
+     else - every use is `dark:`-prefixed, so these values and --page-bg /
+     --page-panel below have to stay in step or a Tailwind-utility surface and
+     a hand-written one sit side by side in different colours. */
+  --color-surface-950: #101619;
+  --color-surface-900: #171e22;
 
   /* Score semantics - read pass / partial / fail, never colour alone. The
      -700 shades are the on-light-background text colours: the -600s render
@@ -181,7 +184,6 @@
 .dark {
   --page-bg: #101619; --page-panel: #171e22; --page-ink: #edf2f4;
   --page-muted: #a2afb7; --page-line: #303b42; --page-accent: #5eead4;
-  --color-surface-950: #101619; --color-surface-900: #171e22;
 }
 body, .dark body { background: var(--page-bg); color: var(--page-ink); }
 [hidden] { display: none !important; }
@@ -227,6 +229,9 @@ main > section > h1 + p { margin-top: 1.2rem; line-height: 1.75; font-size: .9re
 .reading-guide[open] > summary { margin-bottom: 1.5rem; }
 .standings-list { border: 1px solid var(--page-line); border-radius: var(--panel-radius); overflow: clip; background: var(--page-panel); }
 .standings-list > li { margin: 0; border: 0; border-radius: 0; background: transparent; padding: 1.5rem; }
+.standing-metrics { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; font-size: 1rem; }
+.standing-metric-label { display: block; font-size: .6875rem; color: var(--page-muted); }
+.standing-regions { line-height: 1.6; }
 .standings-list > li + li { border-top: 1px solid var(--page-line); }
 .standings-list > li > div .grade-chip { min-height: 3rem; min-width: 3rem; border-radius: 6px; }
 .standings-list > li li .grade-chip { min-height: 2rem; }
@@ -243,7 +248,14 @@ main > section > h1 + p { margin-top: 1.2rem; line-height: 1.75; font-size: .9re
 .reading-nav a { display: block; font-size: .8125rem; line-height: 1.5; padding: .5rem 0 .5rem .8rem; color: var(--page-muted); border-left: 1px solid var(--page-line); }
 .reading-nav > p { margin-bottom: 1rem; }
 .reading-nav a[aria-current="location"] { color: var(--page-accent); border-left: 2px solid var(--page-accent); }
-.reading-layout:not(:has(.reading-nav:not([hidden]))) { display: block; }
+/* The column is reserved whether or not the nav has anything in it yet. The nav
+   is populated by script and starts hidden, so collapsing the grid while it is
+   empty reflowed the article on every prose page the moment that script ran.
+   The article is pinned to the second track rather than auto-placed, because a
+   hidden nav is `display: none` and so is not a grid item at all - auto
+   placement then put the body text in the 180px column, which is what every
+   prose page looked like with scripting off. */
+.reading-layout > article { grid-column: 2; }
 .prose { font-size: 1rem; line-height: 1.8; }
 .site-footer { border-top: 1px solid var(--page-line); background: var(--page-panel); }
 .footer-top { display: grid; grid-template-columns: 1fr 1.3fr; gap: 4rem; padding: 3rem 0; }
@@ -356,6 +368,10 @@ html[data-keyboard] *, html[data-keyboard] *::before, html[data-keyboard] *::aft
 @media (max-width: 767px) {
   main > section:not(.home-intro):not(.home-outro) { padding-block: 2rem 3rem; }
   .hero-copy h1 { max-width: 14ch; }
+  .standings-list > li { padding: 1rem; }
+  .standing-metrics { gap: .5rem .75rem; }
+  .grade-guide > summary > span { display: block; float: none; margin-top: .25rem; }
+  .build-summary { line-height: 1.6; }
   .hero-actions { gap: .5rem; }
   .hero-actions a { gap: 1rem; }
   .target-page #overview > div:last-child { max-width: none; width: 100%; text-align: left; border-top: 1px solid var(--page-line); padding-top: 1.5rem; }
@@ -364,9 +380,9 @@ html[data-keyboard] *, html[data-keyboard] *::before, html[data-keyboard] *::aft
   .grid-cols-3:has(> .tier-metric) { grid-template-columns: 1fr; gap: 1.25rem; }
   .project-support { padding: 1rem; }
   .project-feature-list { grid-template-columns: 1fr; }
-  .reading-nav { display: flex; overflow-x: auto; gap: .5rem; padding-bottom: .75rem; border-bottom: 1px solid var(--page-line); }
-  .reading-nav > p { display: none; }
-  .reading-nav a { flex-shrink: 0; padding: .625rem .75rem; border: 1px solid var(--page-line); border-radius: .5rem; }
+  .reading-nav { display: flex; flex-wrap: wrap; gap: .5rem; padding-bottom: .75rem; border-bottom: 1px solid var(--page-line); }
+  .reading-nav > p { width: 100%; margin-bottom: .25rem; }
+  .reading-nav a { min-width: 0; max-width: 100%; overflow-wrap: anywhere; padding: .625rem .75rem; border: 1px solid var(--page-line); border-radius: .5rem; }
   .reading-nav a[aria-current="location"] { border: 1px solid var(--page-accent); }
   .footer-navigation a { min-height: 2.75rem; }
 }

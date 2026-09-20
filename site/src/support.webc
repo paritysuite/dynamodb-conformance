@@ -1,5 +1,5 @@
 ---js
-{ meta: { title: "Operation support" } }
+{ meta: { title: "Operation support" }, eleventyExcludeFromCollections: true }
 ---
 <!doctype html>
 <html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Operation support | Parity Suite</title><link rel="canonical" href="https://paritysuite.org/targets"><meta http-equiv="refresh" content="0; url=/targets"></head><body><p>Continue to <a href="/targets">operation support across emulators</a>.</p></body></html>

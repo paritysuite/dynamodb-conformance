@@ -67,7 +67,7 @@ test("each claim that drifted, put back into its own page, fails the scan", () =
     ],
     [
       "site/src/methodology.md",
-      "carries {{ suite.byOperation.putItem }} of the suite's tests",
+      "carries {{ suite.byOperation.putItem | formatNumber }} of the suite's tests",
       "carries 115 of the suite's tests",
     ],
   ]) {

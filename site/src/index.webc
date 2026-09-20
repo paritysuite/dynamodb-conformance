@@ -28,9 +28,9 @@
 
 <section class="home-outro max-w-6xl mx-auto px-6 pb-20">
   <div>
-    <p class="eyebrow">Open tests. Inspectable results.</p>
-    <h2>A grade starts the conversation.</h2>
-    <p>Follow it through to the operations, individual tests, and regional answers behind it.</p>
+    <p class="eyebrow">Explore the results</p>
+    <h2>See which operations match.</h2>
+    <p>Browse operation support, failing tests, and regional comparisons.</p>
   </div>
   <a href="/targets" class="button-secondary">Browse emulator support <span aria-hidden="true">→</span></a>
 </section>
