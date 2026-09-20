@@ -93,13 +93,15 @@ export const TARGETS = {
     display: 'Dynoxide',
     project: 'dynoxide',
     reference: true,
-    // Named for the storage under the shared query layer, like every other
-    // configuration here, rather than for the compile target. "native" alone
-    // said only that this build is not the wasm one, which is the single thing
-    // a reader who has not met that build cannot use.
-    configuration: 'native SQLite',
+    // Named for how the build runs rather than for its storage engine, because
+    // that is the axis separating it from the row nested under it: this one is
+    // a binary you run, that one is WebAssembly in a browser. A storage name
+    // ("native SQLite") paired a storage fact against a runtime fact and the
+    // two rows read as answers to different questions. ExtendDB's pair still
+    // names storage, because storage is what distinguishes those two.
+    configuration: 'self-contained binary',
     url: 'https://github.com/nubo-db/dynoxide',
-    requires: 'none - a native binary',
+    requires: 'none - a single binary, with no runtime to install',
     distribution: [
       { channel: 'npx', url: 'https://github.com/nubo-db/dynoxide/blob/main/docs/installation.md' },
       { channel: 'docker', url: 'https://github.com/nubo-db/dynoxide/blob/main/docs/installation.md' },
