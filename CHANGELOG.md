@@ -8,6 +8,8 @@ section its date and version, so several branches can write ahead of one.
 
 ## Unreleased
 
+## 2026-09-20 (3.4.0)
+
 Kumo joins the board, suggested by [@exoego](https://github.com/exoego). It is a
 Go emulator covering 82 AWS services, of which DynamoDB is one, and it runs from
 a container image or a single binary with nothing else to install.
