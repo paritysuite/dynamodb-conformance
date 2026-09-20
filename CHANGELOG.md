@@ -8,6 +8,18 @@ section its date and version, so several branches can write ahead of one.
 
 ## Unreleased
 
+Ten cases for the 4096-byte expression cap and the 32-level nesting cap on the
+batch and transact write surfaces, captured against eu-west-2 and us-east-1.
+
+- **Expression size in a transaction.** A `TransactWriteItems` member's
+  `ConditionExpression` or `UpdateExpression` over 4096 bytes is a top-level
+  `ValidationException`, not a cancellation, even when an earlier member is
+  fine.
+- **Nesting depth on batch and transact writes.** A Put item with a leaf below
+  level 32 is refused up front by `BatchWriteItem` and `TransactWriteItems`. A
+  transacted Update's `ExpressionAttributeValues` entry cancels with a
+  `ValidationError` reason, and a `ConditionCheck`'s is not checked at all.
+
 ## 2026-09-03 (3.3.0)
 
 Thirteen captures against eu-west-2 turned into coverage, and the suite grew

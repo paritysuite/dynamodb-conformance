@@ -1248,6 +1248,10 @@
         "get-item",
         "put-item",
         "data-plane"
+      ],
+      "Expression size limit (4KB) — TransactWriteItems": [
+        "transactions",
+        "data-plane"
       ]
     },
     "tests/tier3/limits/itemSize.test.ts": {
@@ -1311,6 +1315,14 @@
       "Nesting depth — 32-level document limit": [
         "put-item",
         "update-item",
+        "data-plane"
+      ],
+      "Nesting depth — BatchWriteItem": [
+        "batch",
+        "data-plane"
+      ],
+      "Nesting depth — TransactWriteItems": [
+        "transactions",
         "data-plane"
       ]
     },

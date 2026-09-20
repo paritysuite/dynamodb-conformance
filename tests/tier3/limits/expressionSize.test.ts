@@ -3,9 +3,11 @@ import {
   PutItemCommand,
   QueryCommand,
   ScanCommand,
+  TransactWriteItemsCommand,
   UpdateItemCommand,
 } from '@aws-sdk/client-dynamodb'
 import { ddb } from '../../../src/client.js'
+import { skipUnlessSupported } from '../../../src/infra.js'
 import { declareTables, hashTableDef, expectDynamoError, cleanupItems } from '../../../src/helpers.js'
 
 declareTables(hashTableDef)
@@ -319,5 +321,112 @@ describe('Expression size limit (4KB) — ProjectionExpression', { tags: ['get-i
     // returns an empty Item (not an omitted one) for a zero-match projection
     // on an existing item.
     expect(res.$metadata.httpStatusCode).toBe(200)
+  })
+})
+
+// no negative-path: acceptance-mixed (asserts accepted and rejected cases)
+describe('Expression size limit (4KB) — TransactWriteItems', { tags: ['transactions', 'data-plane'] }, () => {
+  // An empty TransactItems is rejected by any target that implements the
+  // operation, so this separates "not implemented" from "implemented".
+  skipUnlessSupported(() => ddb.send(new TransactWriteItemsCommand({ TransactItems: [] })))
+
+  // The same 4096-byte cap applies inside a transaction, and an oversized
+  // member is a top-level ValidationException rather than a cancellation:
+  // the size is checked before any member runs. Captured against eu-west-2
+  // and us-east-1 real DynamoDB, 2026-09-12.
+
+  it('accepts a Put ConditionExpression at the 4096-byte limit', async () => {
+    const k = key('twi-cond-at')
+    await ddb.send(
+      new TransactWriteItemsCommand({
+        TransactItems: [
+          {
+            Put: {
+              TableName: hashTableDef.name,
+              Item: { ...k, real: { S: 'y' } },
+              ConditionExpression: conditionExpression(LIMIT),
+            },
+          },
+        ],
+      }),
+    )
+    // The put went through, so the condition was evaluated rather than dropped.
+    const get = await ddb.send(
+      new GetItemCommand({ TableName: hashTableDef.name, Key: k, ConsistentRead: true }),
+    )
+    expect(get.Item?.real?.S).toBe('y')
+  })
+
+  it('rejects a Put ConditionExpression over the 4096-byte limit', async () => {
+    await expectDynamoError(
+      () =>
+        ddb.send(
+          new TransactWriteItemsCommand({
+            TransactItems: [
+              {
+                Put: {
+                  TableName: hashTableDef.name,
+                  Item: key('twi-cond-over'),
+                  ConditionExpression: conditionExpression(OVER),
+                },
+              },
+            ],
+          }),
+        ),
+      'ValidationException',
+      SIZE_MSG,
+    )
+  })
+
+  it('rejects an Update UpdateExpression over the 4096-byte limit', async () => {
+    const { expr, values } = updateExpression(OVER)
+    await expectDynamoError(
+      () =>
+        ddb.send(
+          new TransactWriteItemsCommand({
+            TransactItems: [
+              {
+                Update: {
+                  TableName: hashTableDef.name,
+                  Key: key('twi-upd-over'),
+                  UpdateExpression: expr,
+                  ExpressionAttributeValues: values,
+                },
+              },
+            ],
+          }),
+        ),
+      'ValidationException',
+      SIZE_MSG,
+    )
+  })
+
+  it('rejects the whole request when only the second member is oversized', async () => {
+    // A top-level ValidationException, not a TransactionCanceledException:
+    // the first member is fine and still nothing is written.
+    const first = key('twi-second-first')
+    await expectDynamoError(
+      () =>
+        ddb.send(
+          new TransactWriteItemsCommand({
+            TransactItems: [
+              { Put: { TableName: hashTableDef.name, Item: first } },
+              {
+                Put: {
+                  TableName: hashTableDef.name,
+                  Item: key('twi-second-over'),
+                  ConditionExpression: conditionExpression(OVER),
+                },
+              },
+            ],
+          }),
+        ),
+      'ValidationException',
+      SIZE_MSG,
+    )
+    const get = await ddb.send(
+      new GetItemCommand({ TableName: hashTableDef.name, Key: first, ConsistentRead: true }),
+    )
+    expect(get.Item).toBeUndefined()
   })
 })
