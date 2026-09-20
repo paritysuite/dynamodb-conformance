@@ -1,0 +1,93 @@
+<script webc:keep>
+(() => {
+  const root = document.documentElement;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const easing = 'cubic-bezier(0.23, 1, 0.32, 1)';
+  document.addEventListener('keydown', () => { root.dataset.keyboard = ''; });
+  document.addEventListener('pointerdown', () => { delete root.dataset.keyboard; }, { passive: true });
+
+  const theme = document.querySelector('[data-theme-toggle]');
+  if (theme) {
+    theme.setAttribute('aria-pressed', String(root.classList.contains('dark')));
+    theme.addEventListener('click', () => {
+      const dark = root.classList.toggle('dark');
+      theme.setAttribute('aria-pressed', String(dark));
+      try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch {}
+    });
+  }
+
+  // Native links and real heading IDs keep deep linking and no-script reading.
+  const readingNav = document.querySelector('[data-reading-nav]');
+  if (readingNav) {
+    const headings = [...document.querySelectorAll('.prose h2[id]')];
+    for (const heading of headings) {
+      const link = document.createElement('a');
+      link.href = '#' + heading.id;
+      link.textContent = heading.textContent;
+      readingNav.append(link);
+    }
+    readingNav.hidden = headings.length === 0;
+  }
+  for (const nav of document.querySelectorAll('.section-nav, [data-reading-nav]')) {
+    const links = [...nav.querySelectorAll('a[href^="#"]')];
+    const sections = links.map(link => document.getElementById(decodeURIComponent(link.hash.slice(1))));
+    let scheduled = false;
+    function markSection() {
+      scheduled = false;
+      let current = 0;
+      sections.forEach((section, i) => { if (section && section.getBoundingClientRect().top <= 170) current = i; });
+      links.forEach((link, i) => {
+        if (i === current) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      });
+    }
+    document.addEventListener('scroll', () => {
+      if (!scheduled) { scheduled = true; requestAnimationFrame(markSection); }
+    }, { passive: true });
+    markSection();
+  }
+
+  // Animate only deliberate pointer disclosure actions. Native keyboard
+  // toggles stay immediate. Retarget from the current height on interruption.
+  const active = new Set();
+  for (const details of document.querySelectorAll('.standings-list details, .reading-guide, .grade-guide')) {
+    const summary = details.querySelector(':scope > summary');
+    if (!summary || !details.animate) continue;
+    let animation = null;
+    let desiredOpen = details.open;
+    function settle() {
+      if (animation) { animation.cancel(); animation = null; }
+      details.open = desiredOpen;
+      details.style.height = '';
+      details.style.overflow = '';
+      active.delete(settle);
+    }
+    summary.addEventListener('click', event => {
+      if (event.target.closest('a,button,input')) return;
+      // Keyboard, AT and reduced-motion activations toggle natively and
+      // instantly. No preventDefault here, deliberately: settle() restores the
+      // state the interrupted animation was heading for, and the native toggle
+      // that follows then moves off it, which is the toggle the user asked for.
+      // Preventing the default would settle and stop, swallowing the keypress.
+      if (reduced.matches || event.detail === 0) {
+        if (animation) settle();
+        return;
+      }
+      event.preventDefault();
+      const start = details.getBoundingClientRect().height;
+      desiredOpen = animation ? !desiredOpen : !details.open;
+      if (animation) animation.cancel();
+      details.style.height = '';
+      details.open = desiredOpen;
+      const end = details.getBoundingClientRect().height;
+      details.open = true;
+      details.style.overflow = 'hidden';
+      animation = details.animate([{ height: start + 'px' }, { height: end + 'px' }], { duration: 200, easing });
+      active.add(settle);
+      animation.onfinish = settle;
+    });
+  }
+  reduced.addEventListener('change', () => { if (reduced.matches) [...active].forEach(settle => settle()); });
+
+})();
+</script>

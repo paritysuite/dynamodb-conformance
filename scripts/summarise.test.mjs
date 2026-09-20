@@ -817,7 +817,7 @@ describe('renderTable variant nesting', () => {
     expect(table).not.toMatch(/\[Dynoxide \(wasm\)\]/)
     // The parent names the configuration its own figures were measured on, so
     // the row does not go ambiguous the moment a second one ships.
-    expect(table).toMatch(/\[Dynoxide\]\([^)]+\) · native/)
+    expect(table).toMatch(/\[Dynoxide\]\([^)]+\) · self-contained binary/)
     // Directly beneath its project, not sorted away from it.
     const lines = table.split('\n').filter((l) => l.startsWith('|'))
     const parent = lines.findIndex((l) => l.includes('[Dynoxide]'))

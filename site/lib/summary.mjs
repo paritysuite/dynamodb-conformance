@@ -1,3 +1,4 @@
+import { formatNumber } from "./numbers.mjs";
 // Build the per-region model from the suite's results/summary.json.
 //
 // summary.json (schemaVersion 1) is the suite's 2.0.0 addition: every target
@@ -179,7 +180,7 @@ const esc = (s) =>
 // Render the per-region drilldown for a target as grouped rate bands. WebC can't
 // nest a webc:for over a property of an outer loop variable (the groups, then
 // the regions in each), so the grouped view is built here as HTML, the same way
-// the support matrix renders its cards.
+// lib/matrix.mjs and lib/capabilities.mjs build theirs.
 export function renderRegionGroups(regions) {
   const groups = groupRegionsByDivergence(regions);
   if (groups.length === 0) return "";
@@ -263,7 +264,7 @@ export function controlSplit(obs) {
   const passes = `${word} slower pass${n === 1 ? "" : "es"}`;
   // No date of its own: the line it sits on is already labelled with the run
   // this refers back to, and repeating it there read as two measurements.
-  return `${obs.observed} in that run, ${obs.shortfall} in ${passes}`;
+  return `${formatNumber(obs.observed)} in that run, ${formatNumber(obs.shortfall)} in ${passes}`;
 }
 
 /** Which passes have reported, when, and what is still outstanding. */
@@ -272,7 +273,7 @@ export function controlProvenance(obs, dateLabel = (d) => d) {
   const seen = listOf(obs.dated.map((l) => `${LANE_NAMES[l.name] ?? l.name} on ${dateLabel(l.runDate)}`));
   if (!obs.shortfall) return seen ? `Measured by ${seen}.` : "";
   const missing = listOf(obs.missingLanes.map((n) => LANE_NAMES[n] ?? n));
-  const tests = `${obs.shortfall} test${obs.shortfall === 1 ? "" : "s"}`;
+  const tests = `${formatNumber(obs.shortfall)} test${obs.shortfall === 1 ? "" : "s"}`;
   const tail = missing
     ? `${tests} sit in the ${missing} passes, which have not reported yet.`
     : `${tests} have not been observed yet.`;

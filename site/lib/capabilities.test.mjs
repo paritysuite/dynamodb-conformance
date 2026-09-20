@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { capabilityTallies, CAPABILITIES, CAPABILITY_GROUPS } from "./scoring.mjs";
-import { renderCapabilities, renderCapabilityCards } from "./capabilities.mjs";
+import { renderCapabilityCards, renderFeatureSummary, renderTargetCapabilities } from "./capabilities.mjs";
 
 // A tag manifest like the suite publishes: (file, top-level describe title) -> tags,
 // plus schema 2's `tests` map for tags applied below the describe.
@@ -153,35 +153,14 @@ const model = {
   },
 };
 
-test("renderCapabilities renders a row per target with glyphs, versions and counts", () => {
-  const html = renderCapabilities(model);
-  // every capability column header is present
-  for (const c of CAPABILITIES) assert.ok(html.includes(c.label), `missing column ${c.label}`);
-  // glyphs map to states (colour never alone: a spoken describe accompanies each)
-  assert.match(html, /✓/); // supported (dynoxide gsi)
-  assert.match(html, /–/); // unsupported (extenddb partiql)
-  assert.match(html, /Dynoxide GSI: supported \(26 pass\)/);
-  assert.match(html, /ExtendDB PartiQL: not supported \(42 skip\)/);
-  // version travels with the target
-  assert.match(html, /0\.10\.0/);
-});
-
-test("renderCapabilities leaves the baseline out", () => {
-  // Every cell in its row was supported by definition, so the row was a line of
-  // ticks a reader could do nothing with. The prose above the grid carries the
-  // point instead.
-  const html = renderCapabilities(model);
-  assert.doesNotMatch(html, /DynamoDB GSI: supported/);
-  assert.doesNotMatch(html, /href="\/targets\/dynamodb"/);
-  // The emulators are all still there.
-  assert.match(html, /Dynoxide GSI/);
-  assert.match(html, /href="\/targets\/extenddb"/);
-});
-
 test("renderCapabilityCards folds to one card per target, with both group headings and every capability", () => {
   const html = renderCapabilityCards(model);
-  // a card per target
-  for (const t of ["DynamoDB", "Dynoxide", "ExtendDB"]) assert.ok(html.includes(t), `missing target ${t}`);
+  // A card per target, counted by the link that heads it rather than by the
+  // display name appearing anywhere: "DynamoDB" also occurs in the "Core
+  // DynamoDB" group heading, so a name match passed for a target with no card.
+  for (const slug of ["dynoxide", "extenddb"]) {
+    assert.match(html, new RegExp(`href="/targets/${slug}"`), `missing card for ${slug}`);
+  }
   // both group headings, and every capability label, appear in each fold
   for (const g of CAPABILITY_GROUPS) assert.ok(html.includes(g.label), `missing group ${g.label}`);
   for (const c of CAPABILITIES) assert.ok(html.includes(c.label), `missing capability ${c.label}`);
@@ -199,12 +178,58 @@ test("renderCapabilityCards escapes target names rather than injecting markup", 
   assert.match(html, /&lt;script&gt;/);
 });
 
-test("renderCapabilities escapes target names rather than injecting markup", () => {
-  const evil = {
-    targets: ["x"],
-    perTarget: { x: { display: "<script>alert(1)</script>", currentVersion: "1", capabilities: [] } },
-  };
-  const html = renderCapabilities(evil);
-  assert.doesNotMatch(html, /<script>alert/);
-  assert.match(html, /&lt;script&gt;/);
+// The baseline is left out of every capability view by definition: its row was
+// supported in every column, so it read as a row of ticks a reader could do
+// nothing with. This asserts it on the renderer that still ships - the only
+// test of that filter used to sit on the wide grid, which no page renders any
+// more, so deleting the grid would otherwise have taken the coverage with it.
+test("renderCapabilityCards leaves the baseline out", () => {
+  const html = renderCapabilityCards(model);
+  assert.doesNotMatch(html, /href="\/targets\/dynamodb"/);
+  assert.match(html, /href="\/targets\/dynoxide"/);
+});
+
+test("directory feature summaries preserve measured states and distinguish missing evidence", () => {
+  const target = { capabilities: [
+    { key: "gsi", state: "supported", passed: 10, failed: 0, skipped: 0 },
+    { key: "lsi", state: "partial", passed: 5, failed: 2, skipped: 0 },
+    { key: "partiql", state: "unsupported", passed: 0, failed: 0, skipped: 8 },
+    { key: "transactions", state: "failing", passed: 0, failed: 4, skipped: 0 },
+  ] };
+  const html = renderFeatureSummary(target);
+  assert.match(html, /10 pass/);
+  assert.match(html, /5 pass, 2 fail/);
+  assert.match(html, /partially supported/);
+  assert.match(html, /not supported/);
+  assert.match(html, /failing/);
+  assert.match(html, /not tested/);
+  assert.doesNotMatch(html, /Backups/);
+  assert.match(renderFeatureSummary(target, "wider"), /Backups/);
+});
+
+// Not an escaping test, deliberately. Every value this renderer interpolates is
+// either a CAPABILITIES constant or formatNumber output, so esc() has nothing
+// attacker-shaped to catch and a payload-through-esc test passes whether or not
+// esc() is there at all. What IS worth pinning is the coercion that makes that
+// true: a non-numeric count becomes "NaN", never markup. If a future change
+// routes a raw value into this renderer, this test stops describing it and the
+// escaping question becomes live again.
+test("a non-numeric count is coerced by the formatter, never interpolated raw", () => {
+  const target = { capabilities: [{ key: "gsi", state: "supported", passed: '"><script>alert(1)</script>', failed: 0, skipped: 0 }] };
+  const html = renderFeatureSummary(target);
+  assert.match(html, /title="NaN pass"/);
+  assert.doesNotMatch(html, /script>alert/);
+});
+
+// A single-target page hands the card renderer a model of one. Keeping the
+// adapter in lib/ rather than in the 11ty config is what lets this be tested.
+test("a target's own capability card is the card renderer over a model of one", () => {
+  const target = { slug: "x", display: "X", currentVersion: "1.0.0", capabilities: [
+    { key: "gsi", state: "supported", passed: 1200, failed: 0, skipped: 0 },
+  ] };
+  const html = renderTargetCapabilities(target);
+  assert.match(html, /href="\/targets\/x"/);
+  assert.match(html, /1,200 pass/);
+  assert.equal(renderTargetCapabilities(null), "");
+  assert.equal(renderTargetCapabilities({}), "");
 });

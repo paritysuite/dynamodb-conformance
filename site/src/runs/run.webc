@@ -14,7 +14,7 @@
     <p class="text-sm text-zinc-500 dark:text-zinc-400">
       <span @text="$data.run.emulatorCount + ' emulators'"></span>
       <span aria-hidden="true">·</span>
-      <span @text="$data.run.suiteSize + ' tests'"></span>
+      <span @text="formatNumber($data.run.suiteSize) + ' tests'"></span>
     </p>
   </div>
   <p class="text-zinc-600 dark:text-zinc-300 mb-4 max-w-2xl leading-relaxed">
@@ -35,10 +35,10 @@
        reason a run-over-run score dips, so say so before the arrows mislead. -->
   <div webc:if="$data.run.suiteGrew" class="mb-8 rounded-xl border border-brand-200 dark:border-brand-500/30 bg-brand-50 dark:bg-brand-500/10 px-4 py-3">
     <p class="text-sm font-semibold text-brand-800 dark:text-brand-200">
-      Suite grew from <span @text="$data.run.prevSuiteSize"></span> to <span @text="$data.run.suiteSize"></span> tests this run.
+      Suite grew from <span @text="formatNumber($data.run.prevSuiteSize)"></span> to <span @text="formatNumber($data.run.suiteSize)"></span> tests this run.
     </p>
     <p class="mt-1 text-sm text-brand-700 dark:text-brand-200/80 max-w-2xl">
-      That's <span @text="$data.run.suiteGrowth"></span> new tests measured against every target. Movement below compares to the previous run, so a rise here is as likely to be the stricter suite as a real regression.
+      That's <span @text="formatNumber($data.run.suiteGrowth)"></span> new tests measured against every target. Movement below compares to the previous run, so a rise here is as likely to be the stricter suite as a real regression.
     </p>
   </div>
 

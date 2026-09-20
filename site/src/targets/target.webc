@@ -1,13 +1,15 @@
-<section class="max-w-6xl mx-auto px-6 py-12">
-  <nav class="text-sm text-zinc-500 dark:text-zinc-400 mb-8 flex items-center gap-2">
+<section class="target-page max-w-6xl mx-auto px-6 py-12">
+  <nav aria-label="Breadcrumb" class="text-sm text-zinc-500 dark:text-zinc-400 mb-8 flex items-center gap-2">
     <a href="/" class="hover:text-brand-700 dark:hover:text-brand-300">Results</a>
     <span aria-hidden="true">/</span>
-    <a href="/targets" class="hover:text-brand-700 dark:hover:text-brand-300">Targets</a>
+    <a href="/targets" class="hover:text-brand-700 dark:hover:text-brand-300">Emulators</a>
     <span aria-hidden="true">/</span>
     <span class="text-zinc-700 dark:text-zinc-300" @text="$data.target.display"></span>
   </nav>
 
-  <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 mb-8">
+
+
+  <div id="overview" class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 mb-8">
     <!-- Full width on mobile so the score sits below; on wider screens this
          column takes what's left beside the score, and min-w-0 lets a long
          project URL truncate inside it. Without both, one target's deep AWS
@@ -66,10 +68,20 @@
         up to <span class="font-mono tnum" @text="$data.target.current.divergenceWorstLabel"></span> in the others<span webc:if="$data.target.current.divergenceValue === 0">, only on <a href="/ground-truth" class="underline decoration-dotted underline-offset-2 hover:text-brand-700 dark:hover:text-brand-300">behaviours where real DynamoDB itself disagrees between regions</a></span>
       </div>
       <div class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-        <span class="font-mono tnum" @text="$data.target.current.coverage"></span> of the suite implemented<span webc:if="$data.target.current.unsupported"> · <span class="tnum" @text="$data.target.current.unsupported"></span> tests it doesn't attempt</span>
+        <span class="font-mono tnum" @text="$data.target.current.coverage"></span> of the suite implemented<span webc:if="$data.target.current.unsupported"> · <span class="tnum" @text="formatNumber($data.target.current.unsupported)"></span> tests it doesn't attempt</span>
       </div>
     </div>
   </div>
+
+  <nav class="section-nav" aria-label="On this emulator page">
+    <a href="#overview">Overview</a>
+    <a webc:if="$data.target.hasRegions" href="#regions">Regions</a>
+    <a webc:if="!$data.target.baseline" href="#capabilities">Features</a>
+    <a href="#trends">Trends</a>
+    <a webc:if="$data.target.areas.length" href="#operations">Operations</a>
+    <a webc:if="fallsShort($data.target.breakdown).length" href="#findings">Findings</a>
+    <a href="#run-history">Run history</a>
+  </nav>
 
   <!-- Conflict-of-interest disclosure, at the score: this engine is maintained
        by the person who runs the board. The credibility is the number being
@@ -172,12 +184,18 @@
   <!-- Per-region drilldown: how this target scores across the observed regions,
        grouped by rate. Hidden when the per-region overlay isn't available. -->
   <div webc:if="$data.target.hasRegions" class="mb-12">
-    <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Per-region divergence</h2>
+    <h2 id="regions" class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Per-region divergence</h2>
     <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-4 max-w-2xl">
       The headline is <span class="font-medium text-zinc-600 dark:text-zinc-300" @text="regionLabel($data.target.regionLabel)"></span>, measured against <span class="font-medium text-zinc-600 dark:text-zinc-300" @text="regionCount($data.target.regionLabel)"></span> observed regions<span webc:if="$data.target.current.headlineRegion">, and scored in <span class="font-mono font-medium text-zinc-600 dark:text-zinc-300" @text="$data.target.current.headlineRegion"></span></span>. Real DynamoDB doesn't behave identically in every region, so a target can match some regions more closely than others. Each figure below is divergence in those regions, best first. eu-west-2 is marked as the historical baseline, and a region that couldn't be resolved this sweep is flagged rather than counted as a disagreement.
     </p>
     <div class="space-y-3" @html="regionGroups($data.target.regions)"></div>
   </div>
+
+  <section webc:if="!$data.target.baseline" id="capabilities" class="mb-12 target-capabilities">
+    <h2 class="text-lg font-semibold mb-2">Feature support</h2>
+    <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-4">Measured across the suite's tests for each feature. <a href="/targets#capabilities" class="underline">Compare with other emulators</a>.</p>
+    <div @html="targetCapabilities($data.target)"></div>
+  </section>
 
   <!-- Affirmative: the areas this target implements completely -->
   <support-badges :supports="$data.target.supports"></support-badges>
@@ -191,7 +209,7 @@
        8.8 points in the same run - and a reader looking only at the first plot would have read
        that as the engine getting better. -->
   <div class="mb-12">
-    <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Divergence and coverage over time</h2>
+    <h2 id="trends" class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Divergence and coverage over time</h2>
     <div webc:if="$data.target.baseline" class="rounded-xl border border-brand-200 dark:border-brand-500/30 bg-brand-50 dark:bg-brand-500/10 p-5 text-sm text-zinc-600 dark:text-zinc-300">
       Real DynamoDB is the baseline every other target is measured against, so it diverges from itself nowhere on every run by definition, not a result that moves.
     </div>
@@ -212,7 +230,7 @@
   <!-- Full per-operation scorecard: every operation area with its state and
        pass rate, so the tier headline can be read down to the operation. -->
   <div webc:if="$data.target.areas.length" class="mb-12 defer-render">
-    <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">By operation</h2>
+    <h2 id="operations" class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">By operation</h2>
     <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-4 max-w-2xl">
       Every operation this target implements, with how much of it diverges and how much of it it
       covers, on the same two axes as the figures above. The counts are fails over the operation's
@@ -221,7 +239,7 @@
       <span class="whitespace-nowrap"><span class="text-partial-700 dark:text-partial-400 font-bold" aria-hidden="true">◑</span> partial</span>,
       <span class="whitespace-nowrap"><span class="text-fail-700 dark:text-fail-400 font-bold" aria-hidden="true">✗</span> failing</span>,
       <span class="whitespace-nowrap"><span class="text-zinc-500 dark:text-zinc-400 font-bold" aria-hidden="true">–</span> unsupported</span>.
-      The <a href="/support" class="text-brand-700 dark:text-brand-300 underline">matrix</a> compares operations across targets.
+      The <a href="/targets" class="text-brand-700 dark:text-brand-300 underline">emulator directory</a> lists support across targets.
     </p>
     <div class="space-y-6" @html="targetOperations($data.target.areas)"></div>
   </div>
@@ -232,7 +250,7 @@
        different kinds of problem: a divergence is something you find in
        production, an unsupported operation is something you plan around. -->
   <div webc:if="fallsShort($data.target.breakdown).length" class="mb-12 defer-render">
-    <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Where it falls short</h2>
+    <h2 id="findings" class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Where it falls short</h2>
     <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-4 max-w-2xl">
       Operations <span @text="$data.target.display"></span> implements and answers differently from real
       DynamoDB, biggest gap first. This is what its divergence figure counts. Open one for the exact
@@ -248,8 +266,8 @@
               <span class="text-[0.65rem] uppercase tracking-wide rounded px-1.5 py-0.5 bg-zinc-200/70 dark:bg-white/10 text-zinc-600 dark:text-zinc-300" @text="a.tier.replace('tier', 'Tier ')"></span>
             </span>
             <span class="flex items-center gap-2 shrink-0 text-xs tnum">
-              <span class="count-failing font-medium" @text="a.failed + ' diverging'"></span>
-              <span webc:if="a.skipped" class="text-zinc-500 dark:text-zinc-400" @text="a.skipped + ' not attempted'"></span>
+              <span class="count-failing font-medium" @text="formatNumber(a.failed) + ' diverging'"></span>
+              <span webc:if="a.skipped" class="text-zinc-500 dark:text-zinc-400" @text="formatNumber(a.skipped) + ' not attempted'"></span>
             </span>
           </summary>
           <div class="px-4 pb-4">
@@ -303,7 +321,7 @@
                    old single list showed both as the same "unsupported" badge. -->
               <span webc:if="a.whole" class="inline-flex items-center rounded-full bg-zinc-200/70 dark:bg-white/10 px-2 py-0.5 text-[0.65rem] uppercase tracking-wide text-zinc-600 dark:text-zinc-300">none of it</span>
               <span webc:else class="inline-flex items-center rounded-full bg-zinc-200/70 dark:bg-white/10 px-2 py-0.5 text-[0.65rem] uppercase tracking-wide text-zinc-600 dark:text-zinc-300">partly</span>
-              <span class="text-zinc-500 dark:text-zinc-400" @text="a.skipped + ' not attempted'"></span>
+              <span class="text-zinc-500 dark:text-zinc-400" @text="formatNumber(a.skipped) + ' not attempted'"></span>
             </span>
           </summary>
           <div class="px-4 pb-4">
@@ -327,7 +345,7 @@
   <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-3 max-w-2xl">
     Every percentage here is divergence, per tier and over the whole suite, so lower is better in each column. Coverage is the exception it is named as.
   </p>
-  <div class="rounded-xl border border-zinc-200 dark:border-white/10 defer-render">
+  <div class="history-table rounded-xl border border-zinc-200 dark:border-white/10 defer-render">
     <table class="w-full text-sm">
       <thead class="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-white/[0.03]">
         <tr>

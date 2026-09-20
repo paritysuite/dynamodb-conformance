@@ -2,9 +2,9 @@
 <html lang="en-GB" class="scroll-smooth">
   <head>
     <script webc:keep>
-      if (localStorage.theme === 'light') {
-        document.documentElement.classList.remove('dark');
-      } else {
+      try {
+        document.documentElement.classList.toggle('dark', localStorage.theme !== 'light');
+      } catch {
         document.documentElement.classList.add('dark');
       }
     </script>
@@ -40,7 +40,7 @@
     <meta name="twitter:creator" :content="site.twitterCreator" />
 
     <meta name="theme-color" content="#f0fdfa" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#0b1f1d" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#101619" media="(prefers-color-scheme: dark)">
 
     <link rel="icon" type="image/svg+xml" href="/images/logo.svg">
     <link rel="apple-touch-icon" href="/images/logo.svg">
@@ -79,10 +79,15 @@
       });
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
-          document.querySelectorAll('details[data-dismiss][open]').forEach(function (d) { d.open = false; });
+          document.querySelectorAll('details[data-dismiss][open]').forEach(function (d) {
+            const restoreFocus = d.contains(document.activeElement);
+            d.open = false;
+            if (restoreFocus) d.querySelector('summary')?.focus();
+          });
         }
       });
     </script>
+    <site-interactions></site-interactions>
     <script @raw="getBundle('js')" webc:keep></script>
   </body>
 </html>

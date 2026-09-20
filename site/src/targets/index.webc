@@ -2,36 +2,33 @@
 {
   layout: "layouts/base.webc",
   meta: {
-    title: "Targets",
-    description: "Every DynamoDB target the conformance suite tracks, with its current score and a link to its full history.",
+    title: "DynamoDB emulators",
+    description: "Compare DynamoDB emulator support for features and API operations, with links to each target’s measured evidence.",
   },
-  // The cards show each target's latest-run score, so freshness tracks the data,
-  // not this file's git date. Keeps the sitemap <lastmod> honest.
+  // Support is derived from the latest measured suite.
   eleventyComputed: {
     lastmod: (data) => data.conformance?.latest?.date,
   },
 }
 ---
-<section class="max-w-6xl mx-auto px-6 py-12">
-  <h1 class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white mb-2">Targets</h1>
-  <p class="text-zinc-600 dark:text-zinc-300 mb-8 max-w-2xl">
-    Every target the suite tracks, with its score from the latest run. Open one to see its tier breakdown and how its conformance has moved over time.
-  </p>
-  <div class="grid sm:grid-cols-2 gap-4">
-    <!-- One card per project. A build of one is named on its parent's card
-         instead of taking a card beside it, so the page does not read as though
-         a project shipping two builds is two engines.
-         Which row that is comes from the row itself, not its slug: when the
-         reference build has no result the grouping promotes another build to
-         stand for the project, and reading the slug dropped the reference card
-         (no current row) and the promoted one (a build) both, losing the
-         project from this page. The slug stays as the reading for a model
-         restored from the committed fallback, which predates the flag. -->
-    <target-card
-      webc:for="slug of $data.conformance.targets"
-      webc:if="$data.conformance.perTarget[slug].current && standsForProject($data.conformance.perTarget[slug].current)"
-      :row="$data.conformance.perTarget[slug].current"></target-card>
+<script webc:setup>
+  function projects(model) {
+    return model.targets.filter(slug => {
+      const row = model.perTarget[slug]?.current;
+      return row && !row.baseline && slug !== 'dynamodb' && standsForProject(row);
+    }).sort((a, b) => model.perTarget[a].display.localeCompare(model.perTarget[b].display));
+  }
+</script>
+<section class="emulator-directory max-w-6xl mx-auto px-6 py-12">
+  <p class="eyebrow">Project directory</p>
+  <h1>DynamoDB emulators</h1>
+  <p class="comparison-intro">What each emulator supports, what it needs to run, and where to get it. Feature support comes from the measured suite; installation information comes from project documentation.</p>
+  <nav class="project-jumps" aria-label="Find an emulator"><a webc:for="slug of projects($data.conformance)" :href="'#project-' + slug" @text="$data.conformance.perTarget[slug].display"></a></nav>
+  <details class="reading-guide"><summary>How to read feature support</summary>
+    <p class="mt-4 text-sm text-zinc-500 dark:text-zinc-400">Supported means all feature tests pass. Partial means some pass while others fail or skip. Failing means the feature is implemented but no tests pass. Not supported means it is not implemented; not tested means there is no measurement. Each build is measured separately.</p>
+  </details>
+  <div class="project-directory" id="capabilities">
+    <emulator-entry webc:for="slug of projects($data.conformance)" :target="$data.conformance.perTarget[slug]" :row="$data.conformance.perTarget[slug].current"></emulator-entry>
   </div>
-
   <suggest-target></suggest-target>
 </section>

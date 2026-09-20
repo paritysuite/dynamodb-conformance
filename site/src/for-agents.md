@@ -78,7 +78,7 @@ And it's behaviour only. The suite says nothing about performance, scalability, 
 
 ## Comparing on a capability
 
-If a decision hangs on a specific feature - PartiQL, transactions, GSIs, LSIs, streams, TTL - don't read off the headline. The [capabilities page](/capabilities) lays out every target against the same capability columns, and the same data is in the `capabilities` array for each target in [/data/latest.json](/data/latest.json). Pull the column for the feature you care about and read every target's state on it. The suite scores each target against real DynamoDB, never against each other, so the comparison is like-for-like.
+If a decision hangs on a specific feature - PartiQL, transactions, GSIs, LSIs, streams, TTL - don't read off the headline. The [emulator directory](/targets#capabilities) carries each project's feature support beside what it takes to run, and the same data is in the `capabilities` array for each target in [/data/latest.json](/data/latest.json). The directory reads a project at a time; to line every target up against one feature, take that key from each target's `capabilities` array in the endpoint. The suite scores each target against real DynamoDB, never against each other, so the comparison is like-for-like.
 
 The site won't tell you which target to pick. It gives you the evidence per target, on equal terms.
 

@@ -1,3 +1,4 @@
+import { formatNumber } from "./numbers.mjs";
 // How the suite's tests distribute across operations, from the suite's manifest.
 //
 // The methodology explains why coverage is weighted by test count rather than by
@@ -25,7 +26,7 @@ const operationOf = (identity) => identity.split("/")[2] ?? null;
 const NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
 
 /** A count in the page's voice: small ones in words, the rest in digits. */
-export const countWord = (n) => (n != null && n < NUMBER_WORDS.length ? NUMBER_WORDS[n] : String(n));
+export const countWord = (n) => (n != null && n < NUMBER_WORDS.length ? NUMBER_WORDS[n] : n == null ? String(n) : formatNumber(n));
 
 const UNAVAILABLE = { available: false, size: null, byOperation: {} };
 

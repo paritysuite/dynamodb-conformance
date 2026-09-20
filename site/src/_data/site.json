@@ -13,14 +13,11 @@
   "ogImageAlt": "Parity Suite: how faithfully each DynamoDB emulator matches the real thing, scored against live AWS DynamoDB",
   "twitterCreator": "@martinhicks",
   "nav": [
-    { "title": "Capabilities", "url": "/capabilities" },
-    { "title": "Matrix", "url": "/support" },
-    { "title": "Runs", "url": "/runs" },
-    { "title": "Ground truth", "url": "/ground-truth" },
-    { "title": "Methodology", "url": "/methodology" },
-    { "title": "Changelog", "url": "/changelog" },
-    { "title": "About", "url": "/about" },
-    { "title": "GitHub", "url": "https://github.com/paritysuite/dynamodb-conformance", "external": true }
+    {"title": "Results", "url": "/"},
+    {"title": "Emulators", "url": "/targets"},
+    {"title": "Methodology", "url": "/methodology"},
+    {"title": "Runs", "url": "/runs"},
+    {"title": "GitHub", "url": "https://github.com/paritysuite/dynamodb-conformance", "external": true}
   ],
   "person": {
     "@context": "https://schema.org",

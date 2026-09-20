@@ -36,7 +36,7 @@
           webc:if="entryRuns[entry.date]"
           :href="'/runs/' + entryRuns[entry.date].id"
           class="inline-flex items-center rounded-full bg-brand-50 dark:bg-brand-500/10 border border-brand-200 dark:border-brand-500/30 px-2.5 py-0.5 text-xs font-mono tnum text-brand-700 dark:text-brand-300 hover:border-brand-400 transition-colors"
-          @text="entryRuns[entry.date].size + ' tests'"></a>
+          @text="formatNumber(entryRuns[entry.date].size) + ' tests'"></a>
       </div>
       <div class="prose prose-sm prose-zinc dark:prose-invert max-w-none prose-a:text-brand-700 dark:prose-a:text-brand-300" @html="entry.bodyHtml"></div>
     </li>

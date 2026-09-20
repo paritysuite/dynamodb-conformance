@@ -13,17 +13,24 @@
 }
 ---
 
+<section class="home-intro max-w-6xl mx-auto px-6">
+  <div class="hero-copy">
+    <p class="eyebrow">Independent DynamoDB conformance tests</p>
+    <h1>How close is <span>compatible?</span></h1>
+    <p class="hero-description">DynamoDB emulators, put to the test. Explore what matches real AWS, what diverges, and what matters for your application.</p>
+    <div class="hero-actions"><a class="button-primary" href="/targets">Explore emulators <span aria-hidden="true">→</span></a><a class="button-secondary" href="/methodology">How we measure <span aria-hidden="true">→</span></a></div>
+  </div>
+
+</section>
+
+
 <standings-table></standings-table>
 
-<section class="max-w-6xl mx-auto px-6 pb-20">
-  <div class="grid sm:grid-cols-2 gap-4">
-    <a href="/about" class="group rounded-xl border border-zinc-200 dark:border-white/10 p-5 hover:border-brand-300 dark:hover:border-brand-500/40 transition-colors">
-      <h2 class="font-semibold text-zinc-900 dark:text-zinc-100 mb-1 group-hover:text-brand-700 dark:group-hover:text-brand-300">Why this exists →</h2>
-      <p class="text-sm text-zinc-600 dark:text-zinc-400">What the conformance suite measures, and why "works with the AWS SDK" isn't the same as matching DynamoDB.</p>
-    </a>
-    <a href="/runs" class="group rounded-xl border border-zinc-200 dark:border-white/10 p-5 hover:border-brand-300 dark:hover:border-brand-500/40 transition-colors">
-      <h2 class="font-semibold text-zinc-900 dark:text-zinc-100 mb-1 group-hover:text-brand-700 dark:group-hover:text-brand-300">Browse past runs →</h2>
-      <p class="text-sm text-zinc-600 dark:text-zinc-400">Step back through every recorded run to see how each emulator's conformance has shifted over time.</p>
-    </a>
+<section class="home-outro max-w-6xl mx-auto px-6 pb-20">
+  <div>
+    <p class="eyebrow">Explore the results</p>
+    <h2>See which operations match.</h2>
+    <p>Browse operation support, failing tests, and regional comparisons.</p>
   </div>
+  <a href="/targets" class="button-secondary">Browse emulator support <span aria-hidden="true">→</span></a>
 </section>

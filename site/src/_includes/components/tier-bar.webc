@@ -21,12 +21,12 @@
   function tierTitle(name) { return TIER_META[name]?.description ?? ""; }
   function tierLabel(name) { return TIER_META[name] ? name + " · " + TIER_META[name].label : name; }
 </script>
-<div>
+<div class="tier-metric">
   <div class="flex items-center justify-between gap-2 mb-1">
-    <span class="text-[0.7rem] uppercase tracking-wide text-zinc-500 dark:text-zinc-400 cursor-help" :title="tierTitle(name)" @text="tierLabel(name)"></span>
+    <span class="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400 cursor-help" :title="tierTitle(name)" @text="tierLabel(name)"></span>
     <!-- The figure is named and coloured by its band; a bare right-aligned
          percentage read as anything the reader expected it to be. -->
-    <span class="text-[0.7rem] font-mono tnum whitespace-nowrap" :class="figClass(tier.divergenceValue)">
+    <span class="text-xs font-mono tnum whitespace-nowrap" :class="figClass(tier.divergenceValue)">
       <span @text="tier.divergence"></span><span class="font-sans text-zinc-500 dark:text-zinc-400"> diverges</span>
     </span>
   </div>
@@ -35,16 +35,16 @@
        coverage lives solely in a bar is the one place a thin surface stops being
        stated: Dynalite's Tier 2 diverges on 14.1%, which reads unremarkable
        until you know it attempts a fifth of the tier. -->
-  <div class="mb-1 flex items-baseline justify-between gap-2 text-[0.65rem] text-zinc-400 dark:text-zinc-500">
+  <div class="mb-1 flex items-baseline justify-between gap-2 text-xs text-zinc-500 dark:text-zinc-400">
     <span class="font-mono tnum"><span @text="tier.coverage"></span> covered</span>
-    <span webc:if="tier.skipped" class="tnum" @text="tier.skipped + ' unsupported'"></span>
+    <span webc:if="tier.skipped" class="tnum" @text="formatNumber(tier.skipped) + ' unsupported'"></span>
   </div>
   <!-- Fails over what the tier actually attempts, on the detail pages only. A
        tier divergence is over the whole tier, so a thinly-attempted tier reads
        mild: Dynalite's Tier 2 shows 14.1% while getting 28 of the 40 tests it
        attempts wrong. -->
-  <div webc:if="detail && tier.failed" class="mb-1 text-[0.65rem] text-zinc-400 dark:text-zinc-500 tnum"
-    @text="tier.failed + ' of ' + (tier.passed + tier.failed) + ' attempted'"></div>
+  <div webc:if="detail && tier.failed" class="mb-1 text-xs text-zinc-500 dark:text-zinc-400 tnum"
+    @text="formatNumber(tier.failed) + ' of ' + formatNumber(tier.passed + tier.failed) + ' attempted'"></div>
   <!-- The value this meter DRAWS is coverage, so that is what it reports.
        Reporting divergence here while rendering coverage as the width left
        assistive tech a number that contradicted the bar beside it, and
