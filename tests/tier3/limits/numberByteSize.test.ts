@@ -85,14 +85,16 @@ function itemForNumber(
 // no negative-path: acceptance-mixed (asserts accepted and rejected cases)
 describe("A number's byte cost", { tags: ['put-item', 'data-plane'] }, () => {
   // Titles carry the figure so a failure names the literal and the cost it was
-  // measured at, rather than an index.
+  // measured at, rather than an index. The quotes are written by hand because
+  // the title is part of the test ID, and Vitest 5 stopped quoting string
+  // placeholders.
   it.each(
     CAPTURED_NUMBER_BYTES.map(([literal, bytes]) => ({
       literal,
       bytes,
       cost: `${bytes} byte${bytes === 1 ? '' : 's'}`,
     })),
-  )('sizes $literal at $cost', async ({ literal, bytes }) => {
+  )("sizes '$literal' at '$cost'", async ({ literal, bytes }) => {
     const accepted = key(`at-${literal}`)
     await ddb.send(new PutItemCommand({
       TableName: TABLE,
