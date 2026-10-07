@@ -155,7 +155,9 @@ describe('ExecuteStatement — comparison on non-scalar types', { tags: ['partiq
     if (keysToClean.length > 0) await cleanupItems(TABLE, keysToClean)
   })
 
-  describe.each(CASES)('$type', (c) => {
+  // Quoted by hand: the title is part of the test ID, and Vitest 5 stopped
+  // quoting string placeholders.
+  describe.each(CASES)("'$type'", (c) => {
     it('matches an equal value', async () => {
       expect(await partiqlMatches(keyFor(c.type), c.same, '=')).toBe(true)
     })
