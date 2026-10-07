@@ -65,7 +65,7 @@
     "@aws-sdk/client-kinesis": "^3.1146.0",
     "@aws-sdk/client-s3": "^3.1146.0",
     "@types/node": "^26.6.3",
-    "js-yaml": "^5.4.2",
+    "js-yaml": "^5.4.3",
     "typescript": "^7.0.2",
     "vitest": "^5.0.2"
   }
