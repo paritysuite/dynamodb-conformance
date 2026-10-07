@@ -1,0 +1,1433 @@
+{
+  "capturedAt": "2026-10-07T14:31:09.405Z",
+  "note": "BatchWriteItem with an empty RequestItems map, all 33 answering regions, two separate processes about eleven minutes apart. Both runs agree on every region.",
+  "probes": [
+    "o_bw_empty_requestitems"
+  ],
+  "runs": [
+    {
+      "capturedAt": "2026-10-07T14:31:09.405Z",
+      "probes": [
+        "o_bw_empty_requestitems"
+      ],
+      "tables": "none: only probes refused before a table is read",
+      "regions": {
+        "af-south-1": {
+          "region": "af-south-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-east-1": {
+          "region": "ap-east-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-east-2": {
+          "region": "ap-east-2",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1",
+              "n": 1,
+              "fields": [
+                "RequestItems"
+              ],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-northeast-1": {
+          "region": "ap-northeast-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-northeast-2": {
+          "region": "ap-northeast-2",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-northeast-3": {
+          "region": "ap-northeast-3",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-south-1": {
+          "region": "ap-south-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-south-2": {
+          "region": "ap-south-2",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-southeast-1": {
+          "region": "ap-southeast-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1",
+              "n": 1,
+              "fields": [
+                "RequestItems"
+              ],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-southeast-2": {
+          "region": "ap-southeast-2",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-southeast-3": {
+          "region": "ap-southeast-3",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-southeast-4": {
+          "region": "ap-southeast-4",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-southeast-5": {
+          "region": "ap-southeast-5",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-southeast-6": {
+          "region": "ap-southeast-6",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-southeast-7": {
+          "region": "ap-southeast-7",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ca-central-1": {
+          "region": "ca-central-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ca-west-1": {
+          "region": "ca-west-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "eu-central-1": {
+          "region": "eu-central-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1",
+              "n": 1,
+              "fields": [
+                "RequestItems"
+              ],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "eu-central-2": {
+          "region": "eu-central-2",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "eu-north-1": {
+          "region": "eu-north-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1",
+              "n": 1,
+              "fields": [
+                "RequestItems"
+              ],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "eu-south-1": {
+          "region": "eu-south-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "eu-south-2": {
+          "region": "eu-south-2",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "eu-west-1": {
+          "region": "eu-west-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "eu-west-2": {
+          "region": "eu-west-2",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1",
+              "n": 1,
+              "fields": [
+                "RequestItems"
+              ],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "eu-west-3": {
+          "region": "eu-west-3",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "il-central-1": {
+          "region": "il-central-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "me-central-1": {
+          "region": "me-central-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "mx-central-1": {
+          "region": "mx-central-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "sa-east-1": {
+          "region": "sa-east-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "us-east-1": {
+          "region": "us-east-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "us-east-2": {
+          "region": "us-east-2",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "us-west-1": {
+          "region": "us-west-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "us-west-2": {
+          "region": "us-west-2",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        }
+      }
+    },
+    {
+      "capturedAt": "2026-10-07T14:41:57.959Z",
+      "probes": [
+        "o_bw_empty_requestitems"
+      ],
+      "tables": "none: only probes refused before a table is read",
+      "regions": {
+        "af-south-1": {
+          "region": "af-south-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-east-1": {
+          "region": "ap-east-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-east-2": {
+          "region": "ap-east-2",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1",
+              "n": 1,
+              "fields": [
+                "RequestItems"
+              ],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-northeast-1": {
+          "region": "ap-northeast-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-northeast-2": {
+          "region": "ap-northeast-2",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-northeast-3": {
+          "region": "ap-northeast-3",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-south-1": {
+          "region": "ap-south-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-south-2": {
+          "region": "ap-south-2",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-southeast-1": {
+          "region": "ap-southeast-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1",
+              "n": 1,
+              "fields": [
+                "RequestItems"
+              ],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-southeast-2": {
+          "region": "ap-southeast-2",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-southeast-3": {
+          "region": "ap-southeast-3",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-southeast-4": {
+          "region": "ap-southeast-4",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-southeast-5": {
+          "region": "ap-southeast-5",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-southeast-6": {
+          "region": "ap-southeast-6",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ap-southeast-7": {
+          "region": "ap-southeast-7",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ca-central-1": {
+          "region": "ca-central-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "ca-west-1": {
+          "region": "ca-west-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "eu-central-1": {
+          "region": "eu-central-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1",
+              "n": 1,
+              "fields": [
+                "RequestItems"
+              ],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "eu-central-2": {
+          "region": "eu-central-2",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "eu-north-1": {
+          "region": "eu-north-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1",
+              "n": 1,
+              "fields": [
+                "RequestItems"
+              ],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "eu-south-1": {
+          "region": "eu-south-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "eu-south-2": {
+          "region": "eu-south-2",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "eu-west-1": {
+          "region": "eu-west-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "eu-west-2": {
+          "region": "eu-west-2",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1",
+              "n": 1,
+              "fields": [
+                "RequestItems"
+              ],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "eu-west-3": {
+          "region": "eu-west-3",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "il-central-1": {
+          "region": "il-central-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "me-central-1": {
+          "region": "me-central-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "mx-central-1": {
+          "region": "mx-central-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "sa-east-1": {
+          "region": "sa-east-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "us-east-1": {
+          "region": "us-east-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "us-east-2": {
+          "region": "us-east-2",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "us-west-1": {
+          "region": "us-west-1",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        },
+        "us-west-2": {
+          "region": "us-west-2",
+          "probes": [
+            {
+              "id": "o_bw_empty_requestitems",
+              "family": "ordering",
+              "note": "BatchWriteItem RequestItems={}",
+              "threw": true,
+              "name": "ValidationException",
+              "message": "The requestItems parameter is required for BatchWriteItem",
+              "n": null,
+              "fields": [],
+              "cancellationReasons": null
+            }
+          ],
+          "nullRoundTrip": {
+            "put": "rejected",
+            "name": "ValidationException",
+            "message": "1 validation error detected: One or more parameter values were invalid: Null attribute value types must have the value of true"
+          }
+        }
+      }
+    }
+  ]
+}
