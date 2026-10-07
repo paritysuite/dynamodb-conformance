@@ -61,8 +61,18 @@ describe('TransactWriteItems — exact error messages', { tags: ['transactions',
         Item: { pk: { S: `twi-${i}` } },
       },
     }))
+    // The pattern spans both validation cohorts. eu-north-1 moved to the
+    // framework's generic wording by the 2026-10-03 sweep and names the
+    // constraint against the member instead of echoing the request; the
+    // 100-action limit is what fires either way, which is all this
+    // assertion claims. It stays a pattern rather than a registry row because
+    // the old cohort's message embeds the whole request, per-run table name
+    // included, so there is no byte-exact answer for a row to hold.
+    const echoedRequest = `Value '\\[.+\\]' at 'transactItems'`
+    const namedMember = `Value at 'TransactItems'`
     const expectedPattern = new RegExp(
-      `^1 validation error detected: Value '\\[.+\\]' at 'transactItems' failed to satisfy constraint: Member must have length less than or equal to 100$`,
+      `^1 validation error detected: (?:${echoedRequest}|${namedMember}) failed to satisfy constraint: ` +
+        `Member must have length less than or equal to 100$`,
       's',
     )
     try {

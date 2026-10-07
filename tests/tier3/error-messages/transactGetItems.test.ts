@@ -5,14 +5,21 @@ import {
   TransactionCanceledException,
 } from '@aws-sdk/client-dynamodb'
 import { ddb } from '../../../src/client.js'
+import { observeSplit } from '../../../src/observation-sink.js'
 import { declareTables, hashTableDef, absentTableName } from '../../../src/helpers.js'
 
 declareTables(hashTableDef)
 
 describe('TransactGetItems — exact error messages', { tags: ['transactions', 'data-plane', 'negative-path'] }, () => {
-  it('empty TransactItems: full minimum-length error', async () => {
+  it('empty TransactItems: full minimum-length error', async (ctx) => {
+    // Split behaviour (registry row transact-get-items-empty-transact-items-message):
+    // the answer differs by region, so what the target actually returned is
+    // recorded for per-region scoring. eu-west-2 is pinned and answers the
+    // request-echo wording below. eu-north-1 moved to the validation
+    // framework's generic constraint message by the 2026-10-03 sweep;
+    // ap-northeast-2 has given both and is in no row.
     try {
-      await ddb.send(new TransactGetItemsCommand({ TransactItems: [] }))
+      await observeSplit(ctx.task, () => ddb.send(new TransactGetItemsCommand({ TransactItems: [] })))
       expect.unreachable('should have thrown')
     } catch (err) {
       expect(err).toBeInstanceOf(DynamoDBServiceException)
@@ -32,8 +39,18 @@ describe('TransactGetItems — exact error messages', { tags: ['transactions', '
         Key: { pk: { S: `tgi-${i}` } },
       },
     }))
+    // The pattern spans both validation cohorts. eu-north-1 moved to the
+    // framework's generic wording by the 2026-10-03 sweep and names the
+    // constraint against the member instead of echoing the request; the
+    // 100-item limit is what fires either way, which is all this
+    // assertion claims. It stays a pattern rather than a registry row because
+    // the old cohort's message embeds the whole request, per-run table name
+    // included, so there is no byte-exact answer for a row to hold.
+    const echoedRequest = `Value '\\[.+\\]' at 'transactItems'`
+    const namedMember = `Value at 'TransactItems'`
     const expectedPattern = new RegExp(
-      `^1 validation error detected: Value '\\[.+\\]' at 'transactItems' failed to satisfy constraint: Member must have length less than or equal to 100$`,
+      `^1 validation error detected: (?:${echoedRequest}|${namedMember}) failed to satisfy constraint: ` +
+        `Member must have length less than or equal to 100$`,
       's',
     )
     try {

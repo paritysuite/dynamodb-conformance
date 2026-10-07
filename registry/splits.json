@@ -6,10 +6,10 @@
         "file": "tests/tier3/validation-ordering/putItem.test.ts",
         "fullName": "PutItem — validation ordering empty TableName with invalid ReturnValues reports only tableName"
       },
-      "behaviour": "PutItem with an empty TableName and an invalid ReturnValues: part of the 2026-06 validation-framework rollout. New-cohort regions short-circuit at the table name and report one error; old-cohort regions aggregate both.",
+      "behaviour": "PutItem with an empty TableName and an invalid ReturnValues: part of the 2026-06 validation-framework rollout. New-cohort regions short-circuit at the table name and report one error; old-cohort regions aggregate both. ap-northeast-1, ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-west-1 and us-east-2 crossed to the new cohort by the 2026-10-03 sweep, which three runs from separate processes on 2026-10-07 confirmed, leaving eu-south-2 and me-central-1 the only old-cohort regions.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-06-09",
-      "lastRefreshed": "2026-09-02",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "eu-west-2": {
           "outcome": "rejected",
@@ -57,7 +57,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "2 validation errors detected: Value 'INVALID' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]; Value '' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 1"
+            "message": "1 validation error detected: Value at 'TableName' failed to satisfy constraint: Member must have length greater than or equal to 1"
           }
         },
         "ap-northeast-3": {
@@ -78,7 +78,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "2 validation errors detected: Value 'INVALID' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]; Value '' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 1"
+            "message": "1 validation error detected: Value at 'TableName' failed to satisfy constraint: Member must have length greater than or equal to 1"
           }
         },
         "ap-southeast-3": {
@@ -106,21 +106,21 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "2 validation errors detected: Value 'INVALID' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]; Value '' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 1"
+            "message": "1 validation error detected: Value at 'TableName' failed to satisfy constraint: Member must have length greater than or equal to 1"
           }
         },
         "ap-southeast-7": {
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "2 validation errors detected: Value 'INVALID' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]; Value '' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 1"
+            "message": "1 validation error detected: Value at 'TableName' failed to satisfy constraint: Member must have length greater than or equal to 1"
           }
         },
         "ca-central-1": {
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "2 validation errors detected: Value 'INVALID' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]; Value '' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 1"
+            "message": "1 validation error detected: Value at 'TableName' failed to satisfy constraint: Member must have length greater than or equal to 1"
           }
         },
         "ca-west-1": {
@@ -134,14 +134,14 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "2 validation errors detected: Value 'INVALID' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]; Value '' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 1"
+            "message": "1 validation error detected: Value at 'TableName' failed to satisfy constraint: Member must have length greater than or equal to 1"
           }
         },
         "eu-south-1": {
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "2 validation errors detected: Value 'INVALID' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]; Value '' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 1"
+            "message": "1 validation error detected: Value at 'TableName' failed to satisfy constraint: Member must have length greater than or equal to 1"
           }
         },
         "eu-south-2": {
@@ -155,7 +155,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "2 validation errors detected: Value 'INVALID' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]; Value '' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 1"
+            "message": "1 validation error detected: Value at 'TableName' failed to satisfy constraint: Member must have length greater than or equal to 1"
           }
         },
         "eu-west-3": {
@@ -197,7 +197,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "2 validation errors detected: Value 'INVALID' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]; Value '' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 1"
+            "message": "1 validation error detected: Value at 'TableName' failed to satisfy constraint: Member must have length greater than or equal to 1"
           }
         },
         "us-west-1": {
@@ -248,7 +248,9 @@
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/29334921301",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/29364537167",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/31586467950",
-        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/33670413331"
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/33670413331",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -262,10 +264,10 @@
         "file": "tests/tier3/validation-ordering/updateItem.test.ts",
         "fullName": "UpdateItem — validation ordering rejects invalid ReturnValues (UpdateItem reports the first enum error)"
       },
-      "behaviour": "UpdateItem with invalid ReturnValues and ReturnConsumedCapacity: part of the 2026-06 validation-framework rollout. New-cohort regions stop at the first invalid enum and report one error; old-cohort regions aggregate both.",
+      "behaviour": "UpdateItem with invalid ReturnValues and ReturnConsumedCapacity: part of the 2026-06 validation-framework rollout. New-cohort regions stop at the first invalid enum and report one error; old-cohort regions aggregate both. ap-northeast-1, ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-west-1 and us-east-2 crossed to the new cohort by the 2026-10-03 sweep, which three runs from separate processes on 2026-10-07 confirmed, leaving eu-south-2 and me-central-1 the only old-cohort regions.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-06-09",
-      "lastRefreshed": "2026-09-02",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "eu-west-2": {
           "outcome": "rejected",
@@ -313,7 +315,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "2 validation errors detected: Value 'INVALID' at 'returnConsumedCapacity' failed to satisfy constraint: Member must satisfy enum value set: [INDEXES, TOTAL, NONE]; Value 'INVALID' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]"
+            "message": "1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]"
           }
         },
         "ap-northeast-3": {
@@ -334,7 +336,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "2 validation errors detected: Value 'INVALID' at 'returnConsumedCapacity' failed to satisfy constraint: Member must satisfy enum value set: [INDEXES, TOTAL, NONE]; Value 'INVALID' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]"
+            "message": "1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]"
           }
         },
         "ap-southeast-3": {
@@ -362,21 +364,21 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "2 validation errors detected: Value 'INVALID' at 'returnConsumedCapacity' failed to satisfy constraint: Member must satisfy enum value set: [INDEXES, TOTAL, NONE]; Value 'INVALID' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]"
+            "message": "1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]"
           }
         },
         "ap-southeast-7": {
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "2 validation errors detected: Value 'INVALID' at 'returnConsumedCapacity' failed to satisfy constraint: Member must satisfy enum value set: [INDEXES, TOTAL, NONE]; Value 'INVALID' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]"
+            "message": "1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]"
           }
         },
         "ca-central-1": {
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "2 validation errors detected: Value 'INVALID' at 'returnConsumedCapacity' failed to satisfy constraint: Member must satisfy enum value set: [INDEXES, TOTAL, NONE]; Value 'INVALID' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]"
+            "message": "1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]"
           }
         },
         "ca-west-1": {
@@ -390,14 +392,14 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "2 validation errors detected: Value 'INVALID' at 'returnConsumedCapacity' failed to satisfy constraint: Member must satisfy enum value set: [INDEXES, TOTAL, NONE]; Value 'INVALID' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]"
+            "message": "1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]"
           }
         },
         "eu-south-1": {
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "2 validation errors detected: Value 'INVALID' at 'returnConsumedCapacity' failed to satisfy constraint: Member must satisfy enum value set: [INDEXES, TOTAL, NONE]; Value 'INVALID' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]"
+            "message": "1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]"
           }
         },
         "eu-south-2": {
@@ -411,7 +413,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "2 validation errors detected: Value 'INVALID' at 'returnConsumedCapacity' failed to satisfy constraint: Member must satisfy enum value set: [INDEXES, TOTAL, NONE]; Value 'INVALID' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]"
+            "message": "1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]"
           }
         },
         "eu-west-3": {
@@ -453,7 +455,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "2 validation errors detected: Value 'INVALID' at 'returnConsumedCapacity' failed to satisfy constraint: Member must satisfy enum value set: [INDEXES, TOTAL, NONE]; Value 'INVALID' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]"
+            "message": "1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]"
           }
         },
         "us-west-1": {
@@ -504,7 +506,9 @@
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/29334921301",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/29364537167",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/31586467950",
-        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/33670413331"
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/33670413331",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -518,10 +522,10 @@
         "file": "tests/tier3/limits/nestingDepth.test.ts",
         "fullName": "Nesting depth — 32-level document limit rejects a 32-level ExpressionAttributeValue with ValidationException"
       },
-      "behaviour": "UpdateItem carrying a 32-level ExpressionAttributeValue. 32 is the documented limit, so this is a boundary disagreement rather than a violation: strict regions reject it in validation, the rest accept the value and go on to evaluate the condition. Probed against a key that is never written, so the condition is false everywhere and a ConditionalCheckFailedException is proof the value was accepted rather than a sign of differing regional state. The test lives in tests/tier3/limits/, which sets no assertion-strictness convention. It asserts a ValidationException but matches the message with a regex that tolerates wording variants, so it pins the strict side without pinning the exact message, and this row is the only place the exact answers are pinned. Between the 2026-09-12 and 2026-09-19 sweeps af-south-1, ap-southeast-3, ap-southeast-4, ap-southeast-5 and il-central-1 moved to the strict side, leaving 22 strict and 11 lax as of the 2026-09-28 capture. ap-northeast-1 is answering both ways: lax on the 2026-09-19 sweep, strict on the 2026-09-26 one, and both from separate processes on 2026-09-28, mostly lax. It stays recorded as lax until one answer holds.",
+      "behaviour": "UpdateItem carrying a 32-level ExpressionAttributeValue. 32 is the documented limit, so this is a boundary disagreement rather than a violation: strict regions reject it in validation, the rest accept the value and go on to evaluate the condition. Probed against a key that is never written, so the condition is false everywhere and a ConditionalCheckFailedException is proof the value was accepted rather than a sign of differing regional state. The test lives in tests/tier3/limits/, which sets no assertion-strictness convention. It asserts a ValidationException but matches the message with a regex that tolerates wording variants, so it pins the strict side without pinning the exact message, and this row is the only place the exact answers are pinned. Between the 2026-09-12 and 2026-09-19 sweeps af-south-1, ap-southeast-3, ap-southeast-4, ap-southeast-5 and il-central-1 moved to the strict side, leaving 22 strict and 11 lax as of the 2026-09-28 capture, with ap-northeast-1 answering both ways. By the 2026-10-03 sweep ap-northeast-1, ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-west-1 and us-east-2 had moved to the strict side, which three runs from separate processes on 2026-10-07 confirmed, leaving eu-south-2 and me-central-1 the only lax regions.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-07-15",
-      "lastRefreshed": "2026-09-28",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -547,8 +551,8 @@
         "ap-northeast-1": {
           "outcome": "rejected",
           "error": {
-            "name": "ConditionalCheckFailedException",
-            "message": "The conditional request failed"
+            "name": "ValidationException",
+            "message": "1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
           }
         },
         "ap-northeast-2": {
@@ -575,8 +579,8 @@
         "ap-south-2": {
           "outcome": "rejected",
           "error": {
-            "name": "ConditionalCheckFailedException",
-            "message": "The conditional request failed"
+            "name": "ValidationException",
+            "message": "1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
           }
         },
         "ap-southeast-1": {
@@ -617,22 +621,22 @@
         "ap-southeast-6": {
           "outcome": "rejected",
           "error": {
-            "name": "ConditionalCheckFailedException",
-            "message": "The conditional request failed"
+            "name": "ValidationException",
+            "message": "1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
           }
         },
         "ap-southeast-7": {
           "outcome": "rejected",
           "error": {
-            "name": "ConditionalCheckFailedException",
-            "message": "The conditional request failed"
+            "name": "ValidationException",
+            "message": "1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
           }
         },
         "ca-central-1": {
           "outcome": "rejected",
           "error": {
-            "name": "ConditionalCheckFailedException",
-            "message": "The conditional request failed"
+            "name": "ValidationException",
+            "message": "1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
           }
         },
         "ca-west-1": {
@@ -652,8 +656,8 @@
         "eu-central-2": {
           "outcome": "rejected",
           "error": {
-            "name": "ConditionalCheckFailedException",
-            "message": "The conditional request failed"
+            "name": "ValidationException",
+            "message": "1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
           }
         },
         "eu-north-1": {
@@ -666,8 +670,8 @@
         "eu-south-1": {
           "outcome": "rejected",
           "error": {
-            "name": "ConditionalCheckFailedException",
-            "message": "The conditional request failed"
+            "name": "ValidationException",
+            "message": "1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
           }
         },
         "eu-south-2": {
@@ -680,8 +684,8 @@
         "eu-west-1": {
           "outcome": "rejected",
           "error": {
-            "name": "ConditionalCheckFailedException",
-            "message": "The conditional request failed"
+            "name": "ValidationException",
+            "message": "1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
           }
         },
         "eu-west-2": {
@@ -729,8 +733,8 @@
         "us-east-2": {
           "outcome": "rejected",
           "error": {
-            "name": "ConditionalCheckFailedException",
-            "message": "The conditional request failed"
+            "name": "ValidationException",
+            "message": "1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
           }
         },
         "us-west-1": {
@@ -764,7 +768,9 @@
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/35429705876",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319",
         "captures/2026-09-28-nesting-depth-expression-value.json",
-        "captures/2026-09-28-nesting-depth-ap-northeast-1.json"
+        "captures/2026-09-28-nesting-depth-ap-northeast-1.json",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -1292,10 +1298,10 @@
         "file": "tests/tier3/error-messages/scan.test.ts",
         "fullName": "Scan — exact error messages Segment >= TotalSegments: full out-of-range error"
       },
-      "behaviour": "Scan with Segment equal to TotalSegments: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions answer the out-of-range sentence alone; old-cohort regions append ': Segment: 5 is not less than TotalSegments: 5'. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. The other 29 answering regions give the old wording. The five Scan rows move together: every region answers all five in the same cohort, and the two Segment/TotalSegments pairing checks beside them have not moved anywhere.",
+      "behaviour": "Scan with Segment equal to TotalSegments: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions answer the out-of-range sentence alone; old-cohort regions append ': Segment: 5 is not less than TotalSegments: 5'. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. ap-east-2 crossed by the 2026-10-03 sweep, which three runs from separate processes on 2026-10-07 confirmed. The other 28 answering regions are recorded on the old wording. af-south-1, ap-southeast-1, ap-southeast-3, ap-southeast-4 and ap-southeast-5 gave it on that sweep and the new wording on all three 2026-10-07 runs, so they stay recorded as old until a sweep agrees. The five Scan rows move together: every region answers all five in the same cohort, and the two Segment/TotalSegments pairing checks beside them have not moved anywhere.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-19",
-      "lastRefreshed": "2026-09-28",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -1315,7 +1321,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "The Segment parameter is zero-based and must be less than parameter TotalSegments: Segment: 5 is not less than TotalSegments: 5"
+            "message": "The Segment parameter is zero-based and must be less than parameter TotalSegments"
           }
         },
         "ap-northeast-1": {
@@ -1533,7 +1539,9 @@
         "captures/2026-09-28-scan-validation-messages.json",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/35429705876",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319",
-        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36310693620"
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36310693620",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -1547,10 +1555,10 @@
         "file": "tests/tier3/error-messages/scan.test.ts",
         "fullName": "Scan — exact error messages Limit of 0: full minimum-value error"
       },
-      "behaviour": "Scan with Limit 0: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions name the member as 'Limit' without echoing the value; old-cohort regions answer Value '0' at 'limit'. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. The other 29 answering regions give the old wording. The five Scan rows move together: every region answers all five in the same cohort, and the two Segment/TotalSegments pairing checks beside them have not moved anywhere.",
+      "behaviour": "Scan with Limit 0: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions name the member as 'Limit' without echoing the value; old-cohort regions answer Value '0' at 'limit'. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. ap-east-2 crossed by the 2026-10-03 sweep, which three runs from separate processes on 2026-10-07 confirmed. The other 28 answering regions are recorded on the old wording. af-south-1, ap-southeast-1, ap-southeast-3, ap-southeast-4 and ap-southeast-5 gave it on that sweep and the new wording on all three 2026-10-07 runs, so they stay recorded as old until a sweep agrees. The five Scan rows move together: every region answers all five in the same cohort, and the two Segment/TotalSegments pairing checks beside them have not moved anywhere.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-19",
-      "lastRefreshed": "2026-09-28",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -1570,7 +1578,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "1 validation error detected: Value '0' at 'limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+            "message": "1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
           }
         },
         "ap-northeast-1": {
@@ -1788,7 +1796,9 @@
         "captures/2026-09-28-scan-validation-messages.json",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/35429705876",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319",
-        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36310693620"
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36310693620",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -1802,10 +1812,10 @@
         "file": "tests/tier3/error-messages/scan.test.ts",
         "fullName": "Scan — exact error messages negative Segment: full minimum-value error"
       },
-      "behaviour": "Scan with a negative Segment: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions name the member as 'Segment' without echoing the value; old-cohort regions answer Value '-1' at 'segment'. The validation-ordering test for the same request matches both wordings, so this row is where the per-region answers are pinned. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. The other 29 answering regions give the old wording. The five Scan rows move together: every region answers all five in the same cohort, and the two Segment/TotalSegments pairing checks beside them have not moved anywhere.",
+      "behaviour": "Scan with a negative Segment: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions name the member as 'Segment' without echoing the value; old-cohort regions answer Value '-1' at 'segment'. The validation-ordering test for the same request matches both wordings, so this row is where the per-region answers are pinned. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. ap-east-2 crossed by the 2026-10-03 sweep, which three runs from separate processes on 2026-10-07 confirmed. The other 28 answering regions are recorded on the old wording. af-south-1, ap-southeast-1, ap-southeast-3, ap-southeast-4 and ap-southeast-5 gave it on that sweep and the new wording on all three 2026-10-07 runs, so they stay recorded as old until a sweep agrees. The five Scan rows move together: every region answers all five in the same cohort, and the two Segment/TotalSegments pairing checks beside them have not moved anywhere.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-19",
-      "lastRefreshed": "2026-09-28",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -1825,7 +1835,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "1 validation error detected: Value '-1' at 'segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+            "message": "1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
           }
         },
         "ap-northeast-1": {
@@ -2043,7 +2053,9 @@
         "captures/2026-09-28-scan-validation-messages.json",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/35429705876",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319",
-        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36310693620"
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36310693620",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -2057,10 +2069,10 @@
         "file": "tests/tier3/error-messages/scan.test.ts",
         "fullName": "Scan — exact error messages malformed ExclusiveStartKey: long schema-mismatch error"
       },
-      "behaviour": "Scan with an ExclusiveStartKey that does not match the table's key schema: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions answer the short form Query already gives; old-cohort regions append ': The provided key element does not match the schema'. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. The other 29 answering regions give the old wording. The five Scan rows move together: every region answers all five in the same cohort, and the two Segment/TotalSegments pairing checks beside them have not moved anywhere.",
+      "behaviour": "Scan with an ExclusiveStartKey that does not match the table's key schema: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions answer the short form Query already gives; old-cohort regions append ': The provided key element does not match the schema'. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. ap-east-2 crossed by the 2026-10-03 sweep, which three runs from separate processes on 2026-10-07 confirmed. The other 28 answering regions are recorded on the old wording. af-south-1, ap-southeast-1, ap-southeast-3, ap-southeast-4 and ap-southeast-5 gave it on that sweep and the new wording on all three 2026-10-07 runs, so they stay recorded as old until a sweep agrees. The five Scan rows move together: every region answers all five in the same cohort, and the two Segment/TotalSegments pairing checks beside them have not moved anywhere.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-19",
-      "lastRefreshed": "2026-09-28",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -2080,7 +2092,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "The provided starting key is invalid: The provided key element does not match the schema"
+            "message": "The provided starting key is invalid"
           }
         },
         "ap-northeast-1": {
@@ -2298,7 +2310,9 @@
         "captures/2026-09-28-scan-validation-messages.json",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/35429705876",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319",
-        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36310693620"
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36310693620",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -2312,10 +2326,10 @@
         "file": "tests/tier3/error-messages/scan.test.ts",
         "fullName": "Scan — exact error messages Select SPECIFIC_ATTRIBUTES without ProjectionExpression: full required-projection message"
       },
-      "behaviour": "Scan with Select SPECIFIC_ATTRIBUTES and no projection: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions wrap the required-projection sentence in the '1 validation error detected: ' envelope; old-cohort regions answer it bare. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. The other 29 answering regions give the old wording. The five Scan rows move together: every region answers all five in the same cohort, and the two Segment/TotalSegments pairing checks beside them have not moved anywhere.",
+      "behaviour": "Scan with Select SPECIFIC_ATTRIBUTES and no projection: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions wrap the required-projection sentence in the '1 validation error detected: ' envelope; old-cohort regions answer it bare. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. ap-east-2 crossed by the 2026-10-03 sweep, which three runs from separate processes on 2026-10-07 confirmed. The other 28 answering regions are recorded on the old wording. af-south-1, ap-southeast-1, ap-southeast-3, ap-southeast-4 and ap-southeast-5 gave it on that sweep and the new wording on all three 2026-10-07 runs, so they stay recorded as old until a sweep agrees. The five Scan rows move together: every region answers all five in the same cohort, and the two Segment/TotalSegments pairing checks beside them have not moved anywhere.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-19",
-      "lastRefreshed": "2026-09-28",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -2335,7 +2349,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+            "message": "1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
           }
         },
         "ap-northeast-1": {
@@ -2553,7 +2567,9 @@
         "captures/2026-09-28-scan-validation-messages.json",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/35429705876",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319",
-        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36310693620"
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36310693620",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -2567,10 +2583,10 @@
         "file": "tests/tier3/limits/itemSizeBySurface.test.ts",
         "fullName": "Item size limit by surface — UpdateItem does not charge for the key sits below 409,600 at a one-byte key, so the exclusion binds"
       },
-      "behaviour": "UpdateItem's item-size ceiling, measured through a one-byte key. Twenty-two regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-south-2, eu-west-1, me-central-1 and us-east-2 size it like any other write, capping the finished item at 409,600, and store it. Those ten have answered this way on every sweep since the test arrived (2026-09-05) and on two 33-region probes on 2026-09-28 and 2026-09-29. ap-northeast-1 answers both ways and is in no row.",
+      "behaviour": "UpdateItem's item-size ceiling, measured through a one-byte key. Thirty-one regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. eu-south-2 and me-central-1 size it like any other write, capping the finished item at 409,600, and store it. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-west-1 and us-east-2 did the same on every sweep from 2026-09-05 until the 2026-10-03 one found them on the statement-sized rule, which three runs from separate processes on 2026-10-07 confirmed. ap-northeast-1, which answered both ways in September and was in no row, gave the statement-sized answer on that sweep and all three runs, and joins that side.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-05",
-      "lastRefreshed": "2026-09-29",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -2587,6 +2603,13 @@
           }
         },
         "ap-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
+        },
+        "ap-northeast-1": {
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
@@ -2615,8 +2638,11 @@
           }
         },
         "ap-south-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-1": {
           "outcome": "rejected",
@@ -2654,16 +2680,25 @@
           }
         },
         "ap-southeast-6": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-7": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-central-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-west-1": {
           "outcome": "rejected",
@@ -2680,8 +2715,11 @@
           }
         },
         "eu-central-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-north-1": {
           "outcome": "rejected",
@@ -2691,16 +2729,22 @@
           }
         },
         "eu-south-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-south-2": {
           "outcome": "accepted",
           "detail": "stored an update the statement-sized rule refuses"
         },
         "eu-west-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-west-2": {
           "outcome": "rejected",
@@ -2749,8 +2793,11 @@
           }
         },
         "us-east-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "us-west-1": {
           "outcome": "rejected",
@@ -2770,7 +2817,9 @@
       "evidence": [
         "captures/2026-09-29-update-item-size-rule.json",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/33951735838",
-        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319"
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -2784,10 +2833,10 @@
         "file": "tests/tier3/limits/itemSizeBySurface.test.ts",
         "fullName": "Item size limit by surface — UpdateItem does not charge for the key buys back the same headroom from the key name as from the key value"
       },
-      "behaviour": "UpdateItem's item-size ceiling, measured through a key whose bytes are in its name rather than its value. Twenty-two regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-south-2, eu-west-1, me-central-1 and us-east-2 size it like any other write, capping the finished item at 409,600, and store it. Those ten have answered this way on every sweep since the test arrived (2026-09-05) and on two 33-region probes on 2026-09-28 and 2026-09-29. ap-northeast-1 answers both ways and is in no row.",
+      "behaviour": "UpdateItem's item-size ceiling, measured through a key whose bytes are in its name rather than its value. Thirty-one regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. eu-south-2 and me-central-1 size it like any other write, capping the finished item at 409,600, and store it. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-west-1 and us-east-2 did the same on every sweep from 2026-09-05 until the 2026-10-03 one found them on the statement-sized rule, which three runs from separate processes on 2026-10-07 confirmed. ap-northeast-1, which answered both ways in September and was in no row, gave the statement-sized answer on that sweep and all three runs, and joins that side.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-05",
-      "lastRefreshed": "2026-09-29",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -2804,6 +2853,13 @@
           }
         },
         "ap-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
+        },
+        "ap-northeast-1": {
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
@@ -2832,8 +2888,11 @@
           }
         },
         "ap-south-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-1": {
           "outcome": "rejected",
@@ -2871,16 +2930,25 @@
           }
         },
         "ap-southeast-6": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-7": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-central-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-west-1": {
           "outcome": "rejected",
@@ -2897,8 +2965,11 @@
           }
         },
         "eu-central-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-north-1": {
           "outcome": "rejected",
@@ -2908,16 +2979,22 @@
           }
         },
         "eu-south-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-south-2": {
           "outcome": "accepted",
           "detail": "stored an update the statement-sized rule refuses"
         },
         "eu-west-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-west-2": {
           "outcome": "rejected",
@@ -2966,8 +3043,11 @@
           }
         },
         "us-east-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "us-west-1": {
           "outcome": "rejected",
@@ -2987,7 +3067,9 @@
       "evidence": [
         "captures/2026-09-29-update-item-size-rule.json",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/33951735838",
-        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319"
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -3001,10 +3083,10 @@
         "file": "tests/tier3/limits/itemSizeBySurface.test.ts",
         "fullName": "Item size limit by surface — UpdateItem does not charge for the key buys back a sort key’s own bytes as well"
       },
-      "behaviour": "UpdateItem's item-size ceiling, measured through a composite key. Twenty-two regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-south-2, eu-west-1, me-central-1 and us-east-2 size it like any other write, capping the finished item at 409,600, and store it. Those ten have answered this way on every sweep since the test arrived (2026-09-05) and on two 33-region probes on 2026-09-28 and 2026-09-29. ap-northeast-1 answers both ways and is in no row.",
+      "behaviour": "UpdateItem's item-size ceiling, measured through a composite key. Thirty-one regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. eu-south-2 and me-central-1 size it like any other write, capping the finished item at 409,600, and store it. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-west-1 and us-east-2 did the same on every sweep from 2026-09-05 until the 2026-10-03 one found them on the statement-sized rule, which three runs from separate processes on 2026-10-07 confirmed. ap-northeast-1, which answered both ways in September and was in no row, gave the statement-sized answer on that sweep and all three runs, and joins that side.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-05",
-      "lastRefreshed": "2026-09-29",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -3021,6 +3103,13 @@
           }
         },
         "ap-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
+        },
+        "ap-northeast-1": {
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
@@ -3049,8 +3138,11 @@
           }
         },
         "ap-south-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-1": {
           "outcome": "rejected",
@@ -3088,16 +3180,25 @@
           }
         },
         "ap-southeast-6": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-7": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-central-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-west-1": {
           "outcome": "rejected",
@@ -3114,8 +3215,11 @@
           }
         },
         "eu-central-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-north-1": {
           "outcome": "rejected",
@@ -3125,16 +3229,22 @@
           }
         },
         "eu-south-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-south-2": {
           "outcome": "accepted",
           "detail": "stored an update the statement-sized rule refuses"
         },
         "eu-west-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-west-2": {
           "outcome": "rejected",
@@ -3183,8 +3293,11 @@
           }
         },
         "us-east-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "us-west-1": {
           "outcome": "rejected",
@@ -3204,7 +3317,9 @@
       "evidence": [
         "captures/2026-09-29-update-item-size-rule.json",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/33951735838",
-        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319"
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -3218,10 +3333,10 @@
         "file": "tests/tier3/limits/itemSizeBySurface.test.ts",
         "fullName": "Item size limit by surface — UpdateItem charges per action charges a second SET clause exactly 19 bytes"
       },
-      "behaviour": "UpdateItem's item-size ceiling, measured through a statement with two SET clauses. Twenty-two regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-south-2, eu-west-1, me-central-1 and us-east-2 size it like any other write, capping the finished item at 409,600, and store it. Those ten have answered this way on every sweep since the test arrived (2026-09-05) and on two 33-region probes on 2026-09-28 and 2026-09-29. ap-northeast-1 answers both ways and is in no row.",
+      "behaviour": "UpdateItem's item-size ceiling, measured through a statement with two SET clauses. Thirty-one regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. eu-south-2 and me-central-1 size it like any other write, capping the finished item at 409,600, and store it. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-west-1 and us-east-2 did the same on every sweep from 2026-09-05 until the 2026-10-03 one found them on the statement-sized rule, which three runs from separate processes on 2026-10-07 confirmed. ap-northeast-1, which answered both ways in September and was in no row, gave the statement-sized answer on that sweep and all three runs, and joins that side.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-05",
-      "lastRefreshed": "2026-09-29",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -3238,6 +3353,13 @@
           }
         },
         "ap-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
+        },
+        "ap-northeast-1": {
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
@@ -3266,8 +3388,11 @@
           }
         },
         "ap-south-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-1": {
           "outcome": "rejected",
@@ -3305,16 +3430,25 @@
           }
         },
         "ap-southeast-6": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-7": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-central-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-west-1": {
           "outcome": "rejected",
@@ -3331,8 +3465,11 @@
           }
         },
         "eu-central-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-north-1": {
           "outcome": "rejected",
@@ -3342,16 +3479,22 @@
           }
         },
         "eu-south-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-south-2": {
           "outcome": "accepted",
           "detail": "stored an update the statement-sized rule refuses"
         },
         "eu-west-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-west-2": {
           "outcome": "rejected",
@@ -3400,8 +3543,11 @@
           }
         },
         "us-east-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "us-west-1": {
           "outcome": "rejected",
@@ -3421,7 +3567,9 @@
       "evidence": [
         "captures/2026-09-29-update-item-size-rule.json",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/33951735838",
-        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319"
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -3435,10 +3583,10 @@
         "file": "tests/tier3/limits/itemSizeBySurface.test.ts",
         "fullName": "Item size limit by surface — UpdateItem charges per action charges a REMOVE alongside a SET exactly 2 bytes"
       },
-      "behaviour": "UpdateItem's item-size ceiling, measured through a SET with a REMOVE. Twenty-two regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-south-2, eu-west-1, me-central-1 and us-east-2 size it like any other write, capping the finished item at 409,600, and store it. Those ten have answered this way on every sweep since the test arrived (2026-09-05) and on two 33-region probes on 2026-09-28 and 2026-09-29. ap-northeast-1 answers both ways and is in no row.",
+      "behaviour": "UpdateItem's item-size ceiling, measured through a SET with a REMOVE. Thirty-one regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. eu-south-2 and me-central-1 size it like any other write, capping the finished item at 409,600, and store it. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-west-1 and us-east-2 did the same on every sweep from 2026-09-05 until the 2026-10-03 one found them on the statement-sized rule, which three runs from separate processes on 2026-10-07 confirmed. ap-northeast-1, which answered both ways in September and was in no row, gave the statement-sized answer on that sweep and all three runs, and joins that side.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-05",
-      "lastRefreshed": "2026-09-29",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -3455,6 +3603,13 @@
           }
         },
         "ap-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
+        },
+        "ap-northeast-1": {
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
@@ -3483,8 +3638,11 @@
           }
         },
         "ap-south-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-1": {
           "outcome": "rejected",
@@ -3522,16 +3680,25 @@
           }
         },
         "ap-southeast-6": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-7": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-central-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-west-1": {
           "outcome": "rejected",
@@ -3548,8 +3715,11 @@
           }
         },
         "eu-central-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-north-1": {
           "outcome": "rejected",
@@ -3559,16 +3729,22 @@
           }
         },
         "eu-south-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-south-2": {
           "outcome": "accepted",
           "detail": "stored an update the statement-sized rule refuses"
         },
         "eu-west-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-west-2": {
           "outcome": "rejected",
@@ -3617,8 +3793,11 @@
           }
         },
         "us-east-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "us-west-1": {
           "outcome": "rejected",
@@ -3638,7 +3817,9 @@
       "evidence": [
         "captures/2026-09-29-update-item-size-rule.json",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/33951735838",
-        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319"
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -3652,10 +3833,10 @@
         "file": "tests/tier3/limits/itemSizeBySurface.test.ts",
         "fullName": "Item size limit by surface — UpdateItem charges per action charges the clause, not the value it writes"
       },
-      "behaviour": "UpdateItem's item-size ceiling, measured through a second clause writing values of different sizes. Twenty-two regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-south-2, eu-west-1, me-central-1 and us-east-2 size it like any other write, capping the finished item at 409,600, and store it. Those ten have answered this way on every sweep since the test arrived (2026-09-05) and on two 33-region probes on 2026-09-28 and 2026-09-29. ap-northeast-1 answers both ways and is in no row.",
+      "behaviour": "UpdateItem's item-size ceiling, measured through a second clause writing values of different sizes. Thirty-one regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. eu-south-2 and me-central-1 size it like any other write, capping the finished item at 409,600, and store it. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-west-1 and us-east-2 did the same on every sweep from 2026-09-05 until the 2026-10-03 one found them on the statement-sized rule, which three runs from separate processes on 2026-10-07 confirmed. ap-northeast-1, which answered both ways in September and was in no row, gave the statement-sized answer on that sweep and all three runs, and joins that side.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-05",
-      "lastRefreshed": "2026-09-29",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -3672,6 +3853,13 @@
           }
         },
         "ap-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
+        },
+        "ap-northeast-1": {
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
@@ -3700,8 +3888,11 @@
           }
         },
         "ap-south-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-1": {
           "outcome": "rejected",
@@ -3739,16 +3930,25 @@
           }
         },
         "ap-southeast-6": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-7": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-central-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-west-1": {
           "outcome": "rejected",
@@ -3765,8 +3965,11 @@
           }
         },
         "eu-central-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-north-1": {
           "outcome": "rejected",
@@ -3776,16 +3979,22 @@
           }
         },
         "eu-south-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-south-2": {
           "outcome": "accepted",
           "detail": "stored an update the statement-sized rule refuses"
         },
         "eu-west-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-west-2": {
           "outcome": "rejected",
@@ -3834,8 +4043,11 @@
           }
         },
         "us-east-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "us-west-1": {
           "outcome": "rejected",
@@ -3855,7 +4067,9 @@
       "evidence": [
         "captures/2026-09-29-update-item-size-rule.json",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/33951735838",
-        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319"
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -3869,10 +4083,10 @@
         "file": "tests/tier3/limits/itemSizeBySurface.test.ts",
         "fullName": "Item size limit by surface — UpdateItem charges per action does not charge for an attribute the statement leaves alone"
       },
-      "behaviour": "UpdateItem's item-size ceiling, measured through an item carrying an attribute the statement leaves alone. Twenty-two regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-south-2, eu-west-1, me-central-1 and us-east-2 size it like any other write, capping the finished item at 409,600, and store it. Those ten have answered this way on every sweep since the test arrived (2026-09-05) and on two 33-region probes on 2026-09-28 and 2026-09-29. ap-northeast-1 answers both ways and is in no row.",
+      "behaviour": "UpdateItem's item-size ceiling, measured through an item carrying an attribute the statement leaves alone. Thirty-one regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. eu-south-2 and me-central-1 size it like any other write, capping the finished item at 409,600, and store it. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-west-1 and us-east-2 did the same on every sweep from 2026-09-05 until the 2026-10-03 one found them on the statement-sized rule, which three runs from separate processes on 2026-10-07 confirmed. ap-northeast-1, which answered both ways in September and was in no row, gave the statement-sized answer on that sweep and all three runs, and joins that side.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-05",
-      "lastRefreshed": "2026-09-29",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -3889,6 +4103,13 @@
           }
         },
         "ap-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
+        },
+        "ap-northeast-1": {
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
@@ -3917,8 +4138,11 @@
           }
         },
         "ap-south-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-1": {
           "outcome": "rejected",
@@ -3956,16 +4180,25 @@
           }
         },
         "ap-southeast-6": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-7": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-central-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-west-1": {
           "outcome": "rejected",
@@ -3982,8 +4215,11 @@
           }
         },
         "eu-central-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-north-1": {
           "outcome": "rejected",
@@ -3993,16 +4229,22 @@
           }
         },
         "eu-south-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-south-2": {
           "outcome": "accepted",
           "detail": "stored an update the statement-sized rule refuses"
         },
         "eu-west-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-west-2": {
           "outcome": "rejected",
@@ -4051,8 +4293,11 @@
           }
         },
         "us-east-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "us-west-1": {
           "outcome": "rejected",
@@ -4072,7 +4317,9 @@
       "evidence": [
         "captures/2026-09-29-update-item-size-rule.json",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/33951735838",
-        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319"
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -4086,10 +4333,10 @@
         "file": "tests/tier3/limits/itemSizeBySurface.test.ts",
         "fullName": "Item size limit by surface — UpdateItem charges per action charges the clause, not the attribute name or its alias"
       },
-      "behaviour": "UpdateItem's item-size ceiling, measured through an attribute reached through an alias. Twenty-two regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-south-2, eu-west-1, me-central-1 and us-east-2 size it like any other write, capping the finished item at 409,600, and store it. Those ten have answered this way on every sweep since the test arrived (2026-09-05) and on two 33-region probes on 2026-09-28 and 2026-09-29. ap-northeast-1 answers both ways and is in no row.",
+      "behaviour": "UpdateItem's item-size ceiling, measured through an attribute reached through an alias. Thirty-one regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. eu-south-2 and me-central-1 size it like any other write, capping the finished item at 409,600, and store it. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-west-1 and us-east-2 did the same on every sweep from 2026-09-05 until the 2026-10-03 one found them on the statement-sized rule, which three runs from separate processes on 2026-10-07 confirmed. ap-northeast-1, which answered both ways in September and was in no row, gave the statement-sized answer on that sweep and all three runs, and joins that side.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-05",
-      "lastRefreshed": "2026-09-29",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -4106,6 +4353,13 @@
           }
         },
         "ap-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
+        },
+        "ap-northeast-1": {
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
@@ -4134,8 +4388,11 @@
           }
         },
         "ap-south-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-1": {
           "outcome": "rejected",
@@ -4173,16 +4430,25 @@
           }
         },
         "ap-southeast-6": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-7": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-central-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-west-1": {
           "outcome": "rejected",
@@ -4199,8 +4465,11 @@
           }
         },
         "eu-central-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-north-1": {
           "outcome": "rejected",
@@ -4210,16 +4479,22 @@
           }
         },
         "eu-south-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-south-2": {
           "outcome": "accepted",
           "detail": "stored an update the statement-sized rule refuses"
         },
         "eu-west-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-west-2": {
           "outcome": "rejected",
@@ -4268,8 +4543,11 @@
           }
         },
         "us-east-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "us-west-1": {
           "outcome": "rejected",
@@ -4289,7 +4567,9 @@
       "evidence": [
         "captures/2026-09-29-update-item-size-rule.json",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/33951735838",
-        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319"
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -4303,10 +4583,10 @@
         "file": "tests/tier3/limits/itemSizeBySurface.test.ts",
         "fullName": "Item size limit by surface — UpdateItem through a document path charges a SET through a list index exactly one byte more"
       },
-      "behaviour": "UpdateItem's item-size ceiling, measured through a SET through a list index. Twenty-two regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-south-2, eu-west-1, me-central-1 and us-east-2 size it like any other write, capping the finished item at 409,600, and store it. Those ten have answered this way on every sweep since the test arrived (2026-09-05) and on two 33-region probes on 2026-09-28 and 2026-09-29. ap-northeast-1 answers both ways and is in no row.",
+      "behaviour": "UpdateItem's item-size ceiling, measured through a SET through a list index. Thirty-one regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. eu-south-2 and me-central-1 size it like any other write, capping the finished item at 409,600, and store it. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-west-1 and us-east-2 did the same on every sweep from 2026-09-05 until the 2026-10-03 one found them on the statement-sized rule, which three runs from separate processes on 2026-10-07 confirmed. ap-northeast-1, which answered both ways in September and was in no row, gave the statement-sized answer on that sweep and all three runs, and joins that side.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-05",
-      "lastRefreshed": "2026-09-29",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -4323,6 +4603,13 @@
           }
         },
         "ap-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
+        },
+        "ap-northeast-1": {
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
@@ -4351,8 +4638,11 @@
           }
         },
         "ap-south-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-1": {
           "outcome": "rejected",
@@ -4390,16 +4680,25 @@
           }
         },
         "ap-southeast-6": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-7": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-central-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-west-1": {
           "outcome": "rejected",
@@ -4416,8 +4715,11 @@
           }
         },
         "eu-central-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-north-1": {
           "outcome": "rejected",
@@ -4427,16 +4729,22 @@
           }
         },
         "eu-south-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-south-2": {
           "outcome": "accepted",
           "detail": "stored an update the statement-sized rule refuses"
         },
         "eu-west-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-west-2": {
           "outcome": "rejected",
@@ -4485,8 +4793,11 @@
           }
         },
         "us-east-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "us-west-1": {
           "outcome": "rejected",
@@ -4506,7 +4817,9 @@
       "evidence": [
         "captures/2026-09-29-update-item-size-rule.json",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/33951735838",
-        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319"
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -4520,10 +4833,10 @@
         "file": "tests/tier3/limits/itemSizeBySurface.test.ts",
         "fullName": "Item size limit by surface — a PartiQL UPDATE does not inherit the exclusion writes what UpdateItem refuses at the same key"
       },
-      "behaviour": "UpdateItem's item-size ceiling, measured through the UpdateItem half of the PartiQL comparison. Twenty-two regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-south-2, eu-west-1, me-central-1 and us-east-2 size it like any other write, capping the finished item at 409,600, and store it. Those ten have answered this way on every sweep since the test arrived (2026-09-05) and on two 33-region probes on 2026-09-28 and 2026-09-29. ap-northeast-1 answers both ways and is in no row.",
+      "behaviour": "UpdateItem's item-size ceiling, measured through the UpdateItem half of the PartiQL comparison. Thirty-one regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. eu-south-2 and me-central-1 size it like any other write, capping the finished item at 409,600, and store it. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-west-1 and us-east-2 did the same on every sweep from 2026-09-05 until the 2026-10-03 one found them on the statement-sized rule, which three runs from separate processes on 2026-10-07 confirmed. ap-northeast-1, which answered both ways in September and was in no row, gave the statement-sized answer on that sweep and all three runs, and joins that side.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-05",
-      "lastRefreshed": "2026-09-29",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -4540,6 +4853,13 @@
           }
         },
         "ap-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
+        },
+        "ap-northeast-1": {
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
@@ -4568,8 +4888,11 @@
           }
         },
         "ap-south-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-1": {
           "outcome": "rejected",
@@ -4607,16 +4930,25 @@
           }
         },
         "ap-southeast-6": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-7": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-central-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-west-1": {
           "outcome": "rejected",
@@ -4633,8 +4965,11 @@
           }
         },
         "eu-central-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-north-1": {
           "outcome": "rejected",
@@ -4644,16 +4979,22 @@
           }
         },
         "eu-south-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-south-2": {
           "outcome": "accepted",
           "detail": "stored an update the statement-sized rule refuses"
         },
         "eu-west-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-west-2": {
           "outcome": "rejected",
@@ -4702,8 +5043,11 @@
           }
         },
         "us-east-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "us-west-1": {
           "outcome": "rejected",
@@ -4723,7 +5067,9 @@
       "evidence": [
         "captures/2026-09-29-update-item-size-rule.json",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/33951735838",
-        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319"
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -4737,10 +5083,10 @@
         "file": "tests/tier3/limits/itemSizeBySurface.test.ts",
         "fullName": "Item size limit by surface — a transacted Update does not inherit the exclusion writes what UpdateItem refuses at the same key"
       },
-      "behaviour": "UpdateItem's item-size ceiling, measured through the UpdateItem half of the transacted Update comparison. Twenty-two regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-south-2, eu-west-1, me-central-1 and us-east-2 size it like any other write, capping the finished item at 409,600, and store it. Those ten have answered this way on every sweep since the test arrived (2026-09-05) and on two 33-region probes on 2026-09-28 and 2026-09-29. ap-northeast-1 answers both ways and is in no row.",
+      "behaviour": "UpdateItem's item-size ceiling, measured through the UpdateItem half of the transacted Update comparison. Thirty-one regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. eu-south-2 and me-central-1 size it like any other write, capping the finished item at 409,600, and store it. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-west-1 and us-east-2 did the same on every sweep from 2026-09-05 until the 2026-10-03 one found them on the statement-sized rule, which three runs from separate processes on 2026-10-07 confirmed. ap-northeast-1, which answered both ways in September and was in no row, gave the statement-sized answer on that sweep and all three runs, and joins that side. The transacted half has started to move as well: eu-north-1 on the 2026-10-03 sweep, and ap-northeast-2 on all three 2026-10-07 runs, refused the transacted Update too, so the test fails there for a reason this row does not record. Both stay recorded on the UpdateItem half they gave.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-05",
-      "lastRefreshed": "2026-09-29",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -4757,6 +5103,13 @@
           }
         },
         "ap-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
+        },
+        "ap-northeast-1": {
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
@@ -4785,8 +5138,11 @@
           }
         },
         "ap-south-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-1": {
           "outcome": "rejected",
@@ -4824,16 +5180,25 @@
           }
         },
         "ap-southeast-6": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ap-southeast-7": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-central-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "ca-west-1": {
           "outcome": "rejected",
@@ -4850,8 +5215,11 @@
           }
         },
         "eu-central-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-north-1": {
           "outcome": "rejected",
@@ -4861,16 +5229,22 @@
           }
         },
         "eu-south-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-south-2": {
           "outcome": "accepted",
           "detail": "stored an update the statement-sized rule refuses"
         },
         "eu-west-1": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "eu-west-2": {
           "outcome": "rejected",
@@ -4919,8 +5293,11 @@
           }
         },
         "us-east-2": {
-          "outcome": "accepted",
-          "detail": "stored an update the statement-sized rule refuses"
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Item size to update has exceeded the maximum allowed size"
+          }
         },
         "us-west-1": {
           "outcome": "rejected",
@@ -4940,12 +5317,260 @@
       "evidence": [
         "captures/2026-09-29-update-item-size-rule.json",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/33951735838",
-        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319"
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
         "date": "2026-09-29",
         "issue": "https://github.com/paritysuite/dynamodb-conformance/issues/185"
+      }
+    },
+    {
+      "id": "transact-get-items-empty-transact-items-message",
+      "test": {
+        "file": "tests/tier3/error-messages/transactGetItems.test.ts",
+        "fullName": "TransactGetItems — exact error messages empty TransactItems: full minimum-length error"
+      },
+      "behaviour": "TransactGetItems with an empty TransactItems list: the 2026-06 validation-framework rollout reaching the transaction operations. eu-north-1 answers the framework's generic constraint message naming 'TransactItems', on the 2026-10-03 sweep (where five re-runs reproduced it) and on three runs from separate processes on 2026-10-07. The other answering regions, eu-west-2 among them, echo the empty list as Value '[]' at 'transactItems'. ap-northeast-2 gave the old wording on that sweep and the new one on all three runs, and is in no row until one answer holds.",
+      "pinned": "eu-west-2",
+      "firstObserved": "2026-10-03",
+      "lastRefreshed": "2026-10-07",
+      "regions": {
+        "af-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "ap-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "ap-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "ap-northeast-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "ap-northeast-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "ap-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "ap-south-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "ap-southeast-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "ap-southeast-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "ap-southeast-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "ap-southeast-4": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "ap-southeast-5": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "ap-southeast-6": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "ap-southeast-7": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "ca-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "ca-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "eu-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "eu-central-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "eu-north-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value at 'TransactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "eu-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "eu-south-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "eu-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "eu-west-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "eu-west-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "il-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "me-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "mx-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "sa-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "us-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "us-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "us-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        },
+        "us-west-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          }
+        }
+      },
+      "evidence": [
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "captures/2026-10-07-sweep-follow-up.json"
+      ],
+      "admitted": {
+        "by": "Martin Hicks",
+        "date": "2026-10-07",
+        "issue": "https://github.com/paritysuite/dynamodb-conformance/issues/224"
       }
     }
   ]

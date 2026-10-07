@@ -16,6 +16,22 @@ scheduled run failed whenever it landed on the side the test did not pin. The
 registry row moves eu-west-2, eu-central-1, ap-east-2 and ap-southeast-1 to the
 generic message beside eu-north-1.
 
+Fourteen rows move together. ap-south-2, ap-southeast-6, ap-southeast-7,
+ca-central-1, eu-central-2, eu-south-1, eu-west-1 and us-east-2 joined eu-west-2
+by the 2026-10-03 sweep on how they report two validation errors, on checking
+the depth of an UpdateItem ExpressionAttributeValue, and on sizing an UpdateItem
+by what the statement writes. ap-northeast-1 joined them on all three, which
+brings it into the eleven item-size rows. That leaves eu-south-2 and
+me-central-1 the only regions on the old side of the fourteen, and an engine on
+that side is now credited in those two alone. ap-east-2 moves to the new Scan
+wording. Three runs against all 33 regions on 2026-10-07 agreed with the sweep
+on every move; where they disagreed, a region keeps its recorded answer.
+
+TransactGetItems' empty-list message is a new regional split, with eu-north-1 on
+the validation framework's generic wording. The over-100 TransactGetItems and
+TransactWriteItems tests now accept either cohort's wording, as the
+BatchWriteItem over-25 test already does.
+
 ## 2026-09-29 (3.5.0)
 
 Five Scan error messages are now regional splits. The validation-framework
