@@ -1033,10 +1033,10 @@
         "file": "tests/tier3/error-messages/batchWriteItem.test.ts",
         "fullName": "BatchWriteItem — exact error messages empty RequestItems: full required-parameter error"
       },
-      "behaviour": "BatchWriteItem with an empty RequestItems map: the 2026-06 validation-framework rollout reaching the operation beside BatchGetItem. eu-north-1 answers the framework's generic constraint message; the other 32 answering regions answer the bespoke required-parameter sentence. The 2026-08-17 capture found every answering region on the bespoke wording, which dates the crossing to that week. The rollout has not held steady since: the 2026-09-05 sweep also found eu-west-2, eu-central-1, ap-east-2 and ap-southeast-1 on the generic message, the 2026-09-12 and 2026-09-19 sweeps found every region on the bespoke sentence, eu-north-1 included, and the 2026-09-26 sweep and the 2026-09-28 capture found eu-north-1 back on the generic message and nowhere else. The row records the current answer; if eu-north-1 goes back again, the sweep reports the row as converged.",
+      "behaviour": "BatchWriteItem with an empty RequestItems map: the 2026-06 validation-framework rollout reaching the operation beside BatchGetItem, and not settled. A region answers either the framework's generic constraint message or the bespoke required-parameter sentence, and some have moved back and forth. eu-west-2, eu-central-1, ap-east-2 and ap-southeast-1 gave the generic message on the 2026-09-05 sweep, the bespoke sentence on the three sweeps from 2026-09-12 to 2026-09-26, and the generic message again on the 2026-10-03 sweep. eu-north-1 has given it on every sweep since 2026-09-26. The test accepts both exact messages, because pinning either one failed the ground-truth run each time eu-west-2 moved, so this row is the only place each region's answer is pinned. It records the 2026-10-03 sweep and two separate all-region captures on 2026-10-07, which agree with it and with each other.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-08-22",
-      "lastRefreshed": "2026-09-28",
+      "lastRefreshed": "2026-10-07",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -1056,7 +1056,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "The requestItems parameter is required for BatchWriteItem"
+            "message": "1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
           }
         },
         "ap-northeast-1": {
@@ -1098,7 +1098,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "The requestItems parameter is required for BatchWriteItem"
+            "message": "1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
           }
         },
         "ap-southeast-2": {
@@ -1161,7 +1161,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "The requestItems parameter is required for BatchWriteItem"
+            "message": "1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
           }
         },
         "eu-central-2": {
@@ -1203,7 +1203,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "The requestItems parameter is required for BatchWriteItem"
+            "message": "1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
           }
         },
         "eu-west-3": {
@@ -1275,7 +1275,10 @@
         "captures/2026-08-22-batch-validation-messages.json",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/32549181630",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319",
-        "captures/2026-09-28-batch-empty-request-items.json"
+        "captures/2026-09-28-batch-empty-request-items.json",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37195349992",
+        "captures/2026-10-07-batch-empty-request-items.json"
       ],
       "admitted": {
         "by": "Martin Hicks",
