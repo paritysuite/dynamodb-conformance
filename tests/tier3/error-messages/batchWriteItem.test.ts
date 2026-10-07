@@ -27,20 +27,23 @@ describe('BatchWriteItem — exact error messages', { tags: ['batch', 'data-plan
   it('empty RequestItems: full required-parameter error', async (ctx) => {
     // Split behaviour (registry row batch-write-item-empty-request-items-message):
     // the answer differs by region, so what the target actually returned is
-    // recorded for per-region scoring. eu-west-2 is pinned and still answers the
-    // bespoke sentence. eu-north-1 crossed to the validation framework's generic
-    // constraint message between the 2026-08-17 capture, which found all 33
-    // answering regions on the bespoke wording, and the 2026-08-22 sweep - the
-    // same crossing BatchGetItem beside it made a week earlier.
+    // recorded for per-region scoring. The validation-framework rollout has not
+    // settled for this operation. eu-west-2, the pinned region, moved to the
+    // framework's generic constraint message on the 2026-09-05 sweep, was back on
+    // the bespoke sentence by 2026-09-12, and moved again on 2026-10-03, so
+    // pinning either sentence fails the ground-truth run each time it moves.
+    // The assertion accepts both exact messages and nothing else; the row
+    // records which one each region gives.
     try {
       await observeSplit(ctx.task, () => ddb.send(new BatchWriteItemCommand({ RequestItems: {} })))
       expect.unreachable('should have thrown')
     } catch (err) {
       expect(err).toBeInstanceOf(DynamoDBServiceException)
       expect((err as DynamoDBServiceException).name).toBe('ValidationException')
-      expect((err as DynamoDBServiceException).message).toBe(
+      expect([
         'The requestItems parameter is required for BatchWriteItem',
-      )
+        "1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1",
+      ]).toContain((err as DynamoDBServiceException).message)
     }
   })
 

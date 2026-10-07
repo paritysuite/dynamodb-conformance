@@ -8,6 +8,14 @@ section its date and version, so several branches can write ahead of one.
 
 ## Unreleased
 
+BatchWriteItem's empty-RequestItems test now accepts either of the two messages
+DynamoDB gives, so an engine giving either one passes it. eu-west-2 has moved
+between the validation framework's generic constraint message and the older
+required-parameter sentence three times since early September, and the
+scheduled run failed whenever it landed on the side the test did not pin. The
+registry row moves eu-west-2, eu-central-1, ap-east-2 and ap-southeast-1 to the
+generic message beside eu-north-1.
+
 ## 2026-09-29 (3.5.0)
 
 Five Scan error messages are now regional splits. The validation-framework
