@@ -86,21 +86,38 @@ export function suiteIdentities(manifest = readManifest()) {
   return new Set(manifest.tests)
 }
 
+/**
+ * What `--check` prints when the manifest and the suite disagree. A rename
+ * removes one identity and adds another, so the totals alone can match while
+ * dozens of tests have moved: the counts of each side say how many, and only
+ * the first few of each are listed.
+ */
+export function staleReport(defined, recorded, shown = 5) {
+  const missing = defined.filter((id) => !recorded.includes(id))
+  const extra = recorded.filter((id) => !defined.includes(id))
+  if (missing.length === 0 && extra.length === 0) return null
+  const lines = [
+    `registry/suite-manifest.json is stale: ${defined.length} tests defined, ${recorded.length} recorded; ` +
+      `${missing.length} defined but not recorded, ${extra.length} recorded but not defined.`,
+  ]
+  for (const [ids, label] of [[missing, 'defined but not recorded'], [extra, 'recorded but not defined']]) {
+    for (const id of ids.slice(0, shown)) lines.push(`  ${label}: ${id}`)
+    if (ids.length > shown) lines.push(`  ...and ${ids.length - shown} more ${label}`)
+  }
+  return lines
+}
+
 function main(argv) {
   const check = argv.includes('--check')
   const ids = enumerateSuite()
 
   if (check) {
-    const committed = readManifest()
-    const missing = ids.filter((id) => !committed.tests.includes(id))
-    const extra = committed.tests.filter((id) => !ids.includes(id))
-    if (missing.length === 0 && extra.length === 0) {
+    const report = staleReport(ids, readManifest().tests)
+    if (!report) {
       console.log(`registry/suite-manifest.json matches the suite: ${ids.length} tests.`)
       return
     }
-    console.error(`registry/suite-manifest.json is stale: ${ids.length} tests defined, ${committed.tests.length} recorded.`)
-    for (const id of missing.slice(0, 5)) console.error(`  defined but not recorded: ${id}`)
-    for (const id of extra.slice(0, 5)) console.error(`  recorded but not defined: ${id}`)
+    for (const line of report) console.error(line)
     console.error('\nRun: node scripts/suite-manifest.mjs')
     process.exit(1)
   }
