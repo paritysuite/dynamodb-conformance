@@ -29,9 +29,9 @@ import { dirname, join } from 'node:path'
 import { indeterminateFrom, type IndeterminateReason } from './indeterminate.js'
 
 // Typed shape for the test-level marker, merged into Vitest's TaskMeta so the
-// annotation is not an untyped bag. The interface lives in @vitest/runner
-// (vitest only re-exports it), so that is the module to augment.
-declare module '@vitest/runner' {
+// annotation is not an untyped bag. Vitest 5 bundles the runner into the
+// vitest package, so 'vitest' is the module to augment.
+declare module 'vitest' {
   interface TaskMeta {
     indeterminate?: { reason: IndeterminateReason; at: 'test' }
   }

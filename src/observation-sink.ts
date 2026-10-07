@@ -26,8 +26,8 @@ export type Observation =
   | { outcome: 'rejected'; error: { name: string; message: string } }
 
 // Merged into Vitest's TaskMeta alongside the indeterminate marker, so the
-// annotation is not an untyped bag. The interface lives in @vitest/runner.
-declare module '@vitest/runner' {
+// annotation is not an untyped bag. The interface lives in vitest.
+declare module 'vitest' {
   interface TaskMeta {
     observed?: Observation
   }
