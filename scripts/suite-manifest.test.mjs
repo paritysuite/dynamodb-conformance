@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { isTargetResultFile } from './lib/score.mjs'
-import { readManifest, suiteIdentities, suiteSizeOf } from './suite-manifest.mjs'
+import { readManifest, staleReport, suiteIdentities, suiteSizeOf } from './suite-manifest.mjs'
 import { assertMeasuredSuite, assertOneDenominator, readTargets } from './summarise.mjs'
 
 const MANIFEST = readManifest()
@@ -30,6 +30,38 @@ describe('the committed suite manifest', () => {
     const files = readdirSync('results').filter(isTargetResultFile)
     expect(files.length, 'no committed results to check').toBeGreaterThan(0)
     expect(() => assertMeasuredSuite(readTargets(files.map((f) => join('results', f))))).not.toThrow()
+  })
+})
+
+describe('staleReport', () => {
+  const id = (n) => `tests/tier1/a.test.ts::A ${n}`
+  const recorded = Array.from({ length: 8 }, (_, n) => id(`'${n}'`))
+
+  it('says nothing when the suite and the manifest agree', () => {
+    expect(staleReport(recorded, [...recorded])).toBeNull()
+  })
+
+  // A rename leaves both totals at 8, so only the per-side counts show that all
+  // eight moved, not the five that get listed.
+  it('counts every renamed test, not only the ones it lists', () => {
+    const defined = Array.from({ length: 8 }, (_, n) => id(n))
+    const report = staleReport(defined, recorded)
+    expect(report[0]).toBe(
+      'registry/suite-manifest.json is stale: 8 tests defined, 8 recorded; ' +
+        '8 defined but not recorded, 8 recorded but not defined.',
+    )
+    expect(report.filter((l) => l.startsWith('  defined but not recorded: '))).toHaveLength(5)
+    expect(report).toContain('  ...and 3 more defined but not recorded')
+    expect(report).toContain('  ...and 3 more recorded but not defined')
+  })
+
+  it('lists everything, with no remainder line, when there are few', () => {
+    const report = staleReport([...recorded, id('new')], recorded)
+    expect(report).toEqual([
+      'registry/suite-manifest.json is stale: 9 tests defined, 8 recorded; ' +
+        '1 defined but not recorded, 0 recorded but not defined.',
+      `  defined but not recorded: ${id('new')}`,
+    ])
   })
 })
 
