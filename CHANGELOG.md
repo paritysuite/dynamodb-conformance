@@ -8,6 +8,8 @@ section its date and version, so several branches can write ahead of one.
 
 ## Unreleased
 
+## 2026-10-08 (3.6.0)
+
 BatchWriteItem's empty-RequestItems test now accepts either of the two messages
 DynamoDB gives, so an engine giving either one passes it. eu-west-2 has moved
 between the validation framework's generic constraint message and the older
