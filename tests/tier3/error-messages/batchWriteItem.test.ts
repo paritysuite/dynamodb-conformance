@@ -4,7 +4,6 @@ import {
   ResourceNotFoundException,
 } from '@aws-sdk/client-dynamodb'
 import { ddb } from '../../../src/client.js'
-import { observeSplit } from '../../../src/observation-sink.js'
 import {
   hashTableDef,
   hashBTableDef,
@@ -24,18 +23,17 @@ afterAll(async () => {
 })
 
 describe('BatchWriteItem — exact error messages', { tags: ['batch', 'data-plane', 'negative-path'] }, () => {
-  it('empty RequestItems: full required-parameter error', async (ctx) => {
-    // Split behaviour (registry row batch-write-item-empty-request-items-message):
-    // the answer differs by region, so what the target actually returned is
-    // recorded for per-region scoring. The validation-framework rollout has not
-    // settled for this operation. eu-west-2, the pinned region, moved to the
-    // framework's generic constraint message on the 2026-09-05 sweep, was back on
-    // the bespoke sentence by 2026-09-12, and moved again on 2026-10-03, so
-    // pinning either sentence fails the ground-truth run each time it moves.
-    // The assertion accepts both exact messages and nothing else; the row
-    // records which one each region gives.
+  it('empty RequestItems: full required-parameter error', async () => {
+    // The validation-framework rollout has not settled for this operation.
+    // Regions answer either the framework's generic constraint message or the
+    // bespoke required-parameter sentence, and eu-west-2 has given both: it
+    // moved to the generic message on the 2026-09-05 sweep, was back on the
+    // sentence by 2026-09-12, and moved again on 2026-10-03, so pinning either
+    // one fails the ground-truth run each time it moves. The assertion accepts
+    // both exact messages and nothing else. There is no registry row while
+    // eu-west-2 gives both, because a row holds one answer per region.
     try {
-      await observeSplit(ctx.task, () => ddb.send(new BatchWriteItemCommand({ RequestItems: {} })))
+      await ddb.send(new BatchWriteItemCommand({ RequestItems: {} }))
       expect.unreachable('should have thrown')
     } catch (err) {
       expect(err).toBeInstanceOf(DynamoDBServiceException)

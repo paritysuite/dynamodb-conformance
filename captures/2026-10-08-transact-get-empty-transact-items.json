@@ -1,0 +1,446 @@
+{
+  "capturedAt": "2026-10-08T08:28:29.251Z",
+  "note": "TransactGetItems with an empty TransactItems list, all 33 answering regions: 30 calls to eu-west-2 and 5 to every other region, each call on a fresh client and connection. eu-west-2 echoed the empty list on all 30. The ground-truth run on main the same morning (source below) got the generic constraint message from eu-west-2 on both attempts, so eu-west-2 gives both. One ap-southeast-2 call timed out on the network and is recorded as it happened; it is not an answer.",
+  "sources": [
+    "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37745982375"
+  ],
+  "regions": {
+    "af-south-1": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "ap-east-1": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "ap-east-2": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "ap-northeast-1": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "ap-northeast-2": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value at 'TransactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "ap-northeast-3": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "ap-south-1": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "ap-south-2": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "ap-southeast-1": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "ap-southeast-2": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 4
+        },
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "TimeoutError",
+            "message": "read ETIMEDOUT"
+          },
+          "count": 1
+        }
+      ]
+    },
+    "ap-southeast-3": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "ap-southeast-4": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "ap-southeast-5": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "ap-southeast-6": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "ap-southeast-7": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "ca-central-1": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "ca-west-1": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "eu-central-1": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "eu-central-2": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "eu-north-1": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value at 'TransactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "eu-south-1": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "eu-south-2": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "eu-west-1": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "eu-west-2": {
+      "calls": 30,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 30
+        }
+      ]
+    },
+    "eu-west-3": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "il-central-1": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "me-central-1": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "mx-central-1": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "sa-east-1": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "us-east-1": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "us-east-2": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "us-west-1": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    },
+    "us-west-2": {
+      "calls": 5,
+      "answers": [
+        {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+          },
+          "count": 5
+        }
+      ]
+    }
+  }
+}

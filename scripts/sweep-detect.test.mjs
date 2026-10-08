@@ -208,6 +208,39 @@ describe('detectRegistryDrift', () => {
     expect(findings[0].convergedOn).toBeUndefined()
   })
 
+  describe('a test whose assertion accepts every recorded answer', () => {
+    // Where the pinned region gives both answers, the committed assertion
+    // accepts both and every region passes. Each region's recorded
+    // observation says which answer it gave.
+    const row = rowFor()
+    const [stored, notHere] = [row.splits[0].regions['eu-west-2'], row.splits[0].regions['us-east-1']]
+
+    it('reads each region from its observation, so regions answering as recorded are no drift', () => {
+      const verdicts = {
+        'eu-west-2': [verdict('pass', { observed: stored })],
+        'us-east-1': [verdict('pass', { observed: notHere })],
+      }
+      expect(detectRegistryDrift(verdicts, row)).toEqual([])
+      expect(detectMatchingRows(verdicts, row)).toEqual([
+        { id: 'row-1', test: { file: TEST.file, fullName: TEST.fullName } },
+      ])
+    })
+
+    it('still reports a region that moved from one recorded answer to the other', () => {
+      const findings = detectRegistryDrift(
+        {
+          'eu-west-2': [verdict('pass', { observed: stored })],
+          'us-east-1': [verdict('pass', { observed: stored })],
+        },
+        row,
+      )
+      expect(findings).toHaveLength(1)
+      expect(findings[0].kind).toBe('converged')
+      expect(findings[0].convergedOn).toBe('pinned')
+      expect(findings[0].mismatched).toEqual(['us-east-1'])
+    })
+  })
+
   it('an indeterminate observation draws no drift conclusion', () => {
     const findings = detectRegistryDrift(
       {

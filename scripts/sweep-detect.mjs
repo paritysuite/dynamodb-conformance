@@ -63,7 +63,13 @@ import { tmpdir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
 import { classifyResults } from './lib/classify.mjs'
 import { assessRegion } from './lib/health.mjs'
-import { isRegionName, loadRegistry, sameObservation, splitFor } from './lib/registry.mjs'
+import {
+  isRegionName,
+  loadRegistry,
+  sameObservation,
+  splitFor,
+  verdictAgainstPin,
+} from './lib/registry.mjs'
 import { loadRegionHealth, recordSweep, validateRegionHealth } from './lib/observed.mjs'
 
 // The one file this script must never write, whatever it was asked to read.
@@ -110,10 +116,11 @@ function byTest(verdictsByRegion) {
       const key = `${file}\n${v.fullName}`
       let entry = tests.get(key)
       if (!entry) {
-        entry = { test: { file, fullName: v.fullName, title: v.title }, regions: {} }
+        entry = { test: { file, fullName: v.fullName, title: v.title }, regions: {}, observed: {} }
         tests.set(key, entry)
       }
       entry.regions[region] = v.verdict
+      if (v.observed !== undefined) entry.observed[region] = v.observed
     }
   }
   return tests
@@ -211,10 +218,13 @@ export function detectMatchingRows(verdictsByRegion, registry) {
 // What the sweep saw on one admitted row: the verdict the row implies in each
 // named region, the definite verdicts observed, which of those contradict the
 // row, and whether every named region answered. Null when the sweep did not
-// run the row's test at all.
+// run the row's test at all. A pass is read against the pinned answer from the
+// region's recorded observation (verdictAgainstPin), so a test that accepts
+// more than one recorded answer does not show every region as on the pinned
+// side.
 function readRow(row, tests) {
-  const observed = tests.get(`${row.test.file}\n${row.test.fullName}`)
-  if (!observed) return null
+  const entry = tests.get(`${row.test.file}\n${row.test.fullName}`)
+  if (!entry) return null
 
   const expected = {}
   const actual = {}
@@ -222,7 +232,7 @@ function readRow(row, tests) {
     expected[region] = sameObservation(row.regions[region], row.regions[row.pinned])
       ? 'pass'
       : 'fail'
-    const v = observed.regions[region]
+    const v = verdictAgainstPin(row, entry.regions[region], entry.observed[region])
     if (v === 'pass' || v === 'fail') actual[region] = v
   }
   return {

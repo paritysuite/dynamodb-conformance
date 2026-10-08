@@ -5,6 +5,7 @@ import {
   sameObservation,
   splitFor,
   validateRegistry,
+  verdictAgainstPin,
 } from './registry.mjs'
 
 const accepted = { outcome: 'accepted', detail: 'stored' }
@@ -170,6 +171,24 @@ describe('sameObservation', () => {
       }),
     ).toBe(true)
     expect(sameObservation(accepted, rejected)).toBe(false)
+  })
+})
+
+describe('verdictAgainstPin', () => {
+  it('reads a pass carrying a recorded answer as whether that answer is the pinned one', () => {
+    expect(verdictAgainstPin(row(), 'pass', accepted)).toBe('pass')
+    expect(verdictAgainstPin(row(), 'pass', rejected)).toBe('fail')
+  })
+
+  it('leaves a pass alone when it carries no observation or one no region records', () => {
+    expect(verdictAgainstPin(row(), 'pass', undefined)).toBe('pass')
+    expect(verdictAgainstPin(row(), 'pass', { outcome: 'accepted', detail: 'request accepted' })).toBe('pass')
+  })
+
+  it('never turns any other verdict into a pass', () => {
+    for (const verdict of ['fail', 'skip', 'indeterminate']) {
+      expect(verdictAgainstPin(row(), verdict, accepted)).toBe(verdict)
+    }
   })
 })
 

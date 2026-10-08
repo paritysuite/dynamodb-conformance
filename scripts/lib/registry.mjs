@@ -161,3 +161,23 @@ export function expectedFor(doc, { file, fullName }, region) {
   const row = splitFor(doc, { file, fullName })
   return row?.regions?.[region] ?? null
 }
+
+/**
+ * The verdict a row's test earned, read as "gave the pinned answer" or not.
+ *
+ * Scoring and the sweep both read a pass that way, which holds while the
+ * committed assertion accepts the pinned answer and no other recorded one.
+ * Where the pinned region itself gives more than one answer, the assertion
+ * has to accept each of them, and a pass then says only that the target gave
+ * one of them. The recorded observation says which: a pass whose observation
+ * is one of the row's recorded answers counts as a pass only when that answer
+ * is the pinned one. Any other verdict, and a pass whose observation matches
+ * nothing recorded (a wording variant a tolerant assertion let through),
+ * stands as it is.
+ */
+export function verdictAgainstPin(row, verdict, observed) {
+  if (verdict !== 'pass' || observed === undefined) return verdict
+  const recorded = Object.values(row.regions)
+  if (!recorded.some((answer) => sameObservation(answer, observed))) return verdict
+  return sameObservation(observed, row.regions[row.pinned]) ? 'pass' : 'fail'
+}
