@@ -5,28 +5,30 @@ import {
   TransactionCanceledException,
 } from '@aws-sdk/client-dynamodb'
 import { ddb } from '../../../src/client.js'
-import { observeSplit } from '../../../src/observation-sink.js'
 import { declareTables, hashTableDef, absentTableName } from '../../../src/helpers.js'
 
 declareTables(hashTableDef)
 
 describe('TransactGetItems — exact error messages', { tags: ['transactions', 'data-plane', 'negative-path'] }, () => {
-  it('empty TransactItems: full minimum-length error', async (ctx) => {
-    // Split behaviour (registry row transact-get-items-empty-transact-items-message):
-    // the answer differs by region, so what the target actually returned is
-    // recorded for per-region scoring. eu-west-2 is pinned and answers the
-    // request-echo wording below. eu-north-1 moved to the validation
-    // framework's generic constraint message by the 2026-10-03 sweep;
-    // ap-northeast-2 has given both and is in no row.
+  it('empty TransactItems: full minimum-length error', async () => {
+    // The validation-framework rollout is reaching this operation. eu-north-1
+    // moved to the framework's generic constraint message by the 2026-10-03
+    // sweep, and ap-northeast-2 has given both. So has eu-west-2: the request
+    // echo to a separate client on 2026-10-08 and the generic message to the
+    // ground-truth run on main the same day. Pinning either message fails
+    // that run whenever it lands on the other, so the assertion accepts both
+    // exact messages and nothing else. There is no registry row while
+    // eu-west-2 gives both, because a row holds one answer per region.
     try {
-      await observeSplit(ctx.task, () => ddb.send(new TransactGetItemsCommand({ TransactItems: [] })))
+      await ddb.send(new TransactGetItemsCommand({ TransactItems: [] }))
       expect.unreachable('should have thrown')
     } catch (err) {
       expect(err).toBeInstanceOf(DynamoDBServiceException)
       expect((err as DynamoDBServiceException).name).toBe('ValidationException')
-      expect((err as DynamoDBServiceException).message).toBe(
+      expect([
         "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1",
-      )
+        "1 validation error detected: Value at 'TransactItems' failed to satisfy constraint: Member must have length greater than or equal to 1",
+      ]).toContain((err as DynamoDBServiceException).message)
     }
   })
 

@@ -223,6 +223,27 @@ describe('per-region scoring', () => {
     expect(byRegion('us-east-1')).toBe('fail')
   })
 
+  it('a pass carrying another region\'s recorded answer is scored on that answer, not as the pinned one', () => {
+    // Where the pinned region gives both answers, the committed assertion
+    // accepts both, so a pass no longer says which one the target gave. Its
+    // observation does: this target answered as us-east-1 records.
+    const verdicts = suite({ verdict: 'pass', observed: rejected })
+    const byRegion = (region) =>
+      verdictsForRegion(verdicts, registry, region).at(-1).verdict
+    expect(byRegion('eu-west-2')).toBe('fail')
+    expect(byRegion('eu-central-1')).toBe('fail')
+    expect(byRegion('us-east-1')).toBe('pass')
+  })
+
+  it('a pass carrying the pinned answer is credited exactly where the pinned answer is recorded', () => {
+    const verdicts = suite({ verdict: 'pass', observed: accepted })
+    const byRegion = (region) =>
+      verdictsForRegion(verdicts, registry, region).at(-1).verdict
+    expect(byRegion('eu-west-2')).toBe('pass')
+    expect(byRegion('eu-central-1')).toBe('pass')
+    expect(byRegion('us-east-1')).toBe('fail')
+  })
+
   it('indeterminate and skip pass through untouched: an absence is the same absence in every region (AE2)', () => {
     for (const verdict of ['indeterminate', 'skip']) {
       const verdicts = suite({ verdict })

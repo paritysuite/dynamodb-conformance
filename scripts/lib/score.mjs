@@ -15,7 +15,7 @@
 //   neither for nor against a target.
 
 import { classifyResults } from './classify.mjs'
-import { loadRegistry, sameObservation, splitFor } from './registry.mjs'
+import { loadRegistry, sameObservation, splitFor, verdictAgainstPin } from './registry.mjs'
 import { loadRegionHealth, observedRegions } from './observed.mjs'
 
 // The conformance ground truth. Real DynamoDB defines correctness, so its row
@@ -198,7 +198,11 @@ export function axesOf({ passed, failed, count, indeterminate = 0 }) {
  *   revokes a committed pass: the committed assertion is the suite's own
  *   definition of matching the pinned side, and holding a pass to the
  *   byte-exact recorded string as well would silently tighten every split
- *   test to a strictness the suite never asserts anywhere else;
+ *   test to a strictness the suite never asserts anywhere else. The one
+ *   exception is a pass whose observation is another region's recorded
+ *   answer, which an assertion accepts only where the pinned region gives
+ *   both; it is read as the fail it would have been against the pinned
+ *   answer alone (verdictAgainstPin) and scored on that evidence below;
  * - a fail carrying `observed` (the target's recorded answer for the split
  *   behaviour) is redeemed exactly when the observation matches this
  *   region's recorded answer, byte-exactly - a region match is only ever
@@ -217,7 +221,7 @@ export function verdictsForRegion(verdicts, registry, region) {
     const row = splitFor(registry, v)
     const expected = row?.regions?.[region]
     if (!expected) return v
-    if (v.verdict === 'pass') {
+    if (verdictAgainstPin(row, v.verdict, v.observed) === 'pass') {
       return {
         ...v,
         verdict: sameObservation(expected, row.regions[row.pinned]) ? 'pass' : 'fail',
