@@ -8,12 +8,6 @@ section its date and version, so several branches can write ahead of one.
 
 ## Unreleased
 
-The board and the results table now sort by grade, best first, and rows sharing
-a grade by the effective figure the letter is read from. They used to sort on
-divergence alone, and coverage lowers a letter without moving a row, so a target
-diverging slightly less over much less of the suite could sit above a
-better-graded one. No grade or figure changes.
-
 ## 2026-10-09 (3.6.1)
 
 3.6.0 was cut but never published. eu-west-2 changed how it validates
@@ -36,6 +30,12 @@ refuse a 32-level value up front pass tests they used to fail: three for
 LocalStack, and one each for DynamoDB Local, ExtendDB and ExtendDB (SQLite). The
 tests keep their names, which describe what the 30 regions do, until one answer
 is pinned, because a rename needs every committed results file re-run.
+
+The board and the results table now sort by grade, best first, and rows sharing
+a grade by the effective figure the letter is read from. They used to sort on
+divergence alone, and coverage lowers a letter without moving a row, so a target
+diverging slightly less over much less of the suite could sit above a
+better-graded one. No grade or figure changes.
 
 ## 2026-10-08 (3.6.0)
 
