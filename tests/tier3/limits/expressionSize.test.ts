@@ -17,13 +17,31 @@ declareTables(hashTableDef)
 // whitespace is not normalised, and ExpressionAttributeValues are not counted.
 // Verified against real AWS in eu-west-2, us-east-1, eu-central-1 and
 // ap-southeast-2 (2026-07-12): 4096 bytes accepted and 4097 rejected on all
-// five surfaces below, in every region. Only the phrase pinned here is
-// invariant; the wording around it varies by operation and region (a
-// `1 validation error detected:` envelope, an `; expression size: <n>` tail),
-// so the assertion floats everything else.
+// five surfaces below, in every region.
+//
+// The exact wording is pinned where it has been captured. UpdateItem and
+// PutItem wrap the sentence in the validation envelope and give no figure
+// (us-east-1, us-east-2, sa-east-1, eu-west-1, eu-west-2, eu-north-1,
+// eu-central-1 and ap-northeast-1, 2026-10-08). Inside a transaction there is
+// no envelope; an UpdateExpression gives no figure anywhere, while a
+// ConditionExpression still carries `; expression size: 4097` in most regions
+// and has dropped it in eu-west-2 and eu-north-1, so that one accepts both
+// exact forms until the regions settle (captured 2026-10-08 and 2026-10-09).
+// A Query FilterExpression and a ProjectionExpression give no figure in either
+// us-east-1 or eu-west-2; a Scan FilterExpression gives it in us-east-1 only
+// (2026-10-09), so it accepts both exact forms too.
 const LIMIT = 4096
 const OVER = LIMIT + 1
 const SIZE_MSG = 'Expression size has exceeded the maximum allowed size'
+const SIZE_SENTENCE = `${SIZE_MSG};`
+const exactly = (s: string) => new RegExp(`^${s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`)
+const SIZE_UPDATE_ITEM = exactly(`1 validation error detected: Invalid UpdateExpression: ${SIZE_SENTENCE}`)
+const SIZE_PUT_ITEM_CONDITION = exactly(`1 validation error detected: Invalid ConditionExpression: ${SIZE_SENTENCE}`)
+const SIZE_TX_UPDATE = exactly(`Invalid UpdateExpression: ${SIZE_SENTENCE}`)
+const SIZE_TX_CONDITION = /^Invalid ConditionExpression: Expression size has exceeded the maximum allowed size;(?: expression size: 4097)?$/
+const SIZE_QUERY_FILTER = exactly(`Invalid FilterExpression: ${SIZE_SENTENCE}`)
+const SIZE_SCAN_FILTER = /^Invalid FilterExpression: Expression size has exceeded the maximum allowed size;(?: expression size: 4097)?$/
+const SIZE_PROJECTION = exactly(`Invalid ProjectionExpression: ${SIZE_SENTENCE}`)
 
 const PREFIX = 'lim-es-'
 const keysToClean: { pk: { S: string } }[] = []
@@ -140,7 +158,7 @@ describe('Expression size limit (4KB) — UpdateExpression', { tags: ['update-it
           }),
         ),
       'ValidationException',
-      SIZE_MSG,
+      SIZE_UPDATE_ITEM,
     )
   })
 })
@@ -170,7 +188,7 @@ describe('Expression size limit (4KB) — ConditionExpression', { tags: ['put-it
           }),
         ),
       'ValidationException',
-      SIZE_MSG,
+      SIZE_PUT_ITEM_CONDITION,
     )
   })
 })
@@ -214,7 +232,7 @@ describe('Expression size limit (4KB) — Query FilterExpression', { tags: ['que
           }),
         ),
       'ValidationException',
-      SIZE_MSG,
+      SIZE_QUERY_FILTER,
     )
   })
 })
@@ -248,7 +266,7 @@ describe('Expression size limit (4KB) — Scan FilterExpression', { tags: ['scan
           }),
         ),
       'ValidationException',
-      SIZE_MSG,
+      SIZE_SCAN_FILTER,
     )
   })
 })
@@ -287,7 +305,7 @@ describe('Expression size limit (4KB) — ProjectionExpression', { tags: ['get-i
           }),
         ),
       'ValidationException',
-      SIZE_MSG,
+      SIZE_PROJECTION,
     )
   })
 
@@ -374,7 +392,7 @@ describe('Expression size limit (4KB) — TransactWriteItems', { tags: ['transac
           }),
         ),
       'ValidationException',
-      SIZE_MSG,
+      SIZE_TX_CONDITION,
     )
   })
 
@@ -420,7 +438,7 @@ describe('Expression size limit (4KB) — TransactWriteItems', { tags: ['transac
           }),
         ),
       'ValidationException',
-      SIZE_MSG,
+      SIZE_TX_UPDATE,
     )
   })
 
@@ -441,7 +459,7 @@ describe('Expression size limit (4KB) — TransactWriteItems', { tags: ['transac
           }),
         ),
       'ValidationException',
-      SIZE_MSG,
+      SIZE_TX_CONDITION,
     )
   })
 
@@ -462,7 +480,7 @@ describe('Expression size limit (4KB) — TransactWriteItems', { tags: ['transac
           }),
         ),
       'ValidationException',
-      SIZE_MSG,
+      SIZE_TX_CONDITION,
     )
   })
 
@@ -487,7 +505,7 @@ describe('Expression size limit (4KB) — TransactWriteItems', { tags: ['transac
           }),
         ),
       'ValidationException',
-      SIZE_MSG,
+      SIZE_TX_CONDITION,
     )
     const get = await ddb.send(
       new GetItemCommand({ TableName: hashTableDef.name, Key: first, ConsistentRead: true }),

@@ -1303,6 +1303,19 @@
         "transactions",
         "update-item",
         "data-plane"
+      ],
+      "Item size limit by surface — UpdateItem charges each kind of clause": [
+        "update-item",
+        "data-plane"
+      ],
+      "Item size limit by surface — AttributeUpdates sizes the finished item": [
+        "update-item",
+        "legacy",
+        "data-plane"
+      ],
+      "Item size limit by surface — UpdateItem checks the charge before the condition": [
+        "update-item",
+        "data-plane"
       ]
     },
     "tests/tier3/limits/keyLength.test.ts": {
@@ -1381,6 +1394,11 @@
         "batch",
         "data-plane",
         "negative-path"
+      ],
+      "Batch operations — enum and ordering checks": [
+        "batch",
+        "data-plane",
+        "negative-path"
       ]
     },
     "tests/tier3/validation-ordering/createTable.test.ts": {
@@ -1429,6 +1447,18 @@
     "tests/tier3/validation-ordering/scan.test.ts": {
       "Scan — validation ordering": [
         "scan",
+        "data-plane",
+        "negative-path"
+      ]
+    },
+    "tests/tier3/validation-ordering/transactions.test.ts": {
+      "TransactWriteItems — validation ordering": [
+        "transactions",
+        "data-plane",
+        "negative-path"
+      ],
+      "TransactGetItems — validation ordering": [
+        "transactions",
         "data-plane",
         "negative-path"
       ]
