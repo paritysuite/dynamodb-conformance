@@ -445,6 +445,13 @@
         "lsi"
       ]
     },
+    "tests/tier1/query/multiAttributeGsiKey.test.ts": {
+      "Query - GSI with a multi-attribute key": [
+        "query",
+        "gsi",
+        "data-plane"
+      ]
+    },
     "tests/tier1/query/numericKeys.test.ts": {
       "Query — numeric sort key": [
         "query",
@@ -777,6 +784,12 @@
         "data-plane"
       ]
     },
+    "tests/tier2/partiql/grammar.test.ts": {
+      "PartiQL - grammar": [
+        "partiql",
+        "data-plane"
+      ]
+    },
     "tests/tier2/partiql/indexQualifier.test.ts": {
       "ExecuteStatement — index qualifier": [
         "partiql",
@@ -1077,6 +1090,13 @@
         "negative-path"
       ]
     },
+    "tests/tier3/error-messages/partiqlGrammar.test.ts": {
+      "PartiQL grammar - exact error messages": [
+        "partiql",
+        "data-plane",
+        "negative-path"
+      ]
+    },
     "tests/tier3/error-messages/partiqlIndexQualifier.test.ts": {
       "PartiQL index qualifier — exact error messages": [
         "partiql",
@@ -1099,6 +1119,13 @@
         "negative-path"
       ],
       "Query — ProjectionExpression rejection messages": [
+        "query",
+        "data-plane",
+        "negative-path"
+      ]
+    },
+    "tests/tier3/error-messages/queryKeyConditionOperands.test.ts": {
+      "Query - KeyConditionExpression operand types": [
         "query",
         "data-plane",
         "negative-path"
@@ -1340,6 +1367,17 @@
         "data-plane"
       ]
     },
+    "tests/tier3/limits/numberExponent.test.ts": {
+      "Number limits - exponents": [
+        "put-item",
+        "get-item",
+        "delete-item",
+        "update-item",
+        "query",
+        "batch",
+        "data-plane"
+      ]
+    },
     "tests/tier3/limits/numberPrecision.test.ts": {
       "Number precision — DynamoDB number limits and edge cases": [
         "put-item",
@@ -1421,6 +1459,13 @@
     },
     "tests/tier3/validation-ordering/query.test.ts": {
       "Query — validation ordering": [
+        "query",
+        "data-plane",
+        "negative-path"
+      ]
+    },
+    "tests/tier3/validation-ordering/queryKeyCondition.test.ts": {
+      "Query - KeyConditionExpression validation ordering": [
         "query",
         "data-plane",
         "negative-path"
