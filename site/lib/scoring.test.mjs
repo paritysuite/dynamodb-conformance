@@ -23,6 +23,7 @@ import {
   capClauseOf,
   gradeForRow,
   gradeLineOf,
+  gradeOf,
   regionClauseOf,
   sortRows,
   buildsAgree,
@@ -438,6 +439,30 @@ test("the baseline is never given a letter by any of them", () => {
   const baseline = { divergenceValue: 0, coverageValue: 100, slug: GROUND_TRUTH_SLUG };
   assert.equal(gradeForRow(baseline, GROUND_TRUTH_SLUG).letter, null);
   assert.equal(capClauseOf(baseline, GROUND_TRUTH_SLUG), "");
+});
+
+// ── The order down the board ────────────────────────────────────────────────
+
+test("sortRows seats targets by grade, then by the effective figure within a grade", () => {
+  // The run of 9 October 2026, which put a B above an A: ExtendDB diverges
+  // least of the four, but covers 78.9% of the suite, and that lowers its
+  // letter to B.
+  const row = (slug, divergenceValue, coverageValue) => ({ slug, target: slug, divergenceValue, coverageValue });
+  const rows = sortRows([
+    row("extenddb", 1.8, 78.9),
+    row("localstack", 2.4, 95.7),
+    row("ministack", 6.6, 95.9),
+    row("floci", 0.1, 99.4),
+  ]);
+  assert.deepEqual(
+    rows.map((r) => [r.slug, gradeOf(r.divergenceValue, r.coverageValue).letter]),
+    [
+      ["floci", "A"],
+      ["localstack", "A"],
+      ["ministack", "B"],
+      ["extenddb", "B"],
+    ],
+  );
 });
 
 // ── Which builds of a project start visible ─────────────────────────────────

@@ -575,7 +575,7 @@ try {
       }));
 
     check(disclosures.length === 2, "the fixture board renders both disclosures", `got ${disclosures.length}`);
-    // By name, not by position. The rows are sorted by divergence over real
+    // By name, not by position. The rows are sorted by grade over real
     // committed figures, so indexing assumed Dynoxide keeps sorting above
     // ExtendDB - and a weekly refresh that reversed them would have failed this
     // check for a reason that has nothing to do with disclosures.

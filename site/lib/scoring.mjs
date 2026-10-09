@@ -33,6 +33,7 @@ import {
   GRADING_CRITERIA_EFFECTIVE,
   GRADING_VERSION,
   bandOf,
+  compareGrades,
   effectiveOf,
   gradeOf,
   gradingCriteriaEffectiveLabel,
@@ -549,11 +550,9 @@ export function dynamodbRow(suiteSize, date) {
 // denominator, so the max over a run's rows is that run's size.
 export const suiteSizeOf = (rows) => Math.max(0, ...rows.map((r) => r.count));
 
-// Sort emulators by divergence ascending, then coverage descending, exactly as
-// summarise.mjs does. The order is a risk ranking, not a verdict on which
-// engine is better: a target that diverges nowhere over a narrow surface sits
-// high and is described by its own coverage figure, so no minimum-coverage
-// floor is needed to keep the order honest.
+// Sort emulators by grade, best first, then by the figures within a grade,
+// exactly as summarise.mjs does: both read the order from compareGrades, so the
+// board and the README table seat targets the same way.
 //
 // The tie-break compares the plain name, not the `[name](url)` label:
 // comparing the label sorts on the first character after the name - a "]" for
@@ -561,16 +560,11 @@ export const suiteSizeOf = (rows) => Math.max(0, ...rows.map((r) => r.count));
 // sort above "Dynoxide" on an equal figure, putting the preview above the
 // engine it is a variant of. Comparing names makes a base engine a prefix of
 // its variant, so "Dynoxide" sorts above "Dynoxide (wasm)".
-const asc = (v) => (v == null ? Number.POSITIVE_INFINITY : v);
-const desc = (v) => (v == null ? Number.NEGATIVE_INFINITY : v);
 const sortName = (row) => {
   const m = row.target.match(/^\[([^\]]+)\]/);
   return m ? m[1] : row.target;
 };
-const byRisk = (a, b) =>
-  asc(a.divergenceValue) - asc(b.divergenceValue) ||
-  desc(b.coverageValue) - desc(a.coverageValue) ||
-  sortName(a).localeCompare(sortName(b));
+const byGrade = (a, b) => compareGrades(a, b) || sortName(a).localeCompare(sortName(b));
 
 // Only projects compete for a place in the order; a build of one travels with
 // it as a nested row. Seating variants in the same list would put builds of one
@@ -622,7 +616,7 @@ export function sortRows(rows) {
   const groups = [];
   for (const group of byProject.values()) {
     const parent = group.find((r) => !isVariant(r.slug)) ?? group[0];
-    parent.variants = group.filter((r) => r !== parent).sort(byRisk);
+    parent.variants = group.filter((r) => r !== parent).sort(byGrade);
     // Whether this project's builds start visible. Every build renders either
     // way; this only picks what the disclosure does on arrival.
     //
@@ -667,7 +661,7 @@ export function sortRows(rows) {
     for (const v of parent.variants) v.isParent = false;
     groups.push(parent);
   }
-  return groups.sort(byRisk).flatMap((parent) => [parent, ...parent.variants]);
+  return groups.sort(byGrade).flatMap((parent) => [parent, ...parent.variants]);
 }
 
 // The site used to carry a second markdown-table renderer here, reproducing the
