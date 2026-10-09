@@ -1,8 +1,8 @@
-import { CreateTableCommand, PutItemCommand, SearchVectorsCommand } from '@aws-sdk/client-dynamodb'
+import { CreateTableCommand, GetItemCommand, PutItemCommand, SearchVectorsCommand } from '@aws-sdk/client-dynamodb'
 import type { AttributeValue } from '@aws-sdk/client-dynamodb'
 import { ddb } from '../../../src/client.js'
-import { uniqueTableName, deleteTable } from '../../../src/helpers.js'
-import { itemBytes, utf8Bytes } from '../../../src/item-size.js'
+import { uniqueTableName, deleteTable, expectDynamoError } from '../../../src/helpers.js'
+import { MAX_ITEM_BYTES, asciiOfBytes, itemBytes, numberBytes, utf8Bytes } from '../../../src/item-size.js'
 import {
   skipUnlessVectorSearch,
   supportsVectorSearch,
@@ -350,5 +350,110 @@ describe('PutItem — VectorWriteRequestBytes', { tags: ['put-item', 'data-plane
     const without = await writeAndReadCapacity(entry('3d', THREE_DIM, vec(1, 0, 0)))
     const withNote = await writeAndReadCapacity(entry('td', THREE_DIM, vec(1, 0, 0), note))
     expect(withNote.vix! - without.vix!).toBe(itemBytes(note))
+  })
+})
+
+// The base item is billed at a different size from the one it is stored at.
+// Captured against eu-west-2 and us-east-1 on 2026-10-09 by bisecting the write
+// and read unit boundaries and the 400KB gate: an attribute a vector index reads
+// costs its name plus four bytes per dimension on a write (1, 3, 8, 256 and 1,024
+// dimensions, with numbers from 1e-30 to 38-digit integers), and DescribeTable's
+// TableSizeBytes follows the same figure. A read and the 400KB gate size the
+// vector as the list of numbers it holds.
+//
+// Every vector below holds 38-digit integers, 20 bytes each as numbers, so a
+// target that bills a write by the numbers lands a unit high, and one that sizes
+// a read or the gate by the billed figure lands a unit low or lets an oversized
+// item through.
+
+/** A 38-digit integer: 20 bytes as a number, 4 as a billed dimension. */
+const WIDE = '12345678901234567890123456789012345678'
+
+const wideVector = (dims: number): AttributeValue => ({
+  L: Array.from({ length: dims }, () => ({ N: WIDE })),
+})
+
+/**
+ * A list's stored size: 3 bytes, plus 1 per element, plus the elements. Held to
+ * the byte for every unindexed list probed in the 2026-10-09 capture.
+ */
+const storedVectorBytes = (dims: number) => 3 + dims * (1 + numberBytes(WIDE))
+
+/**
+ * An item on `attribute` measuring exactly `target` bytes, with its vector
+ * counted as `vectorBytes`: the key, the vector and a padding string. Keys are
+ * two characters, so the fixed part is the same in every comparison.
+ */
+function itemWithVector(
+  target: number,
+  key: string,
+  attribute: string,
+  dims: number,
+  vectorBytes: number,
+): Record<string, AttributeValue> {
+  expect(key, 'keys must match in length across the comparisons').toHaveLength(2)
+  const fixed = utf8Bytes('pk') + utf8Bytes(key) + utf8Bytes(attribute) + vectorBytes + utf8Bytes('pad')
+  return { pk: { S: key }, [attribute]: wideVector(dims), pad: { S: asciiOfBytes(target - fixed) } }
+}
+
+/** An item of exactly `target` billed bytes. */
+const billedItem = (target: number, key: string, attribute: string, dims: number) =>
+  itemWithVector(target, key, attribute, dims, 4 * dims)
+
+/** Write `item` and return its units. TOTAL carries the table's units and no vector figures. */
+async function writeUnits(item: Record<string, AttributeValue>): Promise<number | undefined> {
+  const res = await ddb.send(
+    new PutItemCommand({ TableName: tableName, ReturnConsumedCapacity: 'TOTAL', Item: item }),
+  )
+  return res.ConsumedCapacity?.CapacityUnits
+}
+
+describe('PutItem - a vector attribute is billed at four bytes per dimension', { tags: ['put-item', 'data-plane', 'vector'] }, () => {
+  skipUnlessVectorSearch()
+
+  it('bills a three-dimension vector at 12 bytes, whatever numbers it holds', async () => {
+    expect(await writeUnits(billedItem(1024, 'a3', THREE_DIM, 3))).toBe(1)
+    expect(await writeUnits(billedItem(1025, 'b3', THREE_DIM, 3))).toBe(2)
+  })
+
+  it('bills a six-dimension vector at 24 bytes, whatever numbers it holds', async () => {
+    expect(await writeUnits(billedItem(1024, 'a6', SIX_DIM, 6))).toBe(1)
+    expect(await writeUnits(billedItem(1025, 'b6', SIX_DIM, 6))).toBe(2)
+  })
+})
+
+// no negative-path: acceptance-mixed (asserts accepted and rejected cases)
+describe('GetItem and the 400KB gate - a vector is sized by its numbers', { tags: ['put-item', 'get-item', 'data-plane', 'vector'] }, () => {
+  skipUnlessVectorSearch()
+
+  it('charges a read for the numbers the vector holds, not its billed size', async () => {
+    const item = billedItem(4096, 'r6', SIX_DIM, 6)
+    const stored = 4096 - 4 * 6 + storedVectorBytes(6)
+    expect(stored, 'only the numbers may take the item past 4KB').toBeGreaterThan(4096)
+    expect(stored).toBeLessThanOrEqual(8192)
+
+    await ddb.send(new PutItemCommand({ TableName: tableName, Item: item }))
+    const read = await ddb.send(
+      new GetItemCommand({
+        TableName: tableName,
+        Key: { pk: item.pk },
+        ConsistentRead: true,
+        ReturnConsumedCapacity: 'TOTAL',
+      }),
+    )
+    expect(read.ConsumedCapacity?.CapacityUnits).toBe(2)
+  })
+
+  it('holds the item to 400KB with the vector sized by its numbers', async () => {
+    // Billed, both items sit 105 bytes under the gate.
+    const atGate = itemWithVector(MAX_ITEM_BYTES, 'g0', SIX_DIM, 6, storedVectorBytes(6))
+    const overGate = itemWithVector(MAX_ITEM_BYTES + 1, 'g1', SIX_DIM, 6, storedVectorBytes(6))
+
+    await ddb.send(new PutItemCommand({ TableName: tableName, Item: atGate }))
+    await expectDynamoError(
+      () => ddb.send(new PutItemCommand({ TableName: tableName, Item: overGate })),
+      'ValidationException',
+      /Item size has exceeded the maximum allowed size/,
+    )
   })
 })

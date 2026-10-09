@@ -915,6 +915,17 @@
         "put-item",
         "data-plane",
         "vector"
+      ],
+      "PutItem - a vector attribute is billed at four bytes per dimension": [
+        "put-item",
+        "data-plane",
+        "vector"
+      ],
+      "GetItem and the 400KB gate - a vector is sized by its numbers": [
+        "put-item",
+        "get-item",
+        "data-plane",
+        "vector"
       ]
     },
     "tests/tier2/vectorSearch/lifecycle.test.ts": {
