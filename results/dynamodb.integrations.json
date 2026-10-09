@@ -24,7 +24,7 @@
     "updated": 0,
     "didUpdate": false
   },
-  "startTime": 1790714194065,
+  "startTime": 1791539849605,
   "success": true,
   "testResults": [
     {
@@ -36,7 +36,7 @@
           "fullName": "Export and import — S3 ExportTableToPointInTime initiates an export and reports it",
           "status": "passed",
           "title": "ExportTableToPointInTime initiates an export and reports it",
-          "duration": 1666.8695620000008,
+          "duration": 1971.8071120000004,
           "failureMessages": [],
           "meta": {},
           "tags": [
@@ -44,7 +44,8 @@
             "control-plane",
             "cloud-only",
             "slow"
-          ]
+          ],
+          "benchmarks": []
         },
         {
           "ancestorTitles": [
@@ -53,7 +54,7 @@
           "fullName": "Export and import — S3 ImportTable ingests S3 data into a new table",
           "status": "passed",
           "title": "ImportTable ingests S3 data into a new table",
-          "duration": 195767.52912800002,
+          "duration": 141565.609898,
           "failureMessages": [],
           "meta": {},
           "tags": [
@@ -61,11 +62,12 @@
             "control-plane",
             "cloud-only",
             "slow"
-          ]
+          ],
+          "benchmarks": []
         }
       ],
-      "startTime": 1790714203082,
-      "endTime": 1790714400516.529,
+      "startTime": 1791539859526,
+      "endTime": 1791540003063.6099,
       "status": "passed",
       "message": "",
       "name": "tests/tier2/export/exportImport.test.ts"
@@ -79,7 +81,7 @@
           "fullName": "Kinesis streaming destination enables a streaming destination and reports it via Describe",
           "status": "passed",
           "title": "enables a streaming destination and reports it via Describe",
-          "duration": 11978.179379999987,
+          "duration": 12536.891933000006,
           "failureMessages": [],
           "meta": {},
           "tags": [
@@ -87,11 +89,12 @@
             "control-plane",
             "cloud-only",
             "slow"
-          ]
+          ],
+          "benchmarks": []
         }
       ],
-      "startTime": 1790714421754,
-      "endTime": 1790714433732.1794,
+      "startTime": 1791540023560,
+      "endTime": 1791540036096.8918,
       "status": "passed",
       "message": "",
       "name": "tests/tier2/kinesis/streamingDestination.test.ts"
