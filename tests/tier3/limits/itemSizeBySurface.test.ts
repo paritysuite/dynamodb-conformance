@@ -20,6 +20,7 @@ import {
   longKeyNameTableDef,
   cleanupItems,
   declareTables,
+  assertDynamoError,
   expectDynamoError,
 } from '../../../src/helpers.js'
 import {
@@ -756,19 +757,38 @@ describe('Item size limit by surface — a transacted Update does not inherit th
   skipUnlessSupported(() => ddb.send(new TransactWriteItemsCommand({ TransactItems: [] })))
 
   it('writes what UpdateItem refuses at the same key', async (ctx) => {
-    // Split behaviour (registry row transact-update-size-exclusion): flat in ten
-    // regions, see the note above updateCeilingIs.
+    // Split behaviour on the UpdateItem half (registry row
+    // transact-update-size-exclusion), see the note above updateCeilingIs.
+    //
+    // The transacted half is mid-rollout. Most regions measure a transacted
+    // Update flat, like every other write, and store the item. eu-north-1 and
+    // ap-northeast-2 started applying UpdateItem's statement-sized rule to it
+    // before the transaction runs, and eu-west-2 followed on 2026-10-08, between
+    // two ground-truth runs on main 30 minutes apart. Those three refuse it with
+    // a top-level ValidationException carrying the update wording. The test
+    // accepts either until the regions settle. Its name describes what most
+    // regions still do, and changes when one answer is pinned, alongside the
+    // results refresh a rename needs.
     const { at, item } = await keyUpdateItemRefusesAt('Y', ctx.task)
-    await ddb.send(new TransactWriteItemsCommand({
-      TransactItems: [{
-        Update: {
-          TableName: TABLE,
-          Key: { ...at },
-          UpdateExpression: 'SET p = :p',
-          ExpressionAttributeValues: { ':p': item.p },
-        },
-      }],
-    }))
-    expect(await storedBytes(at)).toBe(MAX_ITEM_BYTES)
+    let refused: unknown
+    try {
+      await ddb.send(new TransactWriteItemsCommand({
+        TransactItems: [{
+          Update: {
+            TableName: TABLE,
+            Key: { ...at },
+            UpdateExpression: 'SET p = :p',
+            ExpressionAttributeValues: { ':p': item.p },
+          },
+        }],
+      }))
+    } catch (err) {
+      refused = err
+    }
+    if (refused === undefined) {
+      expect(await storedBytes(at)).toBe(MAX_ITEM_BYTES)
+    } else {
+      assertDynamoError(refused, 'ValidationException', UPDATE_WORDING)
+    }
   })
 })
