@@ -8,6 +8,8 @@ section its date and version, so several branches can write ahead of one.
 
 ## Unreleased
 
+## 2026-10-09 (3.6.1)
+
 3.6.0 was cut but never published. eu-west-2 changed how it validates
 TransactWriteItems while the 3.6.0 measurement was running, so five tests failed
 against DynamoDB itself and no board was produced. This release carries the fix,
