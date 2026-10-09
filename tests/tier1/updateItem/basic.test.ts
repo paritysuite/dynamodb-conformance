@@ -474,8 +474,10 @@ describe('UpdateItem — ADD', { tags: ['update-item', 'data-plane'] }, () => {
         ConsistentRead: true,
       }),
     )
-    // Set order is not preserved; compare sorted.
-    expect([...result.Item!.tags.SS!].sort()).toEqual(['', 'a'])
+    // GetItem returns a set's members in DynamoDB's own order, not as written:
+    // string and binary sets bytewise, number sets by value. The empty string
+    // sorts first (eu-west-2, 2026-10-09).
+    expect(result.Item!.tags.SS).toEqual(['', 'a'])
 
     await cleanupItems(hashTableDef.name, [{ pk: { S: 'upd-add-ss-empty' } }])
   })

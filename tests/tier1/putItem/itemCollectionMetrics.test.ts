@@ -14,6 +14,7 @@ describe('ReturnItemCollectionMetrics', { tags: ['put-item', 'data-plane', 'gsi'
     { pk: { S: 'icm-del-1' }, sk: { S: 'a' } },
     { pk: { S: 'icm-upd-1' }, sk: { S: 'a' } },
     { pk: { S: 'icm-none-1' }, sk: { S: 'a' } },
+    { pk: { S: 'icm-range-1' }, sk: { S: 'a' } },
   ]
 
   afterAll(async () => {
@@ -96,6 +97,26 @@ describe('ReturnItemCollectionMetrics', { tags: ['put-item', 'data-plane', 'gsi'
     expect(result.ItemCollectionMetrics!.ItemCollectionKey).toBeDefined()
     expect(result.ItemCollectionMetrics!.SizeEstimateRangeGB).toBeDefined()
     expect(result.ItemCollectionMetrics!.SizeEstimateRangeGB).toHaveLength(2)
+  })
+
+  it('PutItem reports a small item collection as the range 0 to 1 GB', async () => {
+    // SizeEstimateRangeGB is a range of whole gigabytes the collection falls
+    // in, not a point estimate of its size: a one-item collection is [0, 1]
+    // (eu-west-2 and us-east-1, 2026-10-09).
+    const result = await ddb.send(
+      new PutItemCommand({
+        TableName: compositeIndexedTableDef.name,
+        Item: {
+          pk: { S: 'icm-range-1' },
+          sk: { S: 'a' },
+          lsi1sk: { S: 'lval' },
+          data: { S: 'hello' },
+        },
+        ReturnItemCollectionMetrics: 'SIZE',
+      }),
+    )
+
+    expect(result.ItemCollectionMetrics!.SizeEstimateRangeGB).toEqual([0, 1])
   })
 
   it('PutItem with NONE does not return ItemCollectionMetrics', async () => {

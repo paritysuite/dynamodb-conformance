@@ -5,7 +5,7 @@ import {
   type SearchVectorsCommandInput,
 } from '@aws-sdk/client-dynamodb'
 import { ddb } from '../../../src/client.js'
-import { uniqueTableName, deleteTable } from '../../../src/helpers.js'
+import { absentTableName, uniqueTableName, deleteTable } from '../../../src/helpers.js'
 import {
   skipUnlessVectorSearch,
   supportsVectorSearch,
@@ -180,5 +180,70 @@ describe('SearchVectors — exact error messages', { tags: ['search-vectors', 'd
       },
       'Search vector contains invalid values. All values in the search vector must be a 32-bit floating-point number attribute',
     )
+  })
+})
+
+describe('SearchVectors - request shape errors', { tags: ['search-vectors', 'data-plane', 'vector', 'negative-path'] }, () => {
+  skipUnlessVectorSearch()
+
+  // SearchVectors reads its body with a strict deserialiser before it
+  // validates any member. An explicit null for a member is a
+  // SerializationException quoting the deserialiser, and a missing TableName
+  // is a ValidationException naming the field; the missing field comes
+  // before a too-short IndexName. Both regions (eu-west-2, us-east-1,
+  // 2026-10-09). The column depends on the body's layout, so it is matched
+  // as a number. The table is never looked up.
+  const absent = absentTableName('vec_shape_absent')
+  const valid = { TableName: absent, IndexName: 'vix', SearchVector: [{ N: '1' }], TopK: 1 }
+
+  async function answer(command: SearchVectorsCommand): Promise<{ name: string; message: string }> {
+    try {
+      await ddb.send(command)
+    } catch (e: unknown) {
+      expect(e).toBeInstanceOf(DynamoDBServiceException)
+      const err = e as DynamoDBServiceException
+      return { name: err.name, message: err.message }
+    }
+    expect.unreachable('should have thrown')
+    return { name: '', message: '' }
+  }
+
+  // The SDK drops null members, so the body is replaced before signing.
+  function withBody(body: Record<string, unknown>): SearchVectorsCommand {
+    const command = new SearchVectorsCommand(valid as SearchVectorsCommandInput)
+    const json = JSON.stringify(body)
+    command.middlewareStack.add(
+      (next) => async (args: any) => {
+        args.request.body = json
+        args.request.headers['content-length'] = String(Buffer.byteLength(json))
+        return next(args)
+      },
+      { step: 'build', priority: 'high', name: 'searchVectorsRawBody' },
+    )
+    return command
+  }
+
+  it('refuses an explicit null member as a SerializationException', async () => {
+    const got = [
+      await answer(withBody({ ...valid, IndexName: null })),
+      await answer(withBody({ ...valid, TableName: null })),
+      await answer(withBody({ ...valid, SearchVector: null })),
+      await answer(withBody({ ...valid, TopK: null })),
+    ]
+    expect(got.map((g) => g.name)).toEqual(Array(4).fill('SerializationException'))
+    expect(got[0].message).toMatch(/^invalid type: null, expected a string at line 1 column \d+$/)
+    expect(got[1].message).toMatch(/^invalid type: null, expected a string at line 1 column \d+$/)
+    expect(got[2].message).toMatch(/^invalid type: null, expected a sequence at line 1 column \d+$/)
+    expect(got[3].message).toMatch(/^invalid type: null, expected i32 at line 1 column \d+$/)
+  })
+
+  it('names a missing TableName as a missing field, before a too-short IndexName', async () => {
+    const { TableName: _omit, ...withoutName } = valid
+    const missing = await answer(new SearchVectorsCommand(withoutName as SearchVectorsCommandInput))
+    const missingAndShort = await answer(new SearchVectorsCommand({ ...withoutName, IndexName: 'ab' } as SearchVectorsCommandInput))
+    for (const got of [missing, missingAndShort]) {
+      expect(got.name).toBe('ValidationException')
+      expect(got.message).toMatch(/^missing field `TableName` at line 1 column \d+$/)
+    }
   })
 })

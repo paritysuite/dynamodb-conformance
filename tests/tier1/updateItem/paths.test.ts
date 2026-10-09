@@ -114,9 +114,9 @@ describe('UpdateItem — nested path semantics', { tags: ['update-item', 'data-p
       }),
     )
     const list = result.Item!.mylist.L!
-    // DynamoDB appends to end when index > length, so the value lands at the end
-    expect(list.length).toBeGreaterThanOrEqual(4)
-    expect(list[list.length - 1].S).toBe('inserted')
+    // An index past the end appends: the value becomes the fourth element,
+    // with nothing padded in between (eu-west-2, 2026-10-09).
+    expect(list).toEqual([{ S: 'a' }, { S: 'b' }, { S: 'c' }, { S: 'inserted' }])
   })
 
   it('SET deeply nested path a.b.c when all intermediates exist', async () => {
