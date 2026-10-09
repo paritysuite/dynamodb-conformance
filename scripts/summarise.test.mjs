@@ -785,6 +785,48 @@ describe('tableRows tie-break', () => {
     ])
   })
 
+  it('keeps a build graded above its project nested, and places the project by its own row', () => {
+    const scored = (failed, skipped) => {
+      const count = 1000
+      const passed = count - failed - skipped
+      const rate = (passed / (passed + failed)) * 100
+      return {
+        headline: { region: 'eu-west-2', rate },
+        regions: {
+          'eu-west-2': {
+            rate,
+            passed,
+            failed,
+            skipped,
+            indeterminate: 0,
+            count,
+            tiers: {
+              tier1: { p: passed, f: failed, s: skipped, i: 0 },
+              tier2: { p: 0, f: 0, s: 0, i: 0 },
+              tier3: { p: 0, f: 0, s: 0, i: 0 },
+            },
+          },
+        },
+        version: '-',
+        runDate: '2026-10-09',
+      }
+    }
+    const summary = {
+      groundTruth: { slug: GROUND_TRUTH_SLUG, runDate: '-' },
+      targets: {
+        // The SQLite build reads an A, ahead of LocalStack, but travels with the
+        // PostgreSQL row, which is a B behind Ministack.
+        'extenddb-sqlite': scored(5, 10),
+        extenddb: scored(18, 211),
+        ministack: scored(66, 41),
+        localstack: scored(24, 43),
+      },
+    }
+    const rows = tableRows(summary).filter((r) => r.slug !== GROUND_TRUTH_SLUG)
+    expect(rows.map((r) => r.slug)).toEqual(['localstack', 'ministack', 'extenddb'])
+    expect(rows.at(-1).variants.map((v) => [v.slug, v.grade])).toEqual([['extenddb-sqlite', 'A']])
+  })
+
   it('nests a variant under its project instead of seating it as a rival', () => {
     const summary = {
       groundTruth: { slug: GROUND_TRUTH_SLUG, runDate: '-' },

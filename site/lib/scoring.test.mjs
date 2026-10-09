@@ -445,7 +445,7 @@ test("the baseline is never given a letter by any of them", () => {
 
 test("sortRows seats targets by grade, then by the effective figure within a grade", () => {
   // The run of 9 October 2026, which put a B above an A: ExtendDB diverges
-  // least of the four, but covers 78.9% of the suite, and that lowers its
+  // less than LocalStack, but covers 78.9% of the suite, and that lowers its
   // letter to B.
   const row = (slug, divergenceValue, coverageValue) => ({ slug, target: slug, divergenceValue, coverageValue });
   const rows = sortRows([
@@ -463,6 +463,20 @@ test("sortRows seats targets by grade, then by the effective figure within a gra
       ["extenddb", "B"],
     ],
   );
+});
+
+test("a build graded above its project stays nested, and the project is placed by its own row", () => {
+  // ExtendDB's SQLite build reads an A here, ahead of LocalStack, but it
+  // travels with the PostgreSQL row, which is a B behind Ministack.
+  const row = (slug, divergenceValue, coverageValue) => ({ slug, target: slug, divergenceValue, coverageValue });
+  const rows = sortRows([
+    row("extenddb-sqlite", 0.5, 99.0),
+    row("extenddb", 1.8, 78.9),
+    row("ministack", 6.6, 95.9),
+    row("localstack", 2.4, 95.7),
+  ]);
+  assert.deepEqual(rows.map((r) => r.slug), ["localstack", "ministack", "extenddb", "extenddb-sqlite"]);
+  assert.equal(gradeOf(0.5, 99.0).letter, "A");
 });
 
 // ── Which builds of a project start visible ─────────────────────────────────
