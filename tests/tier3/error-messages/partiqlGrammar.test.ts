@@ -1,12 +1,14 @@
 import {
+  BatchExecuteStatementCommand,
   ExecuteStatementCommand,
+  ExecuteTransactionCommand,
   DynamoDBServiceException,
 } from '@aws-sdk/client-dynamodb'
 import { ddb } from '../../../src/client.js'
 import { isUnsupportedFault } from '../../../src/infra.js'
-import { declareTables, hashTableDef, hashNTableDef } from '../../../src/helpers.js'
+import { declareTables, hashTableDef, hashNTableDef, compositeTableDef } from '../../../src/helpers.js'
 
-declareTables(hashTableDef, hashNTableDef)
+declareTables(hashTableDef, hashNTableDef, compositeTableDef)
 
 // Exact AWS strings for statements DynamoDB's PartiQL parser refuses, pinned
 // against real AWS (eu-west-2, October 2026). tests/tier2/partiql/grammar.test.ts
@@ -183,6 +185,131 @@ describe('PartiQL grammar - exact error messages', { tags: ['partiql', 'data-pla
     await expectMessage(
       `INSERT INTO "${N}" VALUE {'pk': 970007, 'l': [1, 1e126]}`,
       `${OVERFLOW} under root[1]`,
+    )
+  })
+
+  // ── A WHERE with nothing where a condition should start ─────────────
+
+  it.each([
+    ['WHERE at the end of a SELECT', `SELECT * FROM "${S}" WHERE`],
+    ['WHERE then a semicolon', `SELECT * FROM "${S}" WHERE;`],
+    ['WHERE then spaces', `SELECT * FROM "${S}" WHERE   `],
+    ['WHERE after a projection', `SELECT pk FROM "${S}" WHERE`],
+    ['WHERE at the end of an UPDATE', `UPDATE "${S}" SET a = 1 WHERE`],
+    ['WHERE at the end of a DELETE', `DELETE FROM "${S}" WHERE`],
+    ['WHERE NOT with nothing after it', `SELECT * FROM "${S}" WHERE NOT`],
+    ['WHERE ( with nothing after it', `SELECT * FROM "${S}" WHERE (`],
+    ['WHERE at the end, on a table that does not exist', `SELECT * FROM "${S}-never-created" WHERE`],
+  ])('%s - exact message', async (_label, statement) => {
+    await expectMessage(statement, `${NOT_WELL_FORMED}Unexpected term`)
+  })
+
+  it('a condition ending in AND - exact message', async () => {
+    await expectMessage(`SELECT * FROM "${S}" WHERE pk = 'p1' AND`, `${NOT_WELL_FORMED}Missing right-hand side expression of infix operator`)
+  })
+
+  it('a condition ending in OR - exact message', async () => {
+    await expectMessage(`SELECT * FROM "${S}" WHERE pk = 'p1' OR`, `${NOT_WELL_FORMED}Missing right-hand side expression of infix operator`)
+  })
+
+  it('WHERE followed by ORDER BY - exact message', async () => {
+    await expectMessage(`SELECT * FROM "${S}" WHERE ORDER BY pk`, `${NOT_WELL_FORMED}Unexpected keyword`)
+  })
+
+  it('an empty WHERE in ExecuteTransaction - exact message', async () => {
+    try {
+      await ddb.send(new ExecuteTransactionCommand({ TransactStatements: [{ Statement: `SELECT * FROM "${S}" WHERE` }] }))
+      expect.unreachable('should have thrown')
+    } catch (err) {
+      if (!(err instanceof DynamoDBServiceException)) throw err
+      expect(err.name).toBe('ValidationException')
+      expect(err.message).toBe(`Validation failed in TransactStatements[0]: ${NOT_WELL_FORMED}Unexpected term`)
+    }
+  })
+
+  it('an empty WHERE in BatchExecuteStatement - exact message', async () => {
+    const res = await ddb.send(new BatchExecuteStatementCommand({ Statements: [{ Statement: `SELECT * FROM "${S}" WHERE` }] }))
+    expect(res.Responses).toHaveLength(1)
+    expect(res.Responses![0].Error?.Code).toBe('ValidationError')
+    expect(res.Responses![0].Error?.Message).toBe(`${NOT_WELL_FORMED}Unexpected term`)
+  })
+
+  // ── IS with a type name, and operators where a term should start ────
+
+  it.each(['INT4', 'INT8', 'DOUBLE PRECISION', 'CHARACTER VARYING'])(
+    'IS %s parses as a type test - exact message',
+    async (type) => {
+      // A bare expression statement is refused once it parses; the refusal
+      // names the type test, so the type name was accepted.
+      await expectMessage(`x IS ${type}`, 'Unsupported operation: IsType')
+    },
+  )
+
+  it('IS with a name that is not a type, in a WHERE - exact message', async () => {
+    await expectMessage(`SELECT * FROM "${S}" WHERE pk = 'a' AND x IS FOO`, `${NOT_WELL_FORMED}Expected type name`)
+  })
+
+  it('IS where a WHERE condition should start - exact message', async () => {
+    await expectMessage(`SELECT * FROM "${S}" WHERE IS NULL`, `${NOT_WELL_FORMED}Unexpected operator`)
+  })
+
+  it('LIKE where a comparison operand should start - exact message', async () => {
+    await expectMessage(`SELECT * FROM "${S}" WHERE pk = LIKE`, `${NOT_WELL_FORMED}Unexpected operator`)
+  })
+
+  // ── A statement that stops after DELETE FROM or SELECT ... FROM ─────
+
+  it.each([
+    ['DELETE FROM', 'DELETE FROM'],
+    ['DELETE FROM then spaces', 'DELETE FROM   '],
+    ['DELETE FROM then a semicolon', 'DELETE FROM;'],
+    ['DELETE FROM then WHERE', "DELETE FROM WHERE pk = 'a'"],
+  ])('%s with no table - exact message', async (_label, statement) => {
+    await expectMessage(statement, `${NOT_WELL_FORMED}Expected identifier for simple path`)
+  })
+
+  it('SELECT * FROM with no table - exact message', async () => {
+    await expectMessage('SELECT * FROM', `${NOT_WELL_FORMED}Unexpected term`)
+  })
+
+  // ── The FROM-first UPDATE form ───────────────────────────────────────
+
+  it('FROM ... SET with no WHERE - exact message', async () => {
+    await expectMessage(`FROM "${S}" SET c = 1`, 'Where clause does not contain a mandatory equality on all key attributes')
+  })
+
+  it('FROM ... REMOVE with no WHERE - exact message', async () => {
+    await expectMessage(`FROM "${S}" REMOVE a`, 'Where clause does not contain a mandatory equality on all key attributes')
+  })
+
+  it('FROM ... WHERE on a non-key attribute ... SET - exact message', async () => {
+    await expectMessage(`FROM "${S}" WHERE a = 1 SET c = 1`, 'Where clause does not contain a mandatory equality on all key attributes')
+  })
+
+  it('FROM ... SET with the WHERE after it - exact message', async () => {
+    await expectMessage(`FROM "${S}" SET c = 1 WHERE pk = 'pq-ff-msg'`, LEFTOVER)
+  })
+
+  it('FROM ... SET ... WHERE ... SET - exact message', async () => {
+    await expectMessage(`FROM "${S}" SET c = 1 WHERE pk = 'pq-ff-msg' SET d = 2`, LEFTOVER)
+  })
+
+  it('FROM ... WHERE ... SET on a table that does not exist - exact error', async () => {
+    const err = await rejection(`FROM "${S}-never-created" WHERE pk = 'x' SET c = 1`)
+    expect(err.name).toBe('ResourceNotFoundException')
+    expect(err.message).toBe('Requested resource not found')
+  })
+
+  // ── OR branches that overlap on the sort key ─────────────────────────
+
+  it.each([
+    ['a non-key equality', "x = '1'"],
+    ['a non-key <>', "x <> '1'"],
+  ])('an OR branch with %s beside a sort-key branch - exact message', async (_label, condition) => {
+    const C = compositeTableDef.name
+    await expectMessage(
+      `SELECT * FROM "${C}" WHERE pk = 'a' AND ${condition} OR pk = 'a' AND sk = '2'`,
+      'Overlapping conditions with range keys are not supported in where clause',
     )
   })
 })

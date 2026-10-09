@@ -784,6 +784,12 @@
         "data-plane"
       ]
     },
+    "tests/tier2/partiql/fromFirstUpdate.test.ts": {
+      "PartiQL - FROM-first UPDATE": [
+        "partiql",
+        "data-plane"
+      ]
+    },
     "tests/tier2/partiql/grammar.test.ts": {
       "PartiQL - grammar": [
         "partiql",
@@ -804,6 +810,30 @@
         "data-plane",
         "gsi",
         "lsi"
+      ]
+    },
+    "tests/tier2/partiql/setFunctions.test.ts": {
+      "PartiQL - set_add and set_delete": [
+        "partiql",
+        "data-plane"
+      ]
+    },
+    "tests/tier2/partiql/whereFunctions.test.ts": {
+      "PartiQL - functions and IS in a WHERE clause": [
+        "partiql",
+        "data-plane"
+      ]
+    },
+    "tests/tier2/partiql/whereOverlap.test.ts": {
+      "PartiQL - OR branches with a negated sort-key condition": [
+        "partiql",
+        "data-plane"
+      ]
+    },
+    "tests/tier2/partiql/writeResponses.test.ts": {
+      "PartiQL - responses to writes": [
+        "partiql",
+        "data-plane"
       ]
     },
     "tests/tier2/resourcePolicy/basic.test.ts": {
@@ -1098,6 +1128,13 @@
         "negative-path"
       ]
     },
+    "tests/tier3/error-messages/partiqlFunctions.test.ts": {
+      "PartiQL functions - exact error messages": [
+        "partiql",
+        "data-plane",
+        "negative-path"
+      ]
+    },
     "tests/tier3/error-messages/partiqlGrammar.test.ts": {
       "PartiQL grammar - exact error messages": [
         "partiql",
@@ -1119,6 +1156,13 @@
         "partiql",
         "data-plane",
         "gsi",
+        "negative-path"
+      ]
+    },
+    "tests/tier3/error-messages/partiqlParameterNumbers.test.ts": {
+      "PartiQL parameters - numbers - exact error messages": [
+        "partiql",
+        "data-plane",
         "negative-path"
       ]
     },
