@@ -554,9 +554,8 @@ describe('tableRows / renderTable', () => {
     })
   })
 
-  it('orders by divergence ascending, so a narrow but correct target is not ranked below a broad wrong one', () => {
-    // beta diverges on a third of the suite; alpha on none of it. Coverage
-    // breaks ties, and neither figure is folded into the other.
+  it('orders by grade, so a target diverging nowhere sits above one diverging on a third of the suite', () => {
+    // alpha is A+; beta diverges on a third of the suite and is a D.
     const order = rows.map((r) => r.target)
     expect(order.indexOf('alpha')).toBeLessThan(order.indexOf('beta'))
   })
@@ -693,10 +692,9 @@ describe('tableRows tie-break', () => {
     runDate: '2026-07-24',
   })
 
-  // The tier columns sit beside a headline that is divergence and a sort that
-  // runs on divergence. Left as correctness they read in the opposite
-  // direction, so a target improving down the Divergence column climbs up the
-  // tier ones.
+  // The tier columns sit beside a headline that is divergence. Left as
+  // correctness they read in the opposite direction, so a target improving down
+  // the Divergence column climbs up the tier ones.
   it('reports each tier as divergence over the whole tier, not correctness', () => {
     const summary = {
       groundTruth: { slug: GROUND_TRUTH_SLUG, runDate: '-' },
@@ -741,6 +739,92 @@ describe('tableRows tie-break', () => {
     const gt = tableRows(summary).find((r) => r.slug === GROUND_TRUTH_SLUG)
     expect([gt.tier1, gt.tier2, gt.tier3]).toEqual(['0.0%', '0.0%', '0.0%'])
     expect(gt.divergence).toBe('0.0%')
+  })
+
+  it('orders by grade, so a better letter sits above a row diverging less but covering less', () => {
+    const scored = (failed, skipped) => {
+      const count = 1000
+      const passed = count - failed - skipped
+      return {
+        headline: { region: 'eu-west-2', rate: (passed / (passed + failed)) * 100 },
+        regions: {
+          'eu-west-2': {
+            rate: (passed / (passed + failed)) * 100,
+            passed,
+            failed,
+            skipped,
+            indeterminate: 0,
+            count,
+            tiers: {
+              tier1: { p: passed, f: failed, s: skipped, i: 0 },
+              tier2: { p: 0, f: 0, s: 0, i: 0 },
+              tier3: { p: 0, f: 0, s: 0, i: 0 },
+            },
+          },
+        },
+        version: '-',
+        runDate: '2026-10-09',
+      }
+    }
+    const summary = {
+      groundTruth: { slug: GROUND_TRUTH_SLUG, runDate: '-' },
+      targets: {
+        // 1.8% divergence over 78.9% coverage: a B once coverage is counted.
+        capped: scored(18, 211),
+        // 2.4% over 95.7%: an A.
+        broad: scored(24, 43),
+        // 6.6% over 95.9%: a B, ahead of capped on the effective figure.
+        middling: scored(66, 41),
+      },
+    }
+    const rows = tableRows(summary).filter((r) => r.slug !== GROUND_TRUTH_SLUG)
+    expect(rows.map((r) => [r.slug, r.grade, r.divergence, r.coverage])).toEqual([
+      ['broad', 'A', '2.4%', '95.7%'],
+      ['middling', 'B', '6.6%', '95.9%'],
+      ['capped', 'B', '1.8%', '78.9%'],
+    ])
+  })
+
+  it('keeps a build graded above its project nested, and places the project by its own row', () => {
+    const scored = (failed, skipped) => {
+      const count = 1000
+      const passed = count - failed - skipped
+      const rate = (passed / (passed + failed)) * 100
+      return {
+        headline: { region: 'eu-west-2', rate },
+        regions: {
+          'eu-west-2': {
+            rate,
+            passed,
+            failed,
+            skipped,
+            indeterminate: 0,
+            count,
+            tiers: {
+              tier1: { p: passed, f: failed, s: skipped, i: 0 },
+              tier2: { p: 0, f: 0, s: 0, i: 0 },
+              tier3: { p: 0, f: 0, s: 0, i: 0 },
+            },
+          },
+        },
+        version: '-',
+        runDate: '2026-10-09',
+      }
+    }
+    const summary = {
+      groundTruth: { slug: GROUND_TRUTH_SLUG, runDate: '-' },
+      targets: {
+        // The SQLite build reads an A, ahead of LocalStack, but travels with the
+        // PostgreSQL row, which is a B behind Ministack.
+        'extenddb-sqlite': scored(5, 10),
+        extenddb: scored(18, 211),
+        ministack: scored(66, 41),
+        localstack: scored(24, 43),
+      },
+    }
+    const rows = tableRows(summary).filter((r) => r.slug !== GROUND_TRUTH_SLUG)
+    expect(rows.map((r) => r.slug)).toEqual(['localstack', 'ministack', 'extenddb'])
+    expect(rows.at(-1).variants.map((v) => [v.slug, v.grade])).toEqual([['extenddb-sqlite', 'A']])
   })
 
   it('nests a variant under its project instead of seating it as a rival', () => {

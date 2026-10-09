@@ -33,7 +33,7 @@ Dynalite is the live case. On 24 July 2026, 88 of its failing tests became skips
 
 Implementing a sliver and getting it right still reads as 0.0%, because nothing was got wrong. The coverage figure beside it is what says how thin that surface is.
 
-The standings are ordered by divergence, which ranks how much a target gets wrong; it isn't a verdict on which emulator you should pick, because that depends on which operations you need.
+The standings are ordered by the grade below, so what a target declines counts against its place as well as its letter. That isn't a verdict on which emulator you should pick, because that depends on which operations you need.
 
 <a id="grading"></a>
 
@@ -67,7 +67,7 @@ An A+ earned in a subset of regions cannot conceal ordinary bugs behind a friend
 <!-- literal-figures: criteria, the A+ gate reading raw values, versioned in scripts/lib/grade.mjs -->
 Everything is rounded to the one decimal place the board publishes before the bands are read, so recomputing a grade from the figures on a row lands where the grader did. The A+ gate alone reads the raw values: a divergence that merely rounds to 0.0% earns an A, and a target one test short of the suite does not print 100.0% coverage.
 
-Letters compress, so two things are worth knowing at the boundaries. A target sitting near a band edge can change letter on a movement of a fraction of a point; the percentage-point figures are the finer instrument, and when a letter does change between runs the row says so beside the movement (for example "C → B"). And a letter never breaks a tie: the standings are ordered by divergence, then coverage, then name, so the order is deterministic and two targets sharing a letter still sort by their figures. The "Biggest moves" chips list the three largest movements of at least 0.1 percentage points among re-tested targets.
+Letters compress, so two things are worth knowing at the boundaries. A target sitting near a band edge can change letter on a movement of a fraction of a point; the percentage-point figures are the finer instrument, and when a letter does change between runs the row says so beside the movement (for example "C → B"). And the standings sort by grade, then within a grade by the effective figure the letter was read from, then by divergence, coverage and name for anything still tied, so the order is deterministic and two targets sharing a letter still sort by their figures. The "Biggest moves" chips list the three largest movements of at least 0.1 percentage points among re-tested targets.
 
 Every letter on the board is produced by one shared function from the two published figures and nothing else - no target is graded by different rules, the [board author's own engines](/targets/dynoxide) included - and the suite's tests assert exactly that: the published grade must equal the one recomputed from the row's own divergence and coverage. A row with no cap clause is a letter set by its divergence band alone.
 

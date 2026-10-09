@@ -92,7 +92,7 @@ const QUALIFIERS = [
   { under: 35, text: 'very high divergence' },
 ]
 
-// Grade order for capping, best first.
+// Grade order, best first. The standings sort on it (see compareGrades).
 const ORDER = ['A+', 'A', 'B', 'C', 'D', 'F']
 
 // The colour band a letter falls in, matching the board's published colour
@@ -160,6 +160,44 @@ export function gradeOf(divergenceValue, coverageValue) {
   const capped = letter !== base
 
   return { letter, qualifier, band: BAND_OF[letter], capped, capAt: capped ? letter : null }
+}
+
+// A row with no letter (nothing scored) ranks after F.
+const rankOf = (letter) => (letter === null ? ORDER.length : ORDER.indexOf(letter))
+
+// The effective figure a row's letter was read from, at the published decimal
+// as gradeOf reads it. Unscored rows carry none.
+const effectiveKeyOf = (row) =>
+  Number.isFinite(row.divergenceValue) && Number.isFinite(row.coverageValue)
+    ? effectiveOf(Number(row.divergenceValue.toFixed(1)), Number(row.coverageValue.toFixed(1)))
+    : Number.POSITIVE_INFINITY
+
+// Missing figures sort last whichever way the column runs.
+const asc = (v) => (Number.isFinite(v) ? v : Number.POSITIVE_INFINITY)
+const desc = (v) => (Number.isFinite(v) ? v : Number.NEGATIVE_INFINITY)
+const compare = (x, y) => (x < y ? -1 : x > y ? 1 : 0)
+
+/**
+ * The order the results table and the board seat targets in: by letter, best
+ * first, then by the effective figure within a letter, then by raw divergence
+ * and coverage for anything the rounding leaves tied. Returns 0 for rows the
+ * figures cannot separate, and callers break that on name.
+ *
+ * The letter leads so the order never contradicts the letters printed down it.
+ * Sorting on divergence alone seated a target that covers less of the suite,
+ * and so holds a lower letter, above a better-graded one diverging slightly
+ * more. Within a letter the effective figure decides because it is the number
+ * the letter was read from, so a row near the top of its band sits above one
+ * near the bottom.
+ */
+export function compareGrades(a, b) {
+  return (
+    rankOf(gradeOf(a.divergenceValue, a.coverageValue).letter) -
+      rankOf(gradeOf(b.divergenceValue, b.coverageValue).letter) ||
+    compare(effectiveKeyOf(a), effectiveKeyOf(b)) ||
+    compare(asc(a.divergenceValue), asc(b.divergenceValue)) ||
+    compare(desc(b.coverageValue), desc(a.coverageValue))
+  )
 }
 
 // The label the baseline wears where every other row wears a letter. Real

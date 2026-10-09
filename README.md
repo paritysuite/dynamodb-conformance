@@ -54,7 +54,7 @@ Both are shares of the whole suite, and they are never added together: an operat
 
 **Regions** counts the observed regions a target's headline matched, as evidence rather than a score: it currently over-credits a target whose assertion matches a region's answer loosely ([#138](https://github.com/paritysuite/dynamodb-conformance/issues/138)). Real DynamoDB does not answer identically everywhere, and the per-region detail is in `results/summary.json`.
 
-Rows are sorted by divergence. The tier columns are divergence within that tier, so lower is better in every column but Coverage. Behaviour varies by region and over time, so these are point-in-time figures.
+Rows are sorted by grade, and rows sharing a grade by the figure the letter is read from. The tier columns are divergence within that tier, so lower is better in every column but Coverage. Behaviour varies by region and over time, so these are point-in-time figures.
 
 `me-south-1` has been dropped from the observed set and is not scored against.
 
@@ -66,12 +66,12 @@ _Suite v3.6.1, measured against real DynamoDB on 2026-10-09. Region health as of
 | [Floci](https://github.com/floci-io/floci) | A | e97cd0c1dc2a | 0.1% | 99.4% | 1 | 7 | 0.0% | 0.0% | 0.2% | 26 of 33 |
 | [Dynoxide](https://github.com/nubo-db/dynoxide) · self-contained binary | A | 1.2.1 | 0.8% | 98.9% | 10 | 14 | 0.0% | 0.0% | 2.4% | 26 of 33 |
 | ↳ WebAssembly / OPFS | A | 1.2.1 | 0.2% | 88.0% | 2 | 152 | 0.0% | 0.0% | 0.5% | 26 of 33 |
-| [ExtendDB](https://github.com/ExtendDB/extenddb) · PostgreSQL | B | v0.1.13 | 1.8% | 78.9% | 23 | 267 | 0.0% | 0.0% | 5.4% | 26 of 33 |
-| ↳ SQLite | B | v0.1.13 | 2.1% | 83.0% | 26 | 215 | 0.0% | 1.2% | 5.2% | 26 of 33 |
 | [LocalStack](https://github.com/localstack/localstack) | A | 2026.9.1 | 2.4% | 95.7% | 31 | 54 | 0.0% | 6.1% | 2.4% | 26 of 33 |
 | [Ministack](https://github.com/ministackorg/ministack) | B | 92e9110653e4 | 6.6% | 95.9% | 84 | 52 | 0.0% | 0.3% | 19.5% | 1 of 33 |
-| [Dynalite](https://github.com/architect/dynalite) | C | 4.0.0 | 10.7% | 68.6% | 136 | 398 | 10.7% | 8.1% | 12.9% | 2 of 33 |
+| [ExtendDB](https://github.com/ExtendDB/extenddb) · PostgreSQL | B | v0.1.13 | 1.8% | 78.9% | 23 | 267 | 0.0% | 0.0% | 5.4% | 26 of 33 |
+| ↳ SQLite | B | v0.1.13 | 2.1% | 83.0% | 26 | 215 | 0.0% | 1.2% | 5.2% | 26 of 33 |
 | [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) | C | ff89bd48ff32 | 14.7% | 94.2% | 186 | 73 | 7.5% | 15.4% | 22.6% | 2 of 33 |
+| [Dynalite](https://github.com/architect/dynalite) | C | 4.0.0 | 10.7% | 68.6% | 136 | 398 | 10.7% | 8.1% | 12.9% | 2 of 33 |
 | [Kumo](https://github.com/sivchari/kumo) | F | 76e97ef55735 | 44.9% | 78.6% | 568 | 271 | 47.2% | 13.9% | 67.3% | 2 of 33 |
 <!-- results:end -->
 
@@ -97,10 +97,11 @@ versioned and dated in the
 [methodology](https://paritysuite.org/methodology#grading), which carries the
 derivation of the bands, the worked examples, and what withdrawing a test costs.
 
-Rows are ordered by divergence. That ranks how much a target gets wrong rather
-than telling you which one to pick, because that depends on the operations you
-need: a target with no divergences over a narrow surface sits high, and its
-coverage figure says how narrow.
+Rows are ordered by grade, and rows sharing a grade by the figure the letter is
+read from. The order doesn't tell you which target to pick, because that depends
+on the operations you need: a target covering a narrow surface sits lower for
+it, and if that surface is all your application uses, its divergence is the
+figure to read.
 
 An indented row (`↳`) is a second build of the project above it: the same
 engine with a storage backend swapped underneath, or compiled for somewhere

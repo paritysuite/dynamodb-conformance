@@ -7,6 +7,7 @@ import {
   COVERAGE_DIVISOR,
   GRADE_BANDS,
   GRADING_VERSION,
+  compareGrades,
   gradeOf,
 } from './grade.mjs'
 
@@ -279,5 +280,41 @@ describe('gradeOf', () => {
     // The worked example the methodology publishes.
     expect(gradeCounts(156 - 7, 8 + 7)).toBe('C')
     expect(gradeCounts(156 - 14, 8 + 14)).toBe('B')
+  })
+})
+
+describe('compareGrades', () => {
+  const row = (name, divergenceValue, coverageValue) => ({ name, divergenceValue, coverageValue })
+  const order = (rows) => [...rows].sort(compareGrades).map((r) => r.name)
+
+  it('seats a better letter first, even over a row diverging less', () => {
+    // 1.8% over 78.9% coverage reads 8.8 effective, a B; 2.4% over 95.7% reads
+    // 3.8, an A. Sorting on divergence alone put the B above the A.
+    const capped = row('capped', 1.8, 78.9)
+    const broad = row('broad', 2.4, 95.7)
+    expect(gradeOf(capped.divergenceValue, capped.coverageValue).letter).toBe('B')
+    expect(gradeOf(broad.divergenceValue, broad.coverageValue).letter).toBe('A')
+    expect(order([capped, broad])).toEqual(['broad', 'capped'])
+  })
+
+  it('orders within a letter by the effective figure the letter was read from', () => {
+    // Both B: 6.6% over 95.9% reads 8.0 effective, 1.8% over 78.9% reads 8.8.
+    expect(order([row('capped', 1.8, 78.9), row('broad', 6.6, 95.9)])).toEqual(['broad', 'capped'])
+  })
+
+  it('puts A+ above an A that rounds to the same figures', () => {
+    // One fail in a large suite prints 0.0% without being zero.
+    expect(order([row('one-fail', 0.04, 100), row('perfect', 0, 100)])).toEqual(['perfect', 'one-fail'])
+  })
+
+  it('breaks a tie the rounding leaves on raw divergence, then coverage', () => {
+    expect(order([row('more', 1.04, 100), row('less', 1.01, 100)])).toEqual(['less', 'more'])
+    expect(order([row('narrower', 1, 99.96), row('wider', 1, 99.99)])).toEqual(['wider', 'narrower'])
+  })
+
+  it('seats an unscored row after every letter, and leaves rows it cannot separate tied', () => {
+    expect(order([row('empty', null, null), row('worst', 90, 10)])).toEqual(['worst', 'empty'])
+    expect(compareGrades(row('a', 3, 97), row('b', 3, 97))).toBe(0)
+    expect(compareGrades(row('a', null, null), row('b', null, null))).toBe(0)
   })
 })

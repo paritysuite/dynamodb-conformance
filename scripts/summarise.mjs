@@ -64,7 +64,7 @@ import {
   validateMeasured,
 } from './lib/measured.mjs'
 import { isObserved, observedRegions } from './lib/observed.mjs'
-import { BASELINE_LABEL, gradeOf } from './lib/grade.mjs'
+import { BASELINE_LABEL, compareGrades, gradeOf } from './lib/grade.mjs'
 import {
   configurationOf,
   display,
@@ -669,7 +669,7 @@ const pct = (rate) => (rate === null ? '-' : `${rate.toFixed(1)}%`)
 
 // A tier's divergence: its fails over its whole size, the same shape as the
 // headline. The tier columns used to be correctness over what the tier
-// attempted, so on a row sorted by divergence a rising tier figure was the
+// attempted, so beside a divergence headline a rising tier figure was the
 // target getting better and the two columns read in opposite directions.
 // Through axesOf rather than restating it, so a tier carrying indeterminates
 // withholds its figure exactly as the headline above it does. Restated, a row
@@ -750,17 +750,9 @@ export function tableRows(summary) {
     const m = row.target.match(/^\[([^\]]+)\]/)
     return m ? m[1] : row.target
   }
-  // Ordered by what a target gets wrong, ascending, then by how much it
-  // attempts. The sort key is a risk measure rather than a verdict on which
-  // engine is better: a target with no divergences over a narrow surface is
-  // described accurately by its own two figures, so the order needs no
-  // coverage floor to stay honest. Nulls (nothing scored) sort last.
-  const asc = (v) => (v == null ? Number.POSITIVE_INFINITY : v)
-  const desc = (v) => (v == null ? Number.NEGATIVE_INFINITY : v)
-  const byRisk = (a, b) =>
-    asc(a.divergenceValue) - asc(b.divergenceValue) ||
-    desc(b.coverageValue) - desc(a.coverageValue) ||
-    sortName(a).localeCompare(sortName(b))
+  // Ordered by grade, best first, then by the figures within a grade (see
+  // compareGrades). Nulls (nothing scored) sort last.
+  const byGrade = (a, b) => compareGrades(a, b) || sortName(a).localeCompare(sortName(b))
 
   // Only projects compete for a place in the order; a variant travels with its
   // parent. Sorting variants into the same list would seat builds of one engine
@@ -775,10 +767,10 @@ export function tableRows(summary) {
   const parents = []
   for (const group of byProject.values()) {
     const parent = group.find((r) => !isVariant(r.slug)) ?? group[0]
-    parent.variants = group.filter((r) => r !== parent).sort(byRisk)
+    parent.variants = group.filter((r) => r !== parent).sort(byGrade)
     parents.push(parent)
   }
-  parents.sort(byRisk)
+  parents.sort(byGrade)
   rows.length = 0
   rows.push(...parents)
 
@@ -872,7 +864,8 @@ export function tableCaption(regions, groundTruth = null, tableDate = null, carr
       `DynamoDB does not answer identically everywhere, and the per-region detail is ` +
       `in \`results/summary.json\`.`,
 
-    `Rows are sorted by divergence. The tier columns are divergence within that tier, ` +
+    `Rows are sorted by grade, and rows sharing a grade by the figure the letter is ` +
+      `read from. The tier columns are divergence within that tier, ` +
       `so lower is better in every column but Coverage. Behaviour varies by region and ` +
       `over time, so these are point-in-time figures.`,
   ]
