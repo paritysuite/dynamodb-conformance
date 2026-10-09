@@ -798,6 +798,14 @@
         "lsi"
       ]
     },
+    "tests/tier2/partiql/multiAttributeIndex.test.ts": {
+      "PartiQL - GSI with a multi-attribute key": [
+        "partiql",
+        "data-plane",
+        "gsi",
+        "lsi"
+      ]
+    },
     "tests/tier2/resourcePolicy/basic.test.ts": {
       "Resource policies — Put/Get/Delete": [
         "resource-policy",
@@ -1103,6 +1111,14 @@
         "data-plane",
         "gsi",
         "lsi",
+        "negative-path"
+      ]
+    },
+    "tests/tier3/error-messages/partiqlMultiAttributeIndex.test.ts": {
+      "PartiQL - multi-attribute index exact error messages": [
+        "partiql",
+        "data-plane",
+        "gsi",
         "negative-path"
       ]
     },
