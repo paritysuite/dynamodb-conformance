@@ -36,15 +36,22 @@ describe('TransactWriteItems — exact error messages', { tags: ['transactions',
   skipUnlessSupported(() => ddb.send(new TransactWriteItemsCommand({ TransactItems: [] })))
 
   it('empty TransactItems: full minimum-length error', async () => {
+    // The same rollout as TransactGetItems' empty list. eu-north-1 and
+    // ap-northeast-2 gave the validation framework's generic constraint message
+    // first, and eu-west-2 switched to it on 2026-10-08, between two
+    // ground-truth runs on main 30 minutes apart. The other 30 regions still
+    // echo the empty list. The assertion accepts both exact messages and
+    // nothing else until the regions settle.
     try {
       await ddb.send(new TransactWriteItemsCommand({ TransactItems: [] }))
       expect.unreachable('should have thrown')
     } catch (err) {
       expect(err).toBeInstanceOf(DynamoDBServiceException)
       expect((err as DynamoDBServiceException).name).toBe('ValidationException')
-      expect((err as DynamoDBServiceException).message).toBe(
+      expect([
         "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1",
-      )
+        "1 validation error detected: Value at 'TransactItems' failed to satisfy constraint: Member must have length greater than or equal to 1",
+      ]).toContain((err as DynamoDBServiceException).message)
     }
   })
 

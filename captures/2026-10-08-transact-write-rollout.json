@@ -1,0 +1,1902 @@
+{
+  "capturedAt": "2026-10-08T22:06:21Z",
+  "note": "The five TransactWriteItems tests that failed the 3.6.0 measurement's ground-truth run against eu-west-2, run as the 3.6.0 suite asserts them: five times against eu-west-2 from 21:56 UTC on 2026-10-08, then once against all 33 answering regions from 22:00 UTC, each run a separate process. eu-west-2, eu-north-1 and ap-northeast-2 gave the new answer to all five, every time. The other 30 regions gave the answer the tests assert. An old answer is recorded as the test asserts it, since a pass reports nothing more; a new answer is recorded from the error the test failed on. eu-south-2 and me-central-1 never reach the transacted half of the item-size test, because their UpdateItem stores the first write.",
+  "sources": {
+    "passing ground truth on main, these tests at 09:13-09:16 UTC": "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37754956040",
+    "failing 3.6.0 measurement, these tests at 09:43-09:47 UTC": "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37758398653",
+    "eu-west-2 repeats": "2026-10-08, five runs from 21:56 UTC",
+    "all regions": "2026-10-08, one run per region from 22:00 UTC"
+  },
+  "subjects": {
+    "TransactWriteItems — exact error messages empty TransactItems: full minimum-length error": {
+      "file": "tests/tier3/error-messages/transactWriteItems.test.ts",
+      "issue": "https://github.com/paritysuite/dynamodb-conformance/issues/226",
+      "regions": {
+        "af-south-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "ap-east-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "ap-east-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "ap-northeast-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "ap-northeast-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value at 'TransactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "ap-northeast-3": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "ap-south-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "ap-south-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "ap-southeast-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "ap-southeast-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "ap-southeast-3": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "ap-southeast-4": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "ap-southeast-5": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "ap-southeast-6": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "ap-southeast-7": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "ca-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "ca-west-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "eu-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "eu-central-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "eu-north-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value at 'TransactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "eu-south-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "eu-south-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "eu-west-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "eu-west-2": {
+          "calls": 6,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value at 'TransactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "eu-west-3": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "il-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "me-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "mx-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "sa-east-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "us-east-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "us-east-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "us-west-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        },
+        "us-west-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "1 validation error detected: Value '[]' at 'transactItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+              }
+            }
+          ]
+        }
+      },
+      "newAnswerIn": [
+        "ap-northeast-2",
+        "eu-north-1",
+        "eu-west-2"
+      ],
+      "bothAnswersIn": []
+    },
+    "Nesting depth — TransactWriteItems cancels an Update that writes a 32-level value into the item with a ValidationError reason": {
+      "file": "tests/tier3/limits/nestingDepth.test.ts",
+      "issue": "https://github.com/paritysuite/dynamodb-conformance/issues/227",
+      "regions": {
+        "af-south-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "ap-east-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "ap-east-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "ap-northeast-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "ap-northeast-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+              }
+            }
+          ]
+        },
+        "ap-northeast-3": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "ap-south-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "ap-south-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "ap-southeast-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "ap-southeast-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "ap-southeast-3": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "ap-southeast-4": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "ap-southeast-5": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "ap-southeast-6": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "ap-southeast-7": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "ca-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "ca-west-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "eu-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "eu-central-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "eu-north-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+              }
+            }
+          ]
+        },
+        "eu-south-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "eu-south-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "eu-west-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "eu-west-2": {
+          "calls": 6,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+              }
+            }
+          ]
+        },
+        "eu-west-3": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "il-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "me-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "mx-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "sa-east-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "us-east-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "us-east-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "us-west-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        },
+        "us-west-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ValidationError"
+              ],
+              "reasonMessage": "matches the nesting-limit wording"
+            }
+          ]
+        }
+      },
+      "newAnswerIn": [
+        "ap-northeast-2",
+        "eu-north-1",
+        "eu-west-2"
+      ],
+      "bothAnswersIn": []
+    },
+    "Nesting depth — TransactWriteItems does not check the depth of an Update ExpressionAttributeValue (the condition is evaluated)": {
+      "file": "tests/tier3/limits/nestingDepth.test.ts",
+      "issue": "https://github.com/paritysuite/dynamodb-conformance/issues/229",
+      "regions": {
+        "af-south-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-east-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-east-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-northeast-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-northeast-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+              }
+            }
+          ]
+        },
+        "ap-northeast-3": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-south-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-south-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-southeast-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-southeast-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-southeast-3": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-southeast-4": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-southeast-5": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-southeast-6": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-southeast-7": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ca-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ca-west-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "eu-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "eu-central-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "eu-north-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+              }
+            }
+          ]
+        },
+        "eu-south-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "eu-south-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "eu-west-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "eu-west-2": {
+          "calls": 6,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+              }
+            }
+          ]
+        },
+        "eu-west-3": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "il-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "me-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "mx-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "sa-east-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "us-east-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "us-east-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "us-west-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "us-west-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        }
+      },
+      "newAnswerIn": [
+        "ap-northeast-2",
+        "eu-north-1",
+        "eu-west-2"
+      ],
+      "bothAnswersIn": []
+    },
+    "Nesting depth — TransactWriteItems does not check the depth of a ConditionCheck ExpressionAttributeValue (the condition is evaluated)": {
+      "file": "tests/tier3/limits/nestingDepth.test.ts",
+      "issue": "https://github.com/paritysuite/dynamodb-conformance/issues/228",
+      "regions": {
+        "af-south-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-east-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-east-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-northeast-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-northeast-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+              }
+            }
+          ]
+        },
+        "ap-northeast-3": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-south-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-south-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-southeast-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-southeast-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-southeast-3": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-southeast-4": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-southeast-5": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-southeast-6": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ap-southeast-7": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ca-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "ca-west-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "eu-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "eu-central-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "eu-north-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+              }
+            }
+          ]
+        },
+        "eu-south-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "eu-south-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "eu-west-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "eu-west-2": {
+          "calls": 6,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+              }
+            }
+          ]
+        },
+        "eu-west-3": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "il-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "me-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "mx-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "sa-east-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "us-east-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "us-east-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "us-west-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        },
+        "us-west-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "cancelled",
+              "cancellationReasons": [
+                "ConditionalCheckFailed"
+              ]
+            }
+          ]
+        }
+      },
+      "newAnswerIn": [
+        "ap-northeast-2",
+        "eu-north-1",
+        "eu-west-2"
+      ],
+      "bothAnswersIn": []
+    },
+    "Item size limit by surface — a transacted Update does not inherit the exclusion writes what UpdateItem refuses at the same key": {
+      "file": "tests/tier3/limits/itemSizeBySurface.test.ts",
+      "issue": "https://github.com/paritysuite/dynamodb-conformance/issues/222",
+      "regions": {
+        "af-south-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "ap-east-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "ap-east-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "ap-northeast-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "ap-northeast-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "Item size to update has exceeded the maximum allowed size"
+              }
+            }
+          ]
+        },
+        "ap-northeast-3": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "ap-south-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "ap-south-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "ap-southeast-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "ap-southeast-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "ap-southeast-3": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "ap-southeast-4": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "ap-southeast-5": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "ap-southeast-6": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "ap-southeast-7": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "ca-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "ca-west-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "eu-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "eu-central-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "eu-north-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "Item size to update has exceeded the maximum allowed size"
+              }
+            }
+          ]
+        },
+        "eu-south-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "eu-south-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "not reached",
+              "why": "UpdateItem stored the first write, which this region sizes flat (registry row transact-update-size-exclusion)"
+            }
+          ]
+        },
+        "eu-west-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "eu-west-2": {
+          "calls": 6,
+          "answers": [
+            {
+              "outcome": "rejected",
+              "error": {
+                "name": "ValidationException",
+                "message": "Item size to update has exceeded the maximum allowed size"
+              }
+            }
+          ]
+        },
+        "eu-west-3": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "il-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "me-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "not reached",
+              "why": "UpdateItem stored the first write, which this region sizes flat (registry row transact-update-size-exclusion)"
+            }
+          ]
+        },
+        "mx-central-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "sa-east-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "us-east-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "us-east-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "us-west-1": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        },
+        "us-west-2": {
+          "calls": 1,
+          "answers": [
+            {
+              "outcome": "stored",
+              "bytes": 409600
+            }
+          ]
+        }
+      },
+      "newAnswerIn": [
+        "ap-northeast-2",
+        "eu-north-1",
+        "eu-west-2"
+      ],
+      "bothAnswersIn": []
+    }
+  }
+}

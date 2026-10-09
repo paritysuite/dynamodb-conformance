@@ -9,7 +9,7 @@ import {
 } from '@aws-sdk/client-dynamodb'
 import { ddb } from '../../../src/client.js'
 import { skipUnlessSupported } from '../../../src/infra.js'
-import { declareTables, hashTableDef, cleanupItems, expectDynamoError } from '../../../src/helpers.js'
+import { declareTables, hashTableDef, cleanupItems, assertDynamoError, expectDynamoError } from '../../../src/helpers.js'
 import { observeSplit } from '../../../src/observation-sink.js'
 
 declareTables(hashTableDef)
@@ -224,6 +224,15 @@ describe('Nesting depth — TransactWriteItems', { tags: ['transactions', 'put-i
     )
   })
 
+  // The next three are mid-rollout. eu-north-1 and ap-northeast-2 started
+  // checking the depth of every value in the request before the transaction
+  // runs, and eu-west-2 followed on 2026-10-08, between two ground-truth runs on
+  // main 30 minutes apart. Those regions answer each of these tests with a
+  // top-level ValidationException; the other 30 still run the transaction and
+  // cancel it. Each test accepts either answer, exactly, until the regions
+  // settle. Their names describe what the 30 still do, and change when one
+  // answer is pinned: a rename invalidates every committed results file, so it
+  // lands with a results refresh rather than ahead of one.
   it('cancels an Update that writes a 32-level value into the item with a ValidationError reason', async () => {
     try {
       await ddb.send(
@@ -242,22 +251,24 @@ describe('Nesting depth — TransactWriteItems', { tags: ['transactions', 'put-i
       )
       expect.unreachable('should have thrown')
     } catch (err) {
-      expect(err).toBeInstanceOf(TransactionCanceledException)
-      const txErr = err as TransactionCanceledException
-      const expectedReasons = ['ValidationError'] as const
-      expect(txErr.message).toBe(
-        `Transaction cancelled, please refer cancellation reasons for specific reasons [${expectedReasons.join(', ')}]`,
-      )
-      expect(txErr.CancellationReasons?.map((r) => r.Code)).toEqual([...expectedReasons])
-      expect(txErr.CancellationReasons?.[0]?.Message).toMatch(NEST_MSG)
+      if (err instanceof TransactionCanceledException) {
+        const expectedReasons = ['ValidationError'] as const
+        expect(err.message).toBe(
+          `Transaction cancelled, please refer cancellation reasons for specific reasons [${expectedReasons.join(', ')}]`,
+        )
+        expect(err.CancellationReasons?.map((r) => r.Code)).toEqual([...expectedReasons])
+        expect(err.CancellationReasons?.[0]?.Message).toMatch(NEST_MSG)
+      } else {
+        assertDynamoError(err, 'ValidationException', NEST_MSG)
+      }
     }
   })
 
   it('does not check the depth of an Update ExpressionAttributeValue (the condition is evaluated)', async () => {
     // The value stays out of the item, so only the condition sees it. Against an
-    // item with no `data`, `#d = :deep` is false and the transaction cancels on
-    // the condition. UpdateItem rejects the same request with ValidationException
-    // in most regions.
+    // item with no `data`, `#d = :deep` is false, so a transaction that accepts
+    // the value cancels on the condition. UpdateItem rejects the same request
+    // with ValidationException in most regions.
     await ddb.send(
       new PutItemCommand({
         TableName: hashTableDef.name,
@@ -283,16 +294,17 @@ describe('Nesting depth — TransactWriteItems', { tags: ['transactions', 'put-i
       )
       expect.unreachable('should have thrown')
     } catch (err) {
-      expect(err).toBeInstanceOf(TransactionCanceledException)
-      const txErr = err as TransactionCanceledException
-      expect(txErr.CancellationReasons?.map((r) => r.Code)).toEqual(['ConditionalCheckFailed'])
+      if (err instanceof TransactionCanceledException) {
+        expect(err.CancellationReasons?.map((r) => r.Code)).toEqual(['ConditionalCheckFailed'])
+      } else {
+        assertDynamoError(err, 'ValidationException', NEST_MSG)
+      }
     }
   })
 
   it('does not check the depth of a ConditionCheck ExpressionAttributeValue (the condition is evaluated)', async () => {
-    // Against an item with no `data`, `#d = :deep` is false and the transaction
-    // cancels on the condition, which proves the value was accepted rather than
-    // rejected on depth.
+    // Against an item with no `data`, `#d = :deep` is false, so a cancellation on
+    // the condition proves the value was accepted rather than rejected on depth.
     await ddb.send(
       new PutItemCommand({
         TableName: hashTableDef.name,
@@ -317,9 +329,11 @@ describe('Nesting depth — TransactWriteItems', { tags: ['transactions', 'put-i
       )
       expect.unreachable('should have thrown')
     } catch (err) {
-      expect(err).toBeInstanceOf(TransactionCanceledException)
-      const txErr = err as TransactionCanceledException
-      expect(txErr.CancellationReasons?.map((r) => r.Code)).toEqual(['ConditionalCheckFailed'])
+      if (err instanceof TransactionCanceledException) {
+        expect(err.CancellationReasons?.map((r) => r.Code)).toEqual(['ConditionalCheckFailed'])
+      } else {
+        assertDynamoError(err, 'ValidationException', NEST_MSG)
+      }
     }
   })
 })

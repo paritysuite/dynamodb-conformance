@@ -4824,7 +4824,7 @@
         "file": "tests/tier3/limits/itemSizeBySurface.test.ts",
         "fullName": "Item size limit by surface — a transacted Update does not inherit the exclusion writes what UpdateItem refuses at the same key"
       },
-      "behaviour": "UpdateItem's item-size ceiling, measured through the UpdateItem half of the transacted Update comparison. Thirty-one regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. eu-south-2 and me-central-1 size it like any other write, capping the finished item at 409,600, and store it. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-west-1 and us-east-2 did the same on every sweep from 2026-09-05 until the 2026-10-03 one found them on the statement-sized rule, which three runs from separate processes on 2026-10-07 confirmed. ap-northeast-1, which answered both ways in September and was in no row, gave the statement-sized answer on that sweep and all three runs, and joins that side. The transacted half has started to move as well: eu-north-1 on the 2026-10-03 sweep, and ap-northeast-2 on all three 2026-10-07 runs, refused the transacted Update too, so the test fails there for a reason this row does not record. Both stay recorded on the UpdateItem half they gave.",
+      "behaviour": "UpdateItem's item-size ceiling, measured through the UpdateItem half of the transacted Update comparison. Thirty-one regions, eu-west-2 among them, size an update by what the statement writes plus a fixed cost per clause, leaving out the key and any attribute the statement does not touch, so at a short key the ceiling falls below 409,600 and the write this test makes one byte over it is refused. eu-south-2 and me-central-1 size it like any other write, capping the finished item at 409,600, and store it. ap-south-2, ap-southeast-6, ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-west-1 and us-east-2 did the same on every sweep from 2026-09-05 until the 2026-10-03 one found them on the statement-sized rule, which three runs from separate processes on 2026-10-07 confirmed. ap-northeast-1, which answered both ways in September and was in no row, gave the statement-sized answer on that sweep and all three runs, and joins that side. The transacted half is moving too. eu-north-1 and ap-northeast-2 began refusing the transacted Update before the transaction runs, and eu-west-2 followed on 2026-10-08, so the test accepts that refusal as well as the write. The row records only the UpdateItem half, which none of the three has changed.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-05",
       "lastRefreshed": "2026-10-07",
@@ -5060,7 +5060,8 @@
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/33951735838",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/36228579319",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/37110305157",
-        "captures/2026-10-07-sweep-follow-up.json"
+        "captures/2026-10-07-sweep-follow-up.json",
+        "captures/2026-10-08-transact-write-rollout.json"
       ],
       "admitted": {
         "by": "Martin Hicks",

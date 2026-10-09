@@ -8,6 +8,27 @@ section its date and version, so several branches can write ahead of one.
 
 ## Unreleased
 
+3.6.0 was cut but never published. eu-west-2 changed how it validates
+TransactWriteItems while the 3.6.0 measurement was running, so five tests failed
+against DynamoDB itself and no board was produced. This release carries the fix,
+and the changes listed under 3.6.0 are first measured here.
+
+eu-north-1 and ap-northeast-2 made the change first, and eu-west-2 followed on
+2026-10-08, between two runs on main 30 minutes apart. The three now check a
+transaction's request before running it. An empty TransactItems gets the
+validation framework's generic constraint message. A 32-level value in the
+request is refused with a top-level ValidationException, where the transaction
+used to cancel on it or go on to evaluate the condition. A transacted Update that
+UpdateItem's statement-sized rule refuses is refused the same way, where it used
+to be stored. The other 30 regions still answer as before.
+
+The five tests accept either answer, exactly, until the regions settle. No engine
+loses a test over it, and on the 3.5.0 board's results the engines that already
+refuse a 32-level value up front pass tests they used to fail: three for
+LocalStack, and one each for DynamoDB Local, ExtendDB and ExtendDB (SQLite). The
+tests keep their names, which describe what the 30 regions do, until one answer
+is pinned, because a rename needs every committed results file re-run.
+
 ## 2026-10-08 (3.6.0)
 
 BatchWriteItem's empty-RequestItems test now accepts either of the two messages
