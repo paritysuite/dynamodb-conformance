@@ -374,3 +374,47 @@ describe('PutItem — exact error messages', { tags: ['put-item', 'data-plane'] 
     }
   })
 })
+
+describe('PutItem - request validation envelope', { tags: ['put-item', 'data-plane', 'negative-path'] }, () => {
+  // Each of these is reported inside the `1 validation error detected: `
+  // envelope, and the ExpressionAttributeValues message carries no
+  // ": ConditionExpression is null" suffix. Both regions (eu-west-2,
+  // us-east-1, 2026-10-09).
+  const Item = { pk: { S: 'em-put-envelope' } }
+  const one = (m: string) => `1 validation error detected: ${m}`
+
+  async function message(input: Record<string, unknown>): Promise<string> {
+    try {
+      await ddb.send(new PutItemCommand({ TableName: hashTableDef.name, Item, ...input } as any))
+    } catch (e: unknown) {
+      expect(e).toBeInstanceOf(DynamoDBServiceException)
+      const err = e as DynamoDBServiceException
+      expect(err.name).toBe('ValidationException')
+      return err.message
+    }
+    expect.unreachable('should have thrown')
+    return ''
+  }
+
+  it('ExpressionAttributeValues or ExpressionAttributeNames without an expression', async () => {
+    expect(await message({ ExpressionAttributeValues: { ':v': { S: 'x' } } })).toBe(
+      one('ExpressionAttributeValues can only be specified when using expressions'),
+    )
+    expect(await message({ ExpressionAttributeNames: { '#a': 'a' } })).toBe(
+      one('ExpressionAttributeNames can only be specified when using expressions'),
+    )
+  })
+
+  it('an empty ConditionExpression', async () => {
+    expect(await message({ ConditionExpression: '' })).toBe(one('Invalid ConditionExpression: The expression can not be empty;'))
+  })
+
+  it('a malformed Expected condition', { tags: ['legacy'] }, async () => {
+    expect(await message({ Expected: { a: { Exists: true } } })).toBe(
+      one('One or more parameter values were invalid: Value must be provided when Exists is true for Attribute: a'),
+    )
+    expect(await message({ Expected: { a: { ComparisonOperator: 'EQ' } } })).toBe(
+      one('One or more parameter values were invalid: Value or AttributeValueList must be used with ComparisonOperator: EQ for Attribute: a'),
+    )
+  })
+})

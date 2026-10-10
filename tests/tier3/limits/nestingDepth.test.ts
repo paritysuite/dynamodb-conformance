@@ -26,6 +26,17 @@ function deepMap(depth: number): AttributeValue {
   return v
 }
 
+// The same depth built from single-element lists.
+function deepList(depth: number): AttributeValue {
+  let v: AttributeValue = { S: 'leaf' }
+  for (let i = 0; i < depth; i++) v = { L: [v] }
+  return v
+}
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 function depthOf(v: AttributeValue | undefined): number {
   let depth = 0
   while (v?.M?.n) {
@@ -35,16 +46,37 @@ function depthOf(v: AttributeValue | undefined): number {
   return depth
 }
 
-// Region wording varies; pin the invariant. AWS returns (eu-west-2):
-//   "Nesting Levels have exceeded supported limits: Attributes in the item have
-//    nested levels beyond supported limit"
-// Require both the "nest(ing|ed) levels" and "supported limit" phrases together, so an
-// unrelated ValidationException that merely mentions nesting cannot pass the assertion.
-const NEST_MSG = /nest(?:ing|ed) levels[\s\S]*supported limit/i
+// The nesting refusal comes in four exact forms, depending on the surface:
+//
+//   NEST_BARE    a transaction refusing a too deep item, and the regions that
+//                check transaction values up front (see the TransactWriteItems
+//                block below)
+//   NEST_SINGLE  UpdateItem and PutItem refusing a too deep value, inside the
+//                validation envelope
+//   nestForKey   a transaction refusing a value nested past the second limit,
+//                naming the ExpressionAttributeValues key
+//   NEST_REASON  the cancellation reason when a transaction runs and the item
+//                it would write is too deep
+//
+// Captured in us-east-1, eu-west-2, eu-central-1, eu-north-1 and
+// ap-northeast-1, 2026-10-08, and again in us-east-1 and eu-west-2, 2026-10-09.
+// A BatchWriteItem item is refused without the envelope, a PutItem item with
+// it. Both regions agree on every form below unless a test says otherwise.
+const NEST_BARE =
+  'Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit'
+const NEST_SINGLE = `1 validation error detected: ${NEST_BARE}`
+const NEST_REASON = 'Nesting Levels have exceeded supported limits'
+const nestForKey = (key: string) => `ExpressionAttributeValues contains invalid value: ${NEST_BARE} for key ${key}`
 
 // no negative-path: acceptance-mixed (asserts accepted and rejected cases)
 describe('Nesting depth — 32-level document limit', { tags: ['put-item', 'update-item', 'data-plane'] }, () => {
-  const keys = [{ pk: { S: 'nest-stored-31' } }, { pk: { S: 'nest-cond-eav' } }]
+  const keys = [
+    { pk: { S: 'nest-stored-31' } },
+    { pk: { S: 'nest-cond-eav' } },
+    // never stored by DynamoDB; cleaned up in case a target writes them
+    { pk: { S: 'nest-stored-61' } },
+    { pk: { S: 'nest-stored-63' } },
+  ]
 
   afterAll(async () => {
     await cleanupItems(hashTableDef.name, keys)
@@ -72,7 +104,7 @@ describe('Nesting depth — 32-level document limit', { tags: ['put-item', 'upda
           }),
         ),
       'ValidationException',
-      NEST_MSG,
+      new RegExp(`^${escapeRegExp(NEST_SINGLE)}$`),
     )
   })
 
@@ -125,7 +157,52 @@ describe('Nesting depth — 32-level document limit', { tags: ['put-item', 'upda
           ),
         ),
       'ValidationException',
-      NEST_MSG,
+      new RegExp(`^${escapeRegExp(NEST_SINGLE)}$`),
+    )
+  })
+
+  // Far past the limit the request is still read and refused with the nesting
+  // error, never a failure to parse the body. Somewhere between 61 and 63
+  // levels the single-item operations move to a second check: a PutItem item
+  // loses the envelope, and an UpdateItem value is refused naming its key.
+  // Both regions agree (us-east-1 and eu-west-2, 2026-10-09).
+  it('rejects a stored attribute nested 61 levels with the same message', async () => {
+    await expectDynamoError(
+      () =>
+        ddb.send(
+          new PutItemCommand({ TableName: hashTableDef.name, Item: { pk: { S: 'nest-stored-61' }, data: deepMap(61) } }),
+        ),
+      'ValidationException',
+      new RegExp(`^${escapeRegExp(NEST_SINGLE)}$`),
+    )
+  })
+
+  it('rejects a stored attribute nested 63 levels without the envelope', async () => {
+    await expectDynamoError(
+      () =>
+        ddb.send(
+          new PutItemCommand({ TableName: hashTableDef.name, Item: { pk: { S: 'nest-stored-63' }, data: deepMap(63) } }),
+        ),
+      'ValidationException',
+      new RegExp(`^${escapeRegExp(NEST_BARE)}$`),
+    )
+  })
+
+  it('rejects a 63-level ExpressionAttributeValue naming its key', async () => {
+    await expectDynamoError(
+      () =>
+        ddb.send(
+          new UpdateItemCommand({
+            TableName: hashTableDef.name,
+            Key: { pk: { S: 'nest-cond-eav' } },
+            UpdateExpression: 'SET touched = :t',
+            ConditionExpression: '#d = :deep',
+            ExpressionAttributeNames: { '#d': 'data' },
+            ExpressionAttributeValues: { ':t': { S: 'y' }, ':deep': deepMap(63) },
+          }),
+        ),
+      'ValidationException',
+      new RegExp(`^${escapeRegExp(nestForKey(':deep'))}$`),
     )
   })
 })
@@ -133,10 +210,12 @@ describe('Nesting depth — 32-level document limit', { tags: ['put-item', 'upda
 // The same 32-level cap applies to the items a batch or a transaction writes.
 // Captured against eu-west-2 and us-east-1 real DynamoDB, 2026-09-12: a too
 // deep Put item is a top-level ValidationException on both surfaces.
-// TransactWriteItems does not check the depth of ExpressionAttributeValues for
-// any action, in all 33 regions, where UpdateItem checks it in most regions
-// (registry row update-item-nesting-depth-expression-value). An Update that
-// writes a too deep value into the item still cancels on the stored-item cap.
+// TransactWriteItems does not check a 32-level ExpressionAttributeValue in most
+// regions, where UpdateItem checks it (registry row
+// update-item-nesting-depth-expression-value); a value one level deeper is a
+// different matter (the last tests in the TransactWriteItems block). An Update
+// that writes a too deep value into the item still cancels on the stored-item
+// cap.
 
 // no negative-path: acceptance-mixed (asserts accepted and rejected cases)
 describe('Nesting depth — BatchWriteItem', { tags: ['batch', 'get-item', 'data-plane'] }, () => {
@@ -177,7 +256,7 @@ describe('Nesting depth — BatchWriteItem', { tags: ['batch', 'get-item', 'data
           }),
         ),
       'ValidationException',
-      NEST_MSG,
+      new RegExp(`^${escapeRegExp(NEST_BARE)}$`),
     )
   })
 })
@@ -188,7 +267,13 @@ describe('Nesting depth — TransactWriteItems', { tags: ['transactions', 'put-i
   // operation, so this separates "not implemented" from "implemented".
   skipUnlessSupported(() => ddb.send(new TransactWriteItemsCommand({ TransactItems: [] })))
 
-  const keys = [{ pk: { S: 'nest-twi-31' } }, { pk: { S: 'nest-twi-eav' } }]
+  const keys = [
+    { pk: { S: 'nest-twi-31' } },
+    { pk: { S: 'nest-twi-eav' } },
+    // never stored by DynamoDB; cleaned up in case a target writes them
+    { pk: { S: 'nest-twi-put-33' } },
+    { pk: { S: 'nest-twi-upd-33' } },
+  ]
 
   afterAll(async () => {
     await cleanupItems(hashTableDef.name, keys)
@@ -220,7 +305,7 @@ describe('Nesting depth — TransactWriteItems', { tags: ['transactions', 'put-i
           }),
         ),
       'ValidationException',
-      NEST_MSG,
+      new RegExp(`^${escapeRegExp(NEST_BARE)}$`),
     )
   })
 
@@ -257,9 +342,11 @@ describe('Nesting depth — TransactWriteItems', { tags: ['transactions', 'put-i
           `Transaction cancelled, please refer cancellation reasons for specific reasons [${expectedReasons.join(', ')}]`,
         )
         expect(err.CancellationReasons?.map((r) => r.Code)).toEqual([...expectedReasons])
-        expect(err.CancellationReasons?.[0]?.Message).toMatch(NEST_MSG)
+        // The reason is the short sentence, not the item-level message.
+        expect(err.CancellationReasons?.[0]?.Message).toBe(NEST_REASON)
       } else {
-        assertDynamoError(err, 'ValidationException', NEST_MSG)
+        assertDynamoError(err, 'ValidationException')
+        expect((err as Error).message).toBe(NEST_BARE)
       }
     }
   })
@@ -297,7 +384,8 @@ describe('Nesting depth — TransactWriteItems', { tags: ['transactions', 'put-i
       if (err instanceof TransactionCanceledException) {
         expect(err.CancellationReasons?.map((r) => r.Code)).toEqual(['ConditionalCheckFailed'])
       } else {
-        assertDynamoError(err, 'ValidationException', NEST_MSG)
+        assertDynamoError(err, 'ValidationException')
+        expect((err as Error).message).toBe(NEST_BARE)
       }
     }
   })
@@ -332,8 +420,122 @@ describe('Nesting depth — TransactWriteItems', { tags: ['transactions', 'put-i
       if (err instanceof TransactionCanceledException) {
         expect(err.CancellationReasons?.map((r) => r.Code)).toEqual(['ConditionalCheckFailed'])
       } else {
-        assertDynamoError(err, 'ValidationException', NEST_MSG)
+        assertDynamoError(err, 'ValidationException')
+        expect((err as Error).message).toBe(NEST_BARE)
       }
     }
   })
+
+  // A second limit sits one level past the first. The 30 regions that still run
+  // the transaction with a 32-level value refuse a value nested 33 or more
+  // levels before running it, naming the key. The regions that already check
+  // every value up front (eu-north-1, ap-northeast-2, and eu-west-2 from
+  // 2026-10-08) refuse it with the bare sentence instead. Captured in us-east-1
+  // and eu-west-2, 2026-10-09, from 30 to 101 levels: lists and maps alike, on
+  // every action type, and ahead of any table lookup.
+  const NEST_33 = [nestForKey(':deep'), NEST_BARE]
+
+  it('refuses a ConditionCheck value nested 33 levels before the transaction runs', async () => {
+    try {
+      await ddb.send(
+        new TransactWriteItemsCommand({
+          TransactItems: [
+            {
+              ConditionCheck: {
+                TableName: hashTableDef.name,
+                Key: { pk: { S: 'nest-twi-eav' } },
+                ConditionExpression: '#d = :deep',
+                ExpressionAttributeNames: { '#d': 'data' },
+                ExpressionAttributeValues: { ':deep': deepMap(33) },
+              },
+            },
+          ],
+        }),
+      )
+      expect.unreachable('should have thrown')
+    } catch (err) {
+      assertDynamoError(err, 'ValidationException')
+      expect(NEST_33).toContain((err as Error).message)
+    }
+  })
+
+  it('refuses a Put whose condition compares a value nested 33 levels, and writes nothing', async () => {
+    try {
+      await ddb.send(
+        new TransactWriteItemsCommand({
+          TransactItems: [
+            {
+              Put: {
+                TableName: hashTableDef.name,
+                Item: { pk: { S: 'nest-twi-put-33' } },
+                ConditionExpression: 'attribute_not_exists(pk) AND #d <> :deep',
+                ExpressionAttributeNames: { '#d': 'data' },
+                ExpressionAttributeValues: { ':deep': deepMap(33) },
+              },
+            },
+          ],
+        }),
+      )
+      expect.unreachable('should have thrown')
+    } catch (err) {
+      assertDynamoError(err, 'ValidationException')
+      expect(NEST_33).toContain((err as Error).message)
+    }
+    const get = await ddb.send(
+      new GetItemCommand({ TableName: hashTableDef.name, Key: { pk: { S: 'nest-twi-put-33' } }, ConsistentRead: true }),
+    )
+    expect(get.Item).toBeUndefined()
+  })
+
+  it('refuses an Update writing a value nested 33 levels before the transaction runs', async () => {
+    try {
+      await ddb.send(
+        new TransactWriteItemsCommand({
+          TransactItems: [
+            {
+              Update: {
+                TableName: hashTableDef.name,
+                Key: { pk: { S: 'nest-twi-upd-33' } },
+                UpdateExpression: 'SET deep = :deep',
+                ExpressionAttributeValues: { ':deep': deepMap(33) },
+              },
+            },
+          ],
+        }),
+      )
+      expect.unreachable('should have thrown')
+    } catch (err) {
+      assertDynamoError(err, 'ValidationException')
+      expect(NEST_33).toContain((err as Error).message)
+    }
+  })
+
+  // Past 60 levels both groups of regions name the key. The request still has
+  // to be read to get there: a value this deep is a ValidationException, never
+  // a failure to parse the request body.
+  for (const [shape, build] of [['map', deepMap], ['list', deepList]] as const) {
+    it(`refuses a ConditionCheck ${shape} value nested 61 levels, naming the key`, async () => {
+      try {
+        await ddb.send(
+          new TransactWriteItemsCommand({
+            TransactItems: [
+              {
+                ConditionCheck: {
+                  TableName: hashTableDef.name,
+                  Key: { pk: { S: 'nest-twi-eav' } },
+                  ConditionExpression: '#d = :deep',
+                  ExpressionAttributeNames: { '#d': 'data' },
+                  ExpressionAttributeValues: { ':deep': build(61) },
+                },
+              },
+            ],
+          }),
+        )
+        expect.unreachable('should have thrown')
+      } catch (err) {
+        assertDynamoError(err, 'ValidationException')
+        expect((err as Error).message).toBe(nestForKey(':deep'))
+      }
+    })
+  }
 })

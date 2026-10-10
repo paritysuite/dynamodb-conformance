@@ -26,6 +26,7 @@ import {
 import {
   MAX_ITEM_BYTES,
   asciiOfBytes,
+  attributeValueBytes,
   itemBytes,
   itemOfBytes,
   utf8Bytes,
@@ -310,6 +311,40 @@ const UPDATE_BASE_COST = 3
 const SET_COST = 19
 const REMOVE_COST = 2
 
+// The rest of the clause costs, measured the same way on 2026-10-09 (eu-west-2,
+// bisected, every accepted item read back, the next byte refused; 80 probes, all
+// predicted exactly by the rules below). A clause that writes a value from the
+// request is charged 19 plus what it writes; the other kinds are charged for the
+// request, not for the item they change:
+//
+//   a path operand (`c = m.z`)      1, plus 14 and the element for each element;
+//                                   the value it reads is free
+//   a value operand (`:v`)          its size, at every use, documents included
+//   `x + y` / `x - y`               34 / 37 plus both operands; the result is free
+//   `if_not_exists(path, v)`        39 plus both operands, present or not
+//   `list_append(x, y)`             37 plus both operands
+//   ADD target :v                   19 plus the target plus v (only the members added)
+//   REMOVE target / DELETE target   1 plus the target; nothing removed is charged
+//
+// A target costs its first name, plus 4 and the element for each later element.
+// An element is a name's bytes or a list index's digits, so `REMOVE r` is the 2
+// above. The charge is checked before the ConditionExpression, which adds nothing
+// to it.
+const IF_NOT_EXISTS_COST = 39
+const PLUS_COST = 34
+const MINUS_COST = 37
+const LIST_APPEND_COST = 37
+const REMOVE_OR_DELETE_COST = 1
+
+const elementBytes = (element: string | number) =>
+  typeof element === 'number' ? String(element).length : utf8Bytes(element)
+/** What a path costs as an operand: `operandCost('m', 'z')` for `m.z`. */
+const operandCost = (...elements: (string | number)[]) =>
+  1 + elements.reduce<number>((total, element) => total + 14 + elementBytes(element), 0)
+/** What a path costs as a target: `targetCost('l', 10)` for `l[10]`. */
+const targetCost = (first: string, ...rest: (string | number)[]) =>
+  utf8Bytes(first) + rest.reduce<number>((total, element) => total + 4 + elementBytes(element), 0)
+
 // The statement-sized rule is regional. Ten regions (ap-south-2, ap-southeast-6,
 // ap-southeast-7, ca-central-1, eu-central-2, eu-south-1, eu-south-2, eu-west-1,
 // me-central-1 and us-east-2) size an UpdateItem like every other write: the
@@ -365,7 +400,10 @@ interface UpdateShape {
   untouched?: Record<string, AttributeValue>
   /** Where the padding lands. */
   padAttribute: string
-  /** 3 for the update, plus 19 per SET or ADD and 2 per REMOVE or DELETE. */
+  /**
+   * 3 for the update, plus 19 per SET or ADD, plus one byte and the path for
+   * each REMOVE or DELETE (so 2 for a one-letter name, 3 for a two-letter one).
+   */
   actionCost: number
   /** What the item must already carry for the expression to have something to do. */
   seed?: Record<string, AttributeValue>
@@ -790,5 +828,309 @@ describe('Item size limit by surface — a transacted Update does not inherit th
     } else {
       assertDynamoError(refused, 'ValidationException', UPDATE_WORDING)
     }
+  })
+})
+
+
+// no negative-path: acceptance-mixed (asserts accepted and rejected cases)
+describe('Item size limit by surface — UpdateItem charges each kind of clause', { tags: ['update-item', 'data-plane'] }, () => {
+  // Each case pins one cost against the padding ceiling: `SET b = :pad` plus the
+  // clause under test is accepted at the predicted padding and refused one byte
+  // over. Keys are short and the seeds small, so the statement's charge, not the
+  // finished item, is what binds; the read-back confirms the padding landed.
+  // Split behaviour: the ten flat regions (see the note above updateCeilingIs)
+  // store the refused write, which is what each test records for scoring.
+  interface ChargeShape {
+    /** Runs alongside `SET b = :pad`, which is prepended. */
+    clause: string
+    names?: Record<string, string>
+    values?: Record<string, AttributeValue>
+    seed?: Record<string, AttributeValue>
+    /** The clause's own charge, on top of the base and `SET b = :pad`. */
+    charge: number
+  }
+
+  const PAD_CLAUSE_COST = UPDATE_BASE_COST + SET_COST + utf8Bytes('b')
+  let n = 0
+  const pair = () => {
+    n += 1
+    const keys = { accepted: { pk: { S: `C${n}` } }, refused: { pk: { S: `D${n}` } } }
+    keysToClean.push(keys.accepted, keys.refused)
+    return keys
+  }
+
+  async function chargeCeilingIs(
+    shape: ChargeShape,
+    task?: Parameters<typeof recordObserved>[0],
+  ): Promise<number> {
+    const keys = pair()
+    const padding = MAX_ITEM_BYTES - PAD_CLAUSE_COST - shape.charge
+    const expression = shape.clause.startsWith('SET ')
+      ? `SET b = :pad, ${shape.clause.slice(4)}`
+      : `SET b = :pad ${shape.clause}`
+    const send = async (k: Record<string, AttributeValue>, bytes: number) => {
+      if (shape.seed) await ddb.send(new PutItemCommand({ TableName: TABLE, Item: { ...k, ...shape.seed } }))
+      await ddb.send(new UpdateItemCommand({
+        TableName: TABLE,
+        Key: { ...k },
+        UpdateExpression: expression,
+        ExpressionAttributeNames: shape.names,
+        ExpressionAttributeValues: { ...shape.values, ':pad': { S: asciiOfBytes(bytes) } },
+      }))
+    }
+
+    await send(keys.accepted, padding)
+    const stored = await ddb.send(new GetItemCommand({ TableName: TABLE, Key: { ...keys.accepted }, ConsistentRead: true }))
+    expect(utf8Bytes(stored.Item?.b?.S ?? '')).toBe(padding)
+
+    await expectDynamoError(
+      async () => {
+        await send(keys.refused, padding + 1)
+        await recordStoredDespiteRule(task, TABLE, keys.refused, (item) => utf8Bytes(item.b?.S ?? '') === padding + 1)
+      },
+      'ValidationException',
+      UPDATE_WORDING,
+    )
+    return padding
+  }
+
+  const one = (literal: string): AttributeValue => ({ N: literal })
+  const tenBytes = { S: 'y'.repeat(10) }
+
+  it('charges a path operand 15 bytes plus its name, not the value it copies', async (ctx) => {
+    await chargeCeilingIs({
+      clause: 'SET c = abcdefghij',
+      seed: { abcdefghij: tenBytes },
+      charge: SET_COST + targetCost('c') + operandCost('abcdefghij'),
+    }, ctx.task)
+    await chargeCeilingIs({
+      clause: 'SET c = big',
+      seed: { big: tenBytes },
+      charge: SET_COST + targetCost('c') + operandCost('big'),
+    })
+  })
+
+  it('charges a nested path operand 14 bytes plus the element for each element', async (ctx) => {
+    await chargeCeilingIs({
+      clause: 'SET c = m.z',
+      seed: { m: { M: { z: tenBytes } } },
+      charge: SET_COST + targetCost('c') + operandCost('m', 'z'),
+    }, ctx.task)
+    await chargeCeilingIs({
+      clause: 'SET c = m.a.z',
+      seed: { m: { M: { a: { M: { z: tenBytes } } } } },
+      charge: SET_COST + targetCost('c') + operandCost('m', 'a', 'z'),
+    })
+    await chargeCeilingIs({
+      clause: 'SET c = l[10]',
+      seed: { l: { L: [...Array.from({ length: 10 }, () => ({ S: 'e' })), tenBytes] } },
+      charge: SET_COST + targetCost('c') + operandCost('l', 10),
+    })
+  })
+
+  // A document value costs 3, plus 1 per element, plus each element (a map
+  // element's key included).
+  const listOf = (...sizes: number[]) => 3 + sizes.length + sizes.reduce((a, b) => a + b, 0)
+  const mapOf = (entries: Record<string, number>) =>
+    3 + Object.entries(entries).reduce((total, [k, size]) => total + 1 + utf8Bytes(k) + size, 0)
+
+  it('charges list_append 37 bytes plus its operands', async (ctx) => {
+    await chargeCeilingIs({
+      clause: 'SET l = list_append(l, :new)',
+      seed: { l: { L: [{ S: 'e' }] } },
+      values: { ':new': { L: [tenBytes] } },
+      charge: SET_COST + targetCost('l') + LIST_APPEND_COST + operandCost('l') + listOf(10),
+    }, ctx.task)
+    await chargeCeilingIs({
+      clause: 'SET l = list_append(:a, :c)',
+      seed: { l: { L: [{ S: 'e' }] } },
+      values: { ':a': { L: [{ S: 'e' }] }, ':c': { L: [tenBytes] } },
+      charge: SET_COST + targetCost('l') + LIST_APPEND_COST + listOf(1) + listOf(10),
+    })
+  })
+
+  it('charges a document value operand at its size, at every use', async (ctx) => {
+    const ifNotExists = (value: number) => SET_COST + targetCost('c') + IF_NOT_EXISTS_COST + operandCost('c') + value
+    await chargeCeilingIs({
+      clause: 'SET c = if_not_exists(c, :m)',
+      seed: { c: { S: 'c' } },
+      values: { ':m': { M: { a: { S: 'y'.repeat(100) } } } },
+      charge: ifNotExists(mapOf({ a: 100 })),
+    }, ctx.task)
+    // One value used in two clauses is charged twice.
+    const hundred = { S: 's'.repeat(100) }
+    await chargeCeilingIs({
+      clause: 'SET c = if_not_exists(c, :s), d = if_not_exists(d, :s)',
+      seed: { c: { S: 'c' }, d: { S: 'd' } },
+      values: { ':s': hundred },
+      charge:
+        ifNotExists(100) +
+        SET_COST + targetCost('d') + IF_NOT_EXISTS_COST + operandCost('d') + 100,
+    })
+  })
+
+  it('charges an addition 34 bytes plus its operands, whatever the result', async (ctx) => {
+    const charge = SET_COST + targetCost('n') + PLUS_COST + operandCost('n') + attributeValueBytes(one('1'))
+    await chargeCeilingIs({ clause: 'SET n = n + :one', seed: { n: one('1') }, values: { ':one': one('1') }, charge }, ctx.task)
+    // A 20-digit sum costs the same as 1 + 1.
+    await chargeCeilingIs({
+      clause: 'SET n = n + :one',
+      seed: { n: one('12345678901234567890') },
+      values: { ':one': one('1') },
+      charge,
+    })
+  })
+
+  it('charges a subtraction 37 bytes plus its operands', async (ctx) => {
+    await chargeCeilingIs({
+      clause: 'SET n = n - :one',
+      seed: { n: one('1') },
+      values: { ':one': one('1') },
+      charge: SET_COST + targetCost('n') + MINUS_COST + operandCost('n') + attributeValueBytes(one('1')),
+    }, ctx.task)
+  })
+
+  it('charges if_not_exists 39 bytes plus its operands, whether or not the path exists', async (ctx) => {
+    const ifNotExists = (v: AttributeValue) =>
+      SET_COST + targetCost('c') + IF_NOT_EXISTS_COST + operandCost('c') + attributeValueBytes(v)
+    await chargeCeilingIs({
+      clause: 'SET c = if_not_exists(c, :v)',
+      seed: { c: tenBytes },
+      values: { ':v': { S: 'v' } },
+      charge: ifNotExists({ S: 'v' }),
+    }, ctx.task)
+    await chargeCeilingIs({
+      clause: 'SET c = if_not_exists(c, :v)',
+      values: { ':v': tenBytes },
+      charge: ifNotExists(tenBytes),
+    })
+  })
+
+  it('charges an ADD 19 bytes plus its path and the value added', async (ctx) => {
+    await chargeCeilingIs({
+      clause: 'ADD abcdefghij :one',
+      seed: { abcdefghij: one('1') },
+      values: { ':one': one('1') },
+      charge: SET_COST + targetCost('abcdefghij') + attributeValueBytes(one('1')),
+    }, ctx.task)
+  })
+
+  it('charges an ADD to a set only for the members it adds', async (ctx) => {
+    await chargeCeilingIs({
+      clause: 'ADD ss :new',
+      seed: { ss: { SS: ['p'.repeat(5)] } },
+      values: { ':new': { SS: ['s'.repeat(500)] } },
+      charge: SET_COST + targetCost('ss') + 500,
+    }, ctx.task)
+  })
+
+  it('charges a REMOVE one byte plus its path', async (ctx) => {
+    await chargeCeilingIs({
+      clause: 'REMOVE abcdefghij',
+      seed: { abcdefghij: { S: 'r'.repeat(5) } },
+      charge: REMOVE_OR_DELETE_COST + targetCost('abcdefghij'),
+    }, ctx.task)
+    // A map step adds 4 and the key.
+    await chargeCeilingIs({
+      clause: 'REMOVE m.yyyyyyyyyy',
+      seed: { m: { M: { x: tenBytes, yyyyyyyyyy: { S: 'r' } } } },
+      charge: REMOVE_OR_DELETE_COST + targetCost('m', 'yyyyyyyyyy'),
+    })
+  })
+
+  it('charges a REMOVE through a list index 4 bytes plus its digits', async (ctx) => {
+    await chargeCeilingIs({
+      clause: 'REMOVE abcdefghij[1]',
+      seed: { abcdefghij: { L: [tenBytes, { S: 'r' }] } },
+      charge: REMOVE_OR_DELETE_COST + targetCost('abcdefghij', 1),
+    }, ctx.task)
+    await chargeCeilingIs({
+      clause: 'REMOVE l[10]',
+      seed: { l: { L: Array.from({ length: 11 }, () => ({ S: 'e' })) } },
+      charge: REMOVE_OR_DELETE_COST + targetCost('l', 10),
+    })
+  })
+
+  it('charges a DELETE one byte plus its path, not the members it removes', async (ctx) => {
+    await chargeCeilingIs({
+      clause: 'DELETE abcdefghij :rm',
+      seed: { abcdefghij: { SS: ['p'.repeat(5), 'q'.repeat(20)] } },
+      values: { ':rm': { SS: ['q'.repeat(20)] } },
+      charge: REMOVE_OR_DELETE_COST + targetCost('abcdefghij'),
+    }, ctx.task)
+    await chargeCeilingIs({
+      clause: 'DELETE ss :rm',
+      seed: { ss: { SS: ['p'.repeat(5), 'q'.repeat(20), 'r'.repeat(30)] } },
+      values: { ':rm': { SS: ['q'.repeat(20), 'r'.repeat(30)] } },
+      charge: REMOVE_OR_DELETE_COST + targetCost('ss'),
+    })
+  })
+})
+
+// no negative-path: acceptance-mixed (asserts accepted and rejected cases)
+describe('Item size limit by surface — AttributeUpdates sizes the finished item', { tags: ['update-item', 'legacy', 'data-plane'] }, () => {
+  // The legacy parameter has none of the statement sizing: the ceiling is the
+  // finished item, key and untouched attributes included, exactly 409,600.
+  // Captured in eu-west-2 on 2026-10-09 with and without an untouched attribute.
+  for (const [label, untouched] of [['alone', {}], ['beside an untouched attribute', { u: { S: 'y'.repeat(10) } }]] as const) {
+    it(`caps the finished item at exactly 409,600 ${label}`, async () => {
+      const accepted = key(`au-${label.length}-at`)
+      const refused = key(`au-${label.length}-over`)
+      const padding = (k: Record<string, AttributeValue>) =>
+        MAX_ITEM_BYTES - itemBytes(k) - utf8Bytes('b') - itemBytes(untouched)
+      const send = async (k: Record<string, AttributeValue>, bytes: number) => {
+        if (Object.keys(untouched).length > 0) {
+          await ddb.send(new PutItemCommand({ TableName: TABLE, Item: { ...k, ...untouched } }))
+        }
+        await ddb.send(new UpdateItemCommand({
+          TableName: TABLE,
+          Key: { ...k },
+          AttributeUpdates: { b: { Action: 'PUT', Value: { S: asciiOfBytes(bytes) } } },
+        }))
+      }
+      await send(accepted, padding(accepted))
+      const stored = await ddb.send(new GetItemCommand({ TableName: TABLE, Key: { ...accepted }, ConsistentRead: true }))
+      expect(itemBytes(stored.Item as Record<string, AttributeValue>)).toBe(MAX_ITEM_BYTES)
+      await expectDynamoError(() => send(refused, padding(refused) + 1), 'ValidationException', UPDATE_WORDING)
+    })
+  }
+})
+
+// no negative-path: acceptance-mixed (asserts accepted and rejected cases)
+describe('Item size limit by surface — UpdateItem checks the charge before the condition', { tags: ['update-item', 'data-plane'] }, () => {
+  // `SET c = if_not_exists(c, :huge)` on an item that already holds `c` leaves
+  // the item tiny, but the statement carries 409,700 bytes. The charge is
+  // refused before the ConditionExpression is evaluated: a failing condition
+  // still gets the size refusal, not ConditionalCheckFailedException, and a
+  // passing one is refused too. Captured in eu-west-2, 2026-10-09. A region that
+  // sizes the finished item answers the failing condition and stores the rest,
+  // which is what the passing case records.
+  const huge = { S: 'h'.repeat(409_700) }
+  const send = async (k: Record<string, AttributeValue>, condition?: string) => {
+    await ddb.send(new PutItemCommand({ TableName: TABLE, Item: { ...k, c: { S: 'x' } } }))
+    await ddb.send(new UpdateItemCommand({
+      TableName: TABLE,
+      Key: { ...k },
+      UpdateExpression: 'SET c = if_not_exists(c, :huge)',
+      ConditionExpression: condition,
+      ExpressionAttributeValues: { ':huge': huge },
+    }))
+  }
+
+  it('refuses an over-limit charge even when the condition would fail', async () => {
+    await expectDynamoError(() => send(key('order-fails'), 'attribute_exists(nope)'), 'ValidationException', UPDATE_WORDING)
+  })
+
+  it('refuses an over-limit charge when the condition passes, and with no condition', async (ctx) => {
+    const passing = key('order-passes')
+    await expectDynamoError(
+      async () => {
+        await send(passing, 'attribute_exists(c)')
+        await recordStoredDespiteRule(ctx.task, TABLE, passing, () => true)
+      },
+      'ValidationException',
+      UPDATE_WORDING,
+    )
+    await expectDynamoError(() => send(key('order-none')), 'ValidationException', UPDATE_WORDING)
   })
 })

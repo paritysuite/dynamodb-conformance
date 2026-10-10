@@ -166,6 +166,35 @@ describe('BatchGetItem — exact error messages', { tags: ['batch', 'data-plane'
       expect((err as DynamoDBServiceException).name).toBe('ValidationException')
     }
   })
+
+  // Captured in us-east-1 and eu-west-2, 2026-10-09; both regions agree. A
+  // malformed table name is a constraint on the RequestItems map's keys, and the
+  // message echoes the map as JSON.
+  it('malformed table name: full map-keys constraint message', async () => {
+    try {
+      await ddb.send(new BatchGetItemCommand({ RequestItems: { 'bad!name': { Keys: [{ pk: { S: 'a' } }] } } }))
+      expect.unreachable('should have thrown')
+    } catch (err) {
+      expect(err).toBeInstanceOf(DynamoDBServiceException)
+      expect((err as DynamoDBServiceException).name).toBe('ValidationException')
+      expect((err as DynamoDBServiceException).message).toBe(
+        `1 validation error detected: Value '{"bad!name":{"Keys":[{"pk":{"S":"a"}}]}}' at 'requestItems' failed to satisfy constraint: Map keys must satisfy constraint: [Member must have length less than or equal to 255, Member must have length greater than or equal to 3, Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+]`,
+      )
+    }
+  })
+
+  it('empty Keys list: full minimum-length message', async () => {
+    try {
+      await ddb.send(new BatchGetItemCommand({ RequestItems: { [hashTableDef.name]: { Keys: [] } } }))
+      expect.unreachable('should have thrown')
+    } catch (err) {
+      expect(err).toBeInstanceOf(DynamoDBServiceException)
+      expect((err as DynamoDBServiceException).name).toBe('ValidationException')
+      expect((err as DynamoDBServiceException).message).toBe(
+        `1 validation error detected: Value at 'RequestItems.${hashTableDef.name}.member.Keys' failed to satisfy constraint: Member must have length greater than or equal to 1`,
+      )
+    }
+  })
 })
 
 describe('BatchGetItem — ProjectionExpression rejection messages', { tags: ['batch', 'data-plane', 'negative-path'] }, () => {

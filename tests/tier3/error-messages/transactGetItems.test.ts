@@ -148,4 +148,44 @@ describe('TransactGetItems — exact error messages', { tags: ['transactions', '
       ])
     }
   })
+
+  it('malformed table name: top-level ValidationException naming the member', async () => {
+    // A request-level constraint, not a cancellation reason: the message names
+    // the action's position. Captured in us-east-1 and eu-west-2, 2026-10-09.
+    try {
+      await ddb.send(
+        new TransactGetItemsCommand({
+          TransactItems: [{ Get: { TableName: 'bad!name', Key: { pk: { S: 'a' } } } }],
+        }),
+      )
+      expect.unreachable('should have thrown')
+    } catch (err) {
+      expect(err).toBeInstanceOf(DynamoDBServiceException)
+      expect(err).not.toBeInstanceOf(TransactionCanceledException)
+      expect((err as DynamoDBServiceException).name).toBe('ValidationException')
+      expect((err as DynamoDBServiceException).message).toBe(
+        "1 validation error detected: Value 'bad!name' at 'transactItems.1.member.get.tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+",
+      )
+    }
+  })
+
+  it('malformed table name on the second Get: the message names its position', async () => {
+    try {
+      await ddb.send(
+        new TransactGetItemsCommand({
+          TransactItems: [
+            { Get: { TableName: hashTableDef.name, Key: { pk: { S: 'a' } } } },
+            { Get: { TableName: 'bad!name', Key: { pk: { S: 'a' } } } },
+          ],
+        }),
+      )
+      expect.unreachable('should have thrown')
+    } catch (err) {
+      expect(err).toBeInstanceOf(DynamoDBServiceException)
+      expect((err as DynamoDBServiceException).name).toBe('ValidationException')
+      expect((err as DynamoDBServiceException).message).toBe(
+        "1 validation error detected: Value 'bad!name' at 'transactItems.2.member.get.tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+",
+      )
+    }
+  })
 })

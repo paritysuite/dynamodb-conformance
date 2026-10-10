@@ -131,6 +131,30 @@ describe('UpdateItem — exact error messages', { tags: ['update-item', 'data-pl
     }
   })
 
+  it('undefined value in the ConditionExpression beside a defined one: full error string', async () => {
+    // The UpdateExpression's own value is defined, so the condition is the
+    // only problem. Enveloped, naming the expression and the value (eu-west-2
+    // and us-east-1, 2026-10-09).
+    try {
+      await ddb.send(
+        new UpdateItemCommand({
+          TableName: hashTableDef.name,
+          Key: { pk: { S: 'em-upd-key-mod' } },
+          UpdateExpression: 'SET b = :w',
+          ConditionExpression: 'a = :v',
+          ExpressionAttributeValues: { ':w': { S: 'x' } },
+        }),
+      )
+      expect.unreachable('should have thrown')
+    } catch (err) {
+      expect(err).toBeInstanceOf(DynamoDBServiceException)
+      expect((err as DynamoDBServiceException).name).toBe('ValidationException')
+      expect((err as DynamoDBServiceException).message).toBe(
+        '1 validation error detected: Invalid ConditionExpression: An expression attribute value used in expression is not defined; attribute value: :v',
+      )
+    }
+  })
+
   it('mixing UpdateExpression with AttributeUpdates', { tags: ['legacy'] }, async () => {
     try {
       await ddb.send(

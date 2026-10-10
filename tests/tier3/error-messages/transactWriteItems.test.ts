@@ -1,6 +1,7 @@
 import {
   TransactWriteItemsCommand,
   PutItemCommand,
+  GetItemCommand,
   DynamoDBServiceException,
   ResourceNotFoundException,
   TransactionCanceledException,
@@ -372,4 +373,122 @@ describe('TransactWriteItems — exact error messages', { tags: ['transactions',
     expectTopLevelValidation(cmd(delKeyB(emptyBin)), emptyBinKeyMsg))
   it('ConditionCheck empty-binary Key: top-level empty-value message', () =>
     expectTopLevelValidation(cmd(ccKeyB(emptyBin)), emptyBinKeyMsg))
+
+  // Request-level checks that run before any action does. Captured in
+  // us-east-1 and eu-west-2, 2026-10-08 and 2026-10-09.
+  it('Put malformed table name: top-level message naming the member', () =>
+    expectTopLevelValidation(
+      cmd({ Put: { TableName: 'bad!name', Item: { pk: { S: 'a' } } } }),
+      "1 validation error detected: Value 'bad!name' at 'transactItems.1.member.put.tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+",
+    ))
+
+  // The member path names the action's position and its type.
+  const badName = (path: string) =>
+    `1 validation error detected: Value 'bad!name' at 'transactItems.${path}.tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+`
+
+  it('Update malformed table name on the second action: top-level message naming the member', () =>
+    expectTopLevelValidation(
+      new TransactWriteItemsCommand({
+        TransactItems: [
+          { Put: { TableName: hashTableDef.name, Item: { pk: { S: 'em-twi-badname-first' } } } },
+          { Update: { TableName: 'bad!name', Key: { pk: { S: 'a' } }, UpdateExpression: 'SET a = :a', ExpressionAttributeValues: { ':a': { S: 'x' } } } },
+        ],
+      }),
+      badName('2.member.update'),
+    ))
+
+  it('Delete malformed table name: top-level message naming the member', () =>
+    expectTopLevelValidation(cmd({ Delete: { TableName: 'bad!name', Key: { pk: { S: 'a' } } } }), badName('1.member.delete')))
+
+  it('ConditionCheck malformed table name: top-level message naming the member', () =>
+    expectTopLevelValidation(
+      cmd({ ConditionCheck: { TableName: 'bad!name', Key: { pk: { S: 'a' } }, ConditionExpression: 'attribute_exists(pk)' } }),
+      badName('1.member.conditionCheck'),
+    ))
+
+  it('Put empty ConditionExpression: top-level empty-expression message', () =>
+    expectTopLevelValidation(
+      cmd({ Put: { TableName: hashTableDef.name, Item: { pk: { S: 'em-twi-empty-put' } }, ConditionExpression: '' } }),
+      'Invalid ConditionExpression: The expression can not be empty;',
+    ))
+
+  it('Delete empty ConditionExpression: top-level empty-expression message', () =>
+    expectTopLevelValidation(
+      cmd({ Delete: { TableName: hashTableDef.name, Key: { pk: { S: 'em-twi-empty-del' } }, ConditionExpression: '' } }),
+      'Invalid ConditionExpression: The expression can not be empty;',
+    ))
+
+  it('ConditionCheck empty ConditionExpression: top-level empty-expression message', () =>
+    expectTopLevelValidation(
+      cmd({ ConditionCheck: { TableName: hashTableDef.name, Key: { pk: { S: 'em-twi-cc' } }, ConditionExpression: '' } }),
+      'Invalid ConditionExpression: The expression can not be empty;',
+    ))
+
+  it('ConditionCheck malformed ConditionExpression: top-level syntax message', () =>
+    expectTopLevelValidation(
+      cmd({ ConditionCheck: { TableName: hashTableDef.name, Key: { pk: { S: 'em-twi-cc' } }, ConditionExpression: 'attribute_not_exists(' } }),
+      'Invalid ConditionExpression: Syntax error; token: "<EOF>", near: "("',
+    ))
+
+  it('ConditionCheck unused ExpressionAttributeValues: top-level message', () =>
+    expectTopLevelValidation(
+      cmd({
+        ConditionCheck: {
+          TableName: hashTableDef.name,
+          Key: { pk: { S: 'em-twi-cc' } },
+          ConditionExpression: 'attribute_not_exists(pk)',
+          ExpressionAttributeValues: { ':v': { S: 'x' } },
+        },
+      }),
+      'Value provided in ExpressionAttributeValues unused in expressions: keys: {:v}',
+    ))
+
+  for (const [action, item] of [
+    ['Put', { Put: { TableName: hashTableDef.name, Item: { pk: { S: 'em-twi-unused-put' } }, ConditionExpression: 'attribute_not_exists(pk)', ExpressionAttributeValues: { ':v': { S: 'x' } } } }],
+    ['Update', { Update: { TableName: hashTableDef.name, Key: { pk: { S: 'em-twi-unused-upd' } }, UpdateExpression: 'SET a = :a', ExpressionAttributeValues: { ':a': { S: 'x' }, ':v': { S: 'x' } } } }],
+    ['Delete', { Delete: { TableName: hashTableDef.name, Key: { pk: { S: 'em-twi-unused-del' } }, ConditionExpression: 'attribute_exists(pk)', ExpressionAttributeValues: { ':v': { S: 'x' } } } }],
+  ] as const) {
+    it(`${action} unused ExpressionAttributeValues: top-level message`, () =>
+      expectTopLevelValidation(cmd(item), 'Value provided in ExpressionAttributeValues unused in expressions: keys: {:v}'))
+  }
+
+  it('unused value on the second action: nothing is written', async () => {
+    const first = { pk: { S: 'em-twi-unused-first' } }
+    await expectTopLevelValidation(
+      new TransactWriteItemsCommand({
+        TransactItems: [
+          { Put: { TableName: hashTableDef.name, Item: first } },
+          {
+            ConditionCheck: {
+              TableName: hashTableDef.name,
+              Key: { pk: { S: 'em-twi-cc' } },
+              ConditionExpression: 'attribute_not_exists(pk)',
+              ExpressionAttributeValues: { ':v': { S: 'x' } },
+            },
+          },
+        ],
+      }),
+      'Value provided in ExpressionAttributeValues unused in expressions: keys: {:v}',
+    )
+    const got = await ddb.send(new GetItemCommand({ TableName: hashTableDef.name, Key: first, ConsistentRead: true }))
+    expect(got.Item).toBeUndefined()
+    await cleanupItems(hashTableDef.name, [first])
+  })
+
+  it('action with no operation: top-level message', async () => {
+    // Regional while the validation framework rolls out: eu-west-2 names the
+    // constraint against the list, us-east-1 keeps its own sentence. Both are
+    // exact; nothing else passes.
+    try {
+      await ddb.send(new TransactWriteItemsCommand({ TransactItems: [{}] as TransactWriteItem[] }))
+      expect.unreachable('should have thrown')
+    } catch (err) {
+      expect(err).toBeInstanceOf(DynamoDBServiceException)
+      expect((err as DynamoDBServiceException).name).toBe('ValidationException')
+      expect([
+        "1 validation error detected: Value '' at 'transactItems' failed to satisfy constraint: TransactWriteRequest should contain Delete or Put or Update or ConditionCheck",
+        'Invalid Request: TransactWriteRequest should contain Delete or Put or Update request',
+      ]).toContain((err as DynamoDBServiceException).message)
+    }
+  })
 })

@@ -202,4 +202,49 @@ describe('BatchWriteItem — exact error messages', { tags: ['batch', 'data-plan
       'One or more parameter values are not valid. The AttributeValue for a key attribute cannot contain an empty binary value. Key: pk',
     )
   })
+
+  // Captured in us-east-1 and eu-west-2, 2026-10-09; both regions agree.
+  it('item without the partition key: full schema-mismatch message', async () => {
+    await expectExactValidation(
+      new BatchWriteItemCommand({
+        RequestItems: { [hashTableDef.name]: [{ PutRequest: { Item: { other: { S: 'x' } } } }] },
+      }),
+      'The provided key element does not match the schema',
+    )
+  })
+
+  it('delete key without the partition key: full schema-mismatch message', async () => {
+    await expectExactValidation(
+      new BatchWriteItemCommand({
+        RequestItems: { [hashTableDef.name]: [{ DeleteRequest: { Key: { other: { S: 'x' } } } }] },
+      }),
+      'The provided key element does not match the schema',
+    )
+  })
+
+  it('empty request list for a table: full map-value constraint message', async () => {
+    await expectExactValidation(
+      new BatchWriteItemCommand({ RequestItems: { [hashTableDef.name]: [] } }),
+      `1 validation error detected: Value '{${hashTableDef.name}=[]}' at 'requestItems' failed to satisfy constraint: Map value must satisfy constraint: [Member must have length less than or equal to 25, Member must have length greater than or equal to 1]`,
+    )
+  })
+
+  it('malformed table name: anchored regex on the map-keys constraint', async () => {
+    // The request is echoed in Java's toString form, and the regions print it
+    // differently (eu-west-2 shows each value as an object hash, us-east-1 its
+    // fields), so the echo floats. The table name has to be named in it, and
+    // the constraint after it is exact.
+    try {
+      await ddb.send(
+        new BatchWriteItemCommand({ RequestItems: { 'bad!name': [{ PutRequest: { Item: { pk: { S: 'x' } } } }] } }),
+      )
+      expect.unreachable('should have thrown')
+    } catch (err) {
+      expect(err).toBeInstanceOf(DynamoDBServiceException)
+      expect((err as DynamoDBServiceException).name).toBe('ValidationException')
+      expect((err as DynamoDBServiceException).message).toMatch(
+        /^1 validation error detected: Value '\{bad!name=\[WriteRequest\(putRequest=PutRequest\(item=\{pk=.+\}.*\)\]\}' at 'requestItems' failed to satisfy constraint: Map keys must satisfy constraint: \[Member must have length less than or equal to 255, Member must have length greater than or equal to 3, Member must satisfy regular expression pattern: \[a-zA-Z0-9_.-\]\+\]$/,
+      )
+    }
+  })
 })
