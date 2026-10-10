@@ -58,7 +58,7 @@ Rows are sorted by grade, and rows sharing a grade by the figure the letter is r
 
 `me-south-1` has been dropped from the observed set and is not scored against.
 
-_Suite v3.6.1, measured against real DynamoDB on 2026-10-09. Region health as of 2026-10-03._
+_Suite v3.6.1, measured against real DynamoDB on 2026-10-09. Region health as of 2026-10-10._
 
 | Target | Grade | Version | Divergence | Coverage | Fail | Skip | Tier 1 | Tier 2 | Tier 3 | Regions |
 |--------|-------|---------|-----------|----------|------|------|--------|--------|--------|---------|
