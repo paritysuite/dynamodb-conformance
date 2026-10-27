@@ -19,6 +19,7 @@ import {
   enablePitr,
 } from '../../../src/helpers.js'
 import { isUnsupportedFault, withS3Bucket } from '../../../src/infra.js'
+import { IndeterminateError } from '../../../src/indeterminate.js'
 
 // Table export and import via S3. Both run asynchronously (minutes), so export
 // asserts initiation; import waits for COMPLETED while the bucket is still alive
@@ -129,9 +130,14 @@ describe('Export and import — S3', { tags: ['export-import', 'control-plane', 
           }
           break
         }
-        if (Date.now() - start > 270_000) throw new Error('import did not finish in time')
+        // Real imports have crept from under two minutes to past four, so the
+        // ceiling leaves room. Running out of it is a failed observation, not
+        // an answer, so it never scores as a divergence.
+        if (Date.now() - start > 600_000) {
+          throw new IndeterminateError('import-timeout', `import ${importArn} was still IN_PROGRESS after 600s`)
+        }
         await sleep(5000)
       }
     })
-  }, 360_000)
+  }, 690_000)
 })

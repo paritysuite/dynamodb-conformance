@@ -8,6 +8,12 @@ section its date and version, so several branches can write ahead of one.
 
 ## Unreleased
 
+The S3 ImportTable test now waits up to ten minutes for the import to finish,
+and an import still running at that point is recorded as indeterminate rather
+than as a failure. Real imports have slowed from under two minutes in September
+to past four, and on 2026-10-25 one ran past the old 270-second ceiling, so
+DynamoDB itself was scored as failing its own test.
+
 ## 2026-10-22 (3.7.0)
 
 The suite grows from 1,266 tests to 1,678, so every target's figures move. The
