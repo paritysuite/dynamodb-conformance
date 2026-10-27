@@ -24,7 +24,7 @@
     "updated": 0,
     "didUpdate": false
   },
-  "startTime": 1793101906219,
+  "startTime": 1793122741182,
   "success": true,
   "testResults": [
     {
@@ -36,7 +36,7 @@
           "fullName": "Export and import — S3 ExportTableToPointInTime initiates an export and reports it",
           "status": "passed",
           "title": "ExportTableToPointInTime initiates an export and reports it",
-          "duration": 1657.4050659999994,
+          "duration": 2044.7569810000005,
           "failureMessages": [],
           "meta": {},
           "tags": [
@@ -54,7 +54,7 @@
           "fullName": "Export and import — S3 ImportTable ingests S3 data into a new table",
           "status": "passed",
           "title": "ImportTable ingests S3 data into a new table",
-          "duration": 165330.497255,
+          "duration": 461295.267857,
           "failureMessages": [],
           "meta": {},
           "tags": [
@@ -66,8 +66,8 @@
           "benchmarks": []
         }
       ],
-      "startTime": 1793101915406,
-      "endTime": 1793102082393.4973,
+      "startTime": 1793122752991,
+      "endTime": 1793123216330.2678,
       "status": "passed",
       "message": "",
       "name": "tests/tier2/export/exportImport.test.ts"
@@ -81,7 +81,7 @@
           "fullName": "Kinesis streaming destination enables a streaming destination and reports it via Describe",
           "status": "passed",
           "title": "enables a streaming destination and reports it via Describe",
-          "duration": 11936.88427000001,
+          "duration": 12649.110991000023,
           "failureMessages": [],
           "meta": {},
           "tags": [
@@ -93,8 +93,8 @@
           "benchmarks": []
         }
       ],
-      "startTime": 1793102103898,
-      "endTime": 1793102115834.8843,
+      "startTime": 1793123239162,
+      "endTime": 1793123251811.111,
       "status": "passed",
       "message": "",
       "name": "tests/tier2/kinesis/streamingDestination.test.ts"
