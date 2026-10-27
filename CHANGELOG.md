@@ -8,6 +8,14 @@ section its date and version, so several branches can write ahead of one.
 
 ## Unreleased
 
+eu-south-2 joins eu-west-2 on the fourteen UpdateItem size, validation-ordering
+and nesting-depth rows, which leaves me-central-1 the only region on the other
+side of them. us-east-1 joins it on the five Scan rows, leaving 12 regions on the
+old wording. Both gave the new answer on all three runs on 2026-10-22, and the
+2026-10-24 sweep agreed. That sweep also found five more regions on the new Scan
+wording and eu-north-1 back on the old one, which no separate run has confirmed,
+so those regions keep their recorded answers.
+
 The S3 ImportTable test now waits up to ten minutes for the import to finish,
 and an import still running at that point is recorded as indeterminate rather
 than as a failure. Real imports have slowed from under two minutes in September
