@@ -58,21 +58,21 @@ Rows are sorted by grade, and rows sharing a grade by the figure the letter is r
 
 `me-central-1` did not resolve the latest sweep and carries forward the last resolved data. `me-south-1` has been dropped from the observed set and is not scored against.
 
-_Suite v3.7.0, measured against real DynamoDB on 2026-10-22. Region health as of 2026-10-24._
+_Suite v3.7.0, measured against real DynamoDB on 2026-10-27. Region health as of 2026-10-24._
 
 | Target | Grade | Version | Divergence | Coverage | Fail | Skip | Tier 1 | Tier 2 | Tier 3 | Regions |
 |--------|-------|---------|-----------|----------|------|------|--------|--------|--------|---------|
 | [DynamoDB](https://aws.amazon.com/dynamodb/) | baseline | live (AWS) | 0.0% | 100.0% | 0 | 0 | 0.0% | 0.0% | 0.0% | 33 of 33 |
-| [Dynoxide](https://github.com/nubo-db/dynoxide) · self-contained binary | A | 1.4.0 | 2.2% | 99.2% | 37 | 14 | 0.0% | 0.2% | 4.9% | 20 of 33 |
-| ↳ WebAssembly / OPFS | B | 1.4.0 | 1.4% | 87.8% | 24 | 204 | 0.0% | 0.2% | 3.2% | 20 of 33 |
+| [Ministack](https://github.com/ministackorg/ministack) | A | b58186186515 | 0.1% | 100.0% | 1 | 0 | 0.0% | 0.2% | 0.0% | 11 of 33 |
+| [Dynoxide](https://github.com/nubo-db/dynoxide) · self-contained binary | A | 1.5.0 | 2.0% | 99.2% | 34 | 14 | 0.0% | 0.0% | 4.7% | 20 of 33 |
+| ↳ WebAssembly / OPFS | B | 1.5.0 | 1.3% | 87.8% | 21 | 204 | 0.0% | 0.0% | 2.9% | 20 of 33 |
 | [Floci](https://github.com/floci-io/floci) | B[^regions-floci] | e0b292df4dc9 | 14.4% | 99.6% | 242 | 7 | 0.2% | 6.2% | 29.2% | 20 of 33 |
-| [ExtendDB](https://github.com/ExtendDB/extenddb) · PostgreSQL | C | v0.1.13 | 10.3% | 70.0% | 172 | 504 | 0.0% | 2.7% | 21.9% | 11 of 33 |
-| ↳ SQLite | C | v0.1.13 | 10.7% | 73.4% | 180 | 446 | 0.0% | 4.2% | 22.1% | 11 of 33 |
-| [LocalStack](https://github.com/localstack/localstack) | C | 2026.10.1 | 19.5% | 95.6% | 328 | 73 | 0.2% | 13.5% | 36.5% | 11 of 33 |
-| [Ministack](https://github.com/ministackorg/ministack) | C | e47e70067479 | 21.6% | 100.0% | 362 | 0 | 0.2% | 16.2% | 39.5% | 20 of 33 |
+| [ExtendDB](https://github.com/ExtendDB/extenddb) · PostgreSQL | C | v0.1.14 | 10.1% | 70.0% | 170 | 504 | 0.0% | 2.7% | 21.7% | 11 of 33 |
+| ↳ SQLite | C | v0.1.14 | 10.6% | 73.4% | 178 | 446 | 0.0% | 4.2% | 21.8% | 11 of 33 |
+| [LocalStack](https://github.com/localstack/localstack) | C | 2026.10.3 | 19.5% | 95.6% | 328 | 73 | 0.2% | 13.5% | 36.5% | 11 of 33 |
 | [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) | D | 6ada631ec7aa | 24.1% | 95.3% | 404 | 79 | 7.6% | 11.9% | 42.8% | 2 of 33 |
 | [Dynalite](https://github.com/architect/dynalite) | D | 4.0.0 | 11.9% | 57.9% | 200 | 707 | 11.1% | 6.2% | 16.0% | 2 of 33 |
-| [Kumo](https://github.com/sivchari/kumo) | F | 76e97ef55735 | 43.9% | 69.7% | 736 | 508 | 47.3% | 13.1% | 60.6% | 2 of 33 |
+| [Kumo](https://github.com/sivchari/kumo) | F | 7b15ae8b6e4b | 43.9% | 69.7% | 736 | 508 | 47.3% | 13.1% | 60.6% | 2 of 33 |
 
 [^regions-floci]: C against eu-south-2 and me-central-1, where real DynamoDB answers some tests differently. Per-region figures are on its [target page](https://paritysuite.org/targets/floci#regions).
 <!-- results:end -->
