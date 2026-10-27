@@ -1,11 +1,11 @@
 {
   "numTotalTestSuites": 4,
-  "numPassedTestSuites": 2,
-  "numFailedTestSuites": 2,
+  "numPassedTestSuites": 4,
+  "numFailedTestSuites": 0,
   "numPendingTestSuites": 0,
   "numTotalTests": 3,
-  "numPassedTests": 2,
-  "numFailedTests": 1,
+  "numPassedTests": 3,
+  "numFailedTests": 0,
   "numPendingTests": 0,
   "numTodoTests": 0,
   "snapshot": {
@@ -24,8 +24,8 @@
     "updated": 0,
     "didUpdate": false
   },
-  "startTime": 1792921126539,
-  "success": false,
+  "startTime": 1793101906219,
+  "success": true,
   "testResults": [
     {
       "assertionResults": [
@@ -36,7 +36,7 @@
           "fullName": "Export and import — S3 ExportTableToPointInTime initiates an export and reports it",
           "status": "passed",
           "title": "ExportTableToPointInTime initiates an export and reports it",
-          "duration": 2094.340927000001,
+          "duration": 1657.4050659999994,
           "failureMessages": [],
           "meta": {},
           "tags": [
@@ -52,9 +52,9 @@
             "Export and import — S3"
           ],
           "fullName": "Export and import — S3 ImportTable ingests S3 data into a new table",
-          "status": "failed",
+          "status": "passed",
           "title": "ImportTable ingests S3 data into a new table",
-          "duration": 276166.09957300004,
+          "duration": 165330.497255,
           "failureMessages": [],
           "meta": {},
           "tags": [
@@ -66,9 +66,9 @@
           "benchmarks": []
         }
       ],
-      "startTime": 1792921151302,
-      "endTime": 1792921429563.0996,
-      "status": "failed",
+      "startTime": 1793101915406,
+      "endTime": 1793102082393.4973,
+      "status": "passed",
       "message": "",
       "name": "tests/tier2/export/exportImport.test.ts"
     },
@@ -81,7 +81,7 @@
           "fullName": "Kinesis streaming destination enables a streaming destination and reports it via Describe",
           "status": "passed",
           "title": "enables a streaming destination and reports it via Describe",
-          "duration": 12631.002836,
+          "duration": 11936.88427000001,
           "failureMessages": [],
           "meta": {},
           "tags": [
@@ -93,8 +93,8 @@
           "benchmarks": []
         }
       ],
-      "startTime": 1792921496121,
-      "endTime": 1792921508752.003,
+      "startTime": 1793102103898,
+      "endTime": 1793102115834.8843,
       "status": "passed",
       "message": "",
       "name": "tests/tier2/kinesis/streamingDestination.test.ts"
