@@ -163,17 +163,7 @@ export function cutRelease(text, { version, date } = {}) {
     throw new Error(`refusing to release: "${date}" is not a YYYY-MM-DD date.`)
   }
 
-  const headings = []
-  let m
-  HEADING.lastIndex = 0
-  while ((m = HEADING.exec(text)) !== null) {
-    headings.push({ text: m[1], start: m.index, end: HEADING.lastIndex })
-  }
-  const blockEnd = (i) => (i + 1 < headings.length ? headings[i + 1].start : text.length)
-
-  const pending = headings
-    .map((h, i) => ({ ...h, i }))
-    .filter((h) => UNRELEASED.test(h.text))
+  const { pending, blockEnd } = pendingSections(text)
   if (pending.length === 0) {
     throw new Error(
       'refusing to release: CHANGELOG.md has no `## Unreleased` section, so there are no notes this release would date.',
@@ -184,10 +174,7 @@ export function cutRelease(text, { version, date } = {}) {
   // write their notes as they merge, so a release week can land several. The
   // site parser appends them for the same reason, and a release that dated the
   // first and stranded the second would lose a note nothing else records.
-  const notes = pending
-    .map((h) => text.slice(h.end, blockEnd(h.i)).trim())
-    .filter((body) => body !== '')
-    .join('\n\n')
+  const notes = notesOf(text, pending, blockEnd)
   if (notes === '') {
     throw new Error(
       'refusing to release: the `## Unreleased` section is empty, so there is nothing to release. A release dates notes; it does not invent them.',
@@ -205,6 +192,58 @@ export function cutRelease(text, { version, date } = {}) {
   out += text.slice(cursor)
 
   return { changelog: out.replace(/\n+$/, '\n'), notes }
+}
+
+// The `## Unreleased` sections and where each one ends. Shared by the cut and
+// by the weekly decision, so "there is something to release" means exactly
+// what the cut will date.
+function pendingSections(text) {
+  const headings = []
+  let m
+  HEADING.lastIndex = 0
+  while ((m = HEADING.exec(text)) !== null) {
+    headings.push({ text: m[1], start: m.index, end: HEADING.lastIndex })
+  }
+  const blockEnd = (i) => (i + 1 < headings.length ? headings[i + 1].start : text.length)
+  const pending = headings
+    .map((h, i) => ({ ...h, i }))
+    .filter((h) => UNRELEASED.test(h.text))
+  return { pending, blockEnd }
+}
+
+function notesOf(text, pending, blockEnd) {
+  return pending
+    .map((h) => text.slice(h.end, blockEnd(h.i)).trim())
+    .filter((body) => body !== '')
+    .join('\n\n')
+}
+
+/**
+ * Whether the changelog holds notes a cut would date. The bodyless
+ * `## Unreleased` left between releases is no notes, so a week with nothing
+ * merged is measured without cutting anything.
+ */
+export function hasPendingNotes(text) {
+  const { pending, blockEnd } = pendingSections(text)
+  return notesOf(text, pending, blockEnd) !== ''
+}
+
+// The paths whose change moves a measurement: the assertions, the harness that
+// drives them, and the config a run is made under. The same set conformance.yml
+// keys its push-time refresh on.
+const SUITE_PATH = /^(tests|src)\/|^vitest\.config\.ts$/
+
+/**
+ * The version a scheduled cut takes. A change to the suite moves the
+ * denominator, so it is a minor; anything else (registry rows, docs, tooling)
+ * is a patch. A major is never picked here: it is a person's call, made by
+ * dispatching with a version.
+ */
+export function nextVersion(current, changedPaths = []) {
+  const [major, minor, patch] = parts(assertVersionShape(current))
+  return changedPaths.some((path) => SUITE_PATH.test(path))
+    ? `${major}.${minor + 1}.0`
+    : `${major}.${minor}.${patch + 1}`
 }
 
 /**
@@ -364,7 +403,41 @@ function flip() {
   return 0
 }
 
-const MODES = { cut, flip }
+/**
+ * What this run of release.yml does. A dispatch cuts the version it was given,
+ * as it always has. The weekly schedule cuts only when `## Unreleased` holds
+ * notes, picking the version by nextVersion() from what changed since the tag
+ * the tree carries; otherwise it hands the week to a plain measurement of the
+ * latest release.
+ */
+function plan() {
+  const write = (key, value) => {
+    if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `${key}=${value}\n`)
+  }
+
+  if (process.env.EVENT !== 'schedule') {
+    write('mode', 'cut')
+    write('version', process.env.INPUT_VERSION ?? '')
+    console.log(`Dispatched: cutting ${process.env.INPUT_VERSION}.`)
+    return 0
+  }
+
+  if (!hasPendingNotes(readFileSync('CHANGELOG.md', 'utf8'))) {
+    write('mode', 'measure')
+    console.log('No notes under `## Unreleased`: measuring the latest release without cutting one.')
+    return 0
+  }
+
+  const current = JSON.parse(readFileSync('package.json', 'utf8')).version
+  const changed = (process.env.CHANGED ?? '').split('\n').filter((p) => p.trim() !== '')
+  const version = nextVersion(current, changed)
+  write('mode', 'cut')
+  write('version', version)
+  console.log(`Notes pending since v${current}: cutting ${version}.`)
+  return 0
+}
+
+const MODES = { cut, flip, plan }
 
 function main() {
   const mode = MODES[process.argv[2]]

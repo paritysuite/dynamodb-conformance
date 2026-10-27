@@ -8,6 +8,12 @@ section its date and version, so several branches can write ahead of one.
 
 ## Unreleased
 
+Releases are now cut every Sunday. When there are notes waiting, the weekly
+run cuts a release before measuring, so a change merged during the week is on
+the board by the following Sunday rather than whenever a release is next cut
+by hand. A week with no notes is measured against the latest release, as
+before. Either way there is still one run against real DynamoDB a week.
+
 ## 2026-10-22 (3.7.0)
 
 The suite grows from 1,266 tests to 1,678, so every target's figures move. The

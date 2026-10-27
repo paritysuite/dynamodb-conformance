@@ -21,8 +21,17 @@ name: Cut a release
 #
 # So this workflow runs once per version and never has to tolerate its own
 # output, which is what makes its preconditions safe to state absolutely.
+#
+# It also owns the week's measurement. Every Sunday it cuts a release when
+# `## Unreleased` holds notes, so work merged during the week reaches the board
+# without anyone remembering to release it, and that release's conformance run
+# is the week's run. With no notes it dispatches a plain measurement of the
+# latest release instead. Either way there is one real-AWS run a week. If the
+# cut refuses, the week is still measured, against the previous release.
 
 on:
+  schedule:
+    - cron: '0 4 * * 0' # 4am UTC every Sunday, when AWS is quieter
   workflow_dispatch:
     inputs:
       version:
@@ -53,10 +62,54 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Whether this run cuts, and at what version. A dispatch always cuts the
+  # version it was given. The schedule cuts only when there are notes to date,
+  # and picks the version itself: a minor when the suite changed since the last
+  # tag, a patch otherwise, never a major (see nextVersion in
+  # scripts/release.mjs).
+  plan:
+    name: Cut or measure
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      mode: ${{ steps.plan.outputs.mode }}
+      version: ${{ steps.plan.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          # What changed since the tag the tree carries, for the version rule.
+          # package.json is that tag's version: the cut refuses a version that
+          # is not ahead of it, so the two move together.
+          current=$(node -p "require('./package.json').version")
+          export CHANGED
+          CHANGED=$(git diff --name-only "v${current}" HEAD)
+          node scripts/release.mjs plan
+
   release:
     name: Bump, date, tag, draft
+    needs: plan
+    if: needs.plan.outputs.mode == 'cut'
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    outputs:
+      # Set the moment the measurement is dispatched, so the fallback below can
+      # tell a cut that never reached it from one that did, and never measures
+      # the same week twice.
+      dispatched: ${{ steps.measure.outputs.dispatched }}
     steps:
       # The `main: gated PRs` ruleset lists this App as a bypass actor, so
       # pushing the bump commit and the tag relaxes no protection. It is also
@@ -151,7 +204,7 @@ jobs:
       # than a warning.
       - name: Bump the manifests and date the changelog
         env:
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ needs.plan.outputs.version }}
           CHECKS_JSON: ${{ runner.temp }}/checks.json
           RELEASES_JSON: ${{ runner.temp }}/releases.json
           NOTES_OUT: ${{ runner.temp }}/release-notes.md
@@ -172,7 +225,7 @@ jobs:
 
       - name: Commit the bump
         env:
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ needs.plan.outputs.version }}
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
@@ -183,7 +236,7 @@ jobs:
       # Annotated, matching every tag the repo already carries.
       - name: Tag and push
         env:
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ needs.plan.outputs.version }}
           BOT_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           set -euo pipefail
@@ -207,7 +260,7 @@ jobs:
       - name: Create the draft release
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ needs.plan.outputs.version }}
           NOTES: ${{ runner.temp }}/release-notes.md
         run: |
           set -euo pipefail
@@ -228,19 +281,24 @@ jobs:
       # Explicit rather than letting the resolver pick the latest tag, so this
       # stays correct if another tag is cut while the run is queued.
       - name: Measure the new tag
+        id: measure
         env:
           # The App, not GITHUB_TOKEN. Either one starts the run; only this one
           # produces a run whose completion emits a workflow_run event, which is
           # what results-table.yml listens to. See the permissions block.
           GH_TOKEN: ${{ steps.dispatch-token.outputs.token }}
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ needs.plan.outputs.version }}
+          # A scheduled cut's run is the week's run, so it carries the weekly
+          # reporting: a deterministic red files the scheduled-red issue.
+          WEEKLY: ${{ github.event_name == 'schedule' }}
         run: |
           set -euo pipefail
           # The newest conformance run before dispatching, so the check below
           # can tell a new one from the one already there.
           before=$(gh run list --workflow conformance.yml -L 1 --json databaseId --jq '.[0].databaseId // 0')
 
-          gh workflow run conformance.yml --ref main -f "ref=v$VERSION"
+          gh workflow run conformance.yml --ref main -f "ref=v$VERSION" -f "weekly=$WEEKLY"
+          echo "dispatched=true" >>"$GITHUB_OUTPUT"
 
           # Confirmed, not assumed. Everything up to here has already landed -
           # the tag is pushed and the draft exists - so a dispatch that quietly
@@ -258,3 +316,66 @@ jobs:
 
           echo "::error title=Measurement not started::v$VERSION is tagged and its draft release exists, but no conformance run appeared within 90s of dispatching. Recover by dispatching Conformance Tests from main with its ref input set to v$VERSION."
           exit 1
+
+  # The week's measurement when the schedule did not cut: there were no notes,
+  # or the cut refused before it dispatched one (a red check on main, a draft
+  # still open). Blank ref, so conformance.yml measures the latest release tag.
+  # A refused cut is also reported on the scheduled-red issue, the same place a
+  # red weekly run goes, so it cannot sit unnoticed.
+  measure:
+    name: Measure the latest release
+    needs: [plan, release]
+    if: >-
+      always() && github.event_name == 'schedule' &&
+      (needs.plan.result != 'success' || needs.plan.outputs.mode == 'measure' ||
+       (needs.release.result != 'success' && needs.release.outputs.dispatched != 'true'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write # the scheduled-red issue, when the cut refused
+    steps:
+      # The App, for the same reason as the cut's dispatch: only a run it starts
+      # emits the workflow_run event results-table.yml publishes from.
+      - name: Mint a dispatch token
+        id: dispatch-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.RESULTS_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.RESULTS_BOT_PRIVATE_KEY }}
+          permission-actions: write
+
+      - name: Dispatch the measurement
+        env:
+          GH_TOKEN: ${{ steps.dispatch-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          before=$(gh run list -R "$GITHUB_REPOSITORY" --workflow conformance.yml -L 1 --json databaseId --jq '.[0].databaseId // 0')
+          gh workflow run conformance.yml -R "$GITHUB_REPOSITORY" --ref main -f "weekly=true"
+          for _ in $(seq 1 18); do
+            sleep 5
+            after=$(gh run list -R "$GITHUB_REPOSITORY" --workflow conformance.yml -L 1 --json databaseId --jq '.[0].databaseId // 0')
+            if [ "$after" != "$before" ]; then
+              echo "::notice title=Weekly measurement started::Conformance run $after is measuring the latest release."
+              exit 0
+            fi
+          done
+          echo "::error title=Measurement not started::No conformance run appeared within 90s. Dispatch Conformance Tests from main with weekly set to true."
+          exit 1
+
+      - name: Report the refused cut
+        if: needs.plan.outputs.mode != 'measure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          body="The weekly release was not cut, so this week measures the previous release instead. The notes under \`## Unreleased\` are still waiting. See the refused run for the reason: $RUN_URL. Once it is fixed, dispatch **Cut a release** by hand or wait for next Sunday."
+          gh label create scheduled-red -R "$GITHUB_REPOSITORY" --color B60205 --description "Scheduled conformance run went red" 2>/dev/null || true
+          existing=$(gh issue list -R "$GITHUB_REPOSITORY" --label scheduled-red --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" -R "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create -R "$GITHUB_REPOSITORY" --label scheduled-red \
+              --title "Weekly release was not cut ($(date -u +%Y-%m-%d))" --body "$body"
+          fi

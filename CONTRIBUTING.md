@@ -233,8 +233,18 @@ test does not move the published figures. It still runs against real AWS on
 the way in, which is what validates it, but the numbers move at the next
 release and a dated changelog entry explains the move.
 
-Cutting one is a single dispatch of the **Cut a release** workflow in the
-Actions tab, with a version like `3.2.0`. It bumps `package.json` and the
+**Releases are cut every Sunday.** At 04:00 UTC the **Cut a release**
+workflow checks `## Unreleased`. If it holds notes, it cuts a release and that
+release's conformance run is the week's measurement. If not, it measures the
+latest release without cutting one. A scheduled cut is a minor version when
+anything under `tests/` or `src/`, or `vitest.config.ts`, changed since the
+last tag, and a patch otherwise. It never picks a major. If the cut refuses (a
+red check on `main`, a draft still open), the week is measured against the
+previous release and the refusal is reported on the `scheduled-red` issue.
+
+A release can also be cut by hand, with a version of your choosing: dispatch
+the **Cut a release** workflow in the Actions tab, with a version like
+`3.2.0`. It bumps `package.json` and the
 lockfile, dates the `## Unreleased` section, installs against the bumped
 tree, tags, and opens the release as a **draft**. Then it starts a
 conformance run at the new tag. A full run takes about three hours; when the

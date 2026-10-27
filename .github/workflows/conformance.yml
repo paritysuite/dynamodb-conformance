@@ -1,8 +1,10 @@
 name: Conformance Tests
 
+# The weekly run is not scheduled here. release.yml owns the Sunday trigger:
+# it cuts a release when there are notes and dispatches this workflow at the
+# new tag, or dispatches it at the latest release when there are none. Either
+# dispatch sets `weekly`, which is what turns on the scheduled-red reporting.
 on:
-  schedule:
-    - cron: '0 4 * * 0' # 4am UTC every Sunday, when AWS is quieter
   push:
     branches: [main]
     # Never re-run real-AWS conformance on the suite's own bot output. These
@@ -39,6 +41,11 @@ on:
         description: "Dynoxide git ref to build the wasm engine from (blank = latest release)"
         required: false
         default: ""
+      weekly:
+        description: "The week's run, started by release.yml: a deterministic red files the scheduled-red issue"
+        type: boolean
+        required: false
+        default: false
   # No repository_dispatch. A `[dynoxide-release, extenddb-release]` trigger
   # sat here and nothing ever fired it - the sending repo dispatches to its own
   # docs site, not to this one - so it read as a live path and was not one, and
@@ -46,7 +53,7 @@ on:
   # fix rather than the missing one: two named targets would refresh the whole
   # board within minutes of their own release while the other six waited for
   # Sunday, and one of the two is the board author's engine. Every target's row
-  # is refreshed together, by the weekly cron or by a merge to main, or the
+  # is refreshed together, by the weekly run or by a merge to main, or the
   # dates in the table stop meaning the same thing per row.
 
 permissions:
@@ -260,13 +267,13 @@ jobs:
       # issue - the reporter falls back to a generic triage note without a verdict.
       #
       # The baseline is the weekly capture in the tree this job checked out,
-      # which on a schedule is the release tag being measured. So the diff asks
+      # which on the weekly run is the release tag being measured. So the diff asks
       # whether eu-west-2 has moved since that tag was cut, which is what would
       # turn its run red. A fixed file stops describing eu-west-2 within weeks
       # and can't see any probe added after it, and main's latest capture would
       # absorb drift the tag still fails on and call the next week's red a flake.
       - name: Compute the drift verdict
-        if: failure() && github.event_name == 'schedule'
+        if: failure() && inputs.weekly
         continue-on-error: true
         env:
           AWS_REGION: eu-west-2
@@ -280,7 +287,7 @@ jobs:
       # probes, and the capture behind that claim otherwise dies with the
       # runner, leaving a maintainer no way to check the reading.
       - name: Upload the drift evidence
-        if: failure() && github.event_name == 'schedule'
+        if: failure() && inputs.weekly
         continue-on-error: true
         uses: actions/upload-artifact@v7
         with:
@@ -294,7 +301,7 @@ jobs:
       # not a silent X. The drift verdict (if computed above) labels it aws-drift-confirmed
       # or likely-flake and fills the body's triage slot.
       - name: Report a deterministic failure as an issue
-        if: failure() && github.event_name == 'schedule'
+        if: failure() && inputs.weekly
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
