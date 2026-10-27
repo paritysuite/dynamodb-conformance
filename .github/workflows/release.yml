@@ -110,6 +110,10 @@ jobs:
       # tell a cut that never reached it from one that did, and never measures
       # the same week twice.
       dispatched: ${{ steps.measure.outputs.dispatched }}
+      # Set once the bump and tag are on the remote. A cut that fails after this
+      # has consumed the notes and left a tag the fallback will measure, so the
+      # report has to say so rather than claim nothing was cut.
+      pushed: ${{ steps.push.outputs.pushed }}
     steps:
       # The `main: gated PRs` ruleset lists this App as a bypass actor, so
       # pushing the bump commit and the tag relaxes no protection. It is also
@@ -235,6 +239,7 @@ jobs:
 
       # Annotated, matching every tag the repo already carries.
       - name: Tag and push
+        id: push
         env:
           VERSION: ${{ needs.plan.outputs.version }}
           BOT_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -253,6 +258,7 @@ jobs:
           git push --atomic \
             "https://x-access-token:${BOT_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
             main "refs/tags/v$VERSION"
+          echo "pushed=true" >>"$GITHUB_OUTPUT"
 
       # A draft, and its body cut from the changelog in the state the tag
       # captured rather than reassembled later from a file that has moved on
@@ -295,7 +301,7 @@ jobs:
           set -euo pipefail
           # The newest conformance run before dispatching, so the check below
           # can tell a new one from the one already there.
-          before=$(gh run list --workflow conformance.yml -L 1 --json databaseId --jq '.[0].databaseId // 0')
+          before=$(gh run list --workflow conformance.yml --event workflow_dispatch -L 1 --json databaseId --jq '.[0].databaseId // 0')
 
           gh workflow run conformance.yml --ref main -f "ref=v$VERSION" -f "weekly=$WEEKLY"
           echo "dispatched=true" >>"$GITHUB_OUTPUT"
@@ -307,7 +313,7 @@ jobs:
           # with the tag and draft in the state the recovery path expects.
           for _ in $(seq 1 18); do
             sleep 5
-            after=$(gh run list --workflow conformance.yml -L 1 --json databaseId --jq '.[0].databaseId // 0')
+            after=$(gh run list --workflow conformance.yml --event workflow_dispatch -L 1 --json databaseId --jq '.[0].databaseId // 0')
             if [ "$after" != "$before" ]; then
               echo "::notice title=Release v$VERSION drafted::Conformance run $after is measuring v$VERSION. The draft publishes itself when the board lands, in about three hours."
               exit 0
@@ -326,7 +332,7 @@ jobs:
     name: Measure the latest release
     needs: [plan, release]
     if: >-
-      always() && github.event_name == 'schedule' &&
+      !cancelled() && github.event_name == 'schedule' &&
       (needs.plan.result != 'success' || needs.plan.outputs.mode == 'measure' ||
        (needs.release.result != 'success' && needs.release.outputs.dispatched != 'true'))
     runs-on: ubuntu-latest
@@ -350,11 +356,11 @@ jobs:
           GH_TOKEN: ${{ steps.dispatch-token.outputs.token }}
         run: |
           set -euo pipefail
-          before=$(gh run list -R "$GITHUB_REPOSITORY" --workflow conformance.yml -L 1 --json databaseId --jq '.[0].databaseId // 0')
+          before=$(gh run list -R "$GITHUB_REPOSITORY" --workflow conformance.yml --event workflow_dispatch -L 1 --json databaseId --jq '.[0].databaseId // 0')
           gh workflow run conformance.yml -R "$GITHUB_REPOSITORY" --ref main -f "weekly=true"
           for _ in $(seq 1 18); do
             sleep 5
-            after=$(gh run list -R "$GITHUB_REPOSITORY" --workflow conformance.yml -L 1 --json databaseId --jq '.[0].databaseId // 0')
+            after=$(gh run list -R "$GITHUB_REPOSITORY" --workflow conformance.yml --event workflow_dispatch -L 1 --json databaseId --jq '.[0].databaseId // 0')
             if [ "$after" != "$before" ]; then
               echo "::notice title=Weekly measurement started::Conformance run $after is measuring the latest release."
               exit 0
@@ -363,19 +369,28 @@ jobs:
           echo "::error title=Measurement not started::No conformance run appeared within 90s. Dispatch Conformance Tests from main with weekly set to true."
           exit 1
 
+      # !cancelled(), so a refused cut is still reported when the dispatch above
+      # failed: that is the week most in need of a person.
       - name: Report the refused cut
-        if: needs.plan.outputs.mode != 'measure'
+        if: ${{ !cancelled() && needs.plan.outputs.mode != 'measure' }}
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          PUSHED: ${{ needs.release.outputs.pushed }}
+          VERSION: ${{ needs.plan.outputs.version }}
         run: |
           set -euo pipefail
-          body="The weekly release was not cut, so this week measures the previous release instead. The notes under \`## Unreleased\` are still waiting. See the refused run for the reason: $RUN_URL. Once it is fixed, dispatch **Cut a release** by hand or wait for next Sunday."
+          if [ "$PUSHED" = "true" ]; then
+            title="Weekly release v$VERSION did not finish ($(date -u +%Y-%m-%d))"
+            body="v$VERSION was tagged and pushed, but the rest of the cut failed, so its notes are already dated in CHANGELOG.md. This week's run measures v$VERSION, the latest tag. If the draft release is missing, create it from the tag so it publishes when the board lands. See the failed run: $RUN_URL."
+          else
+            title="Weekly release was not cut ($(date -u +%Y-%m-%d))"
+            body="The weekly release was not cut, so this week measures the latest release tag instead. The notes under \`## Unreleased\` are still waiting. See the refused run for the reason: $RUN_URL. Once it is fixed, dispatch **Cut a release** by hand or wait for next Sunday."
+          fi
           gh label create scheduled-red -R "$GITHUB_REPOSITORY" --color B60205 --description "Scheduled conformance run went red" 2>/dev/null || true
           existing=$(gh issue list -R "$GITHUB_REPOSITORY" --label scheduled-red --state open --json number --jq '.[0].number // empty')
           if [ -n "$existing" ]; then
             gh issue comment "$existing" -R "$GITHUB_REPOSITORY" --body "$body"
           else
-            gh issue create -R "$GITHUB_REPOSITORY" --label scheduled-red \
-              --title "Weekly release was not cut ($(date -u +%Y-%m-%d))" --body "$body"
+            gh issue create -R "$GITHUB_REPOSITORY" --label scheduled-red --title "$title" --body "$body"
           fi

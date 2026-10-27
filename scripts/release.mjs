@@ -409,31 +409,35 @@ function flip() {
  * notes, picking the version by nextVersion() from what changed since the tag
  * the tree carries; otherwise it hands the week to a plain measurement of the
  * latest release.
+ *
+ * Returns `{ mode: 'cut' | 'measure', version }`, with version null when
+ * measuring.
  */
+export function planRun({ event, inputVersion, changelog, packageVersion, changed = [] }) {
+  if (event !== 'schedule') return { mode: 'cut', version: inputVersion ?? '' }
+  if (!hasPendingNotes(changelog)) return { mode: 'measure', version: null }
+  return { mode: 'cut', version: nextVersion(packageVersion, changed) }
+}
+
 function plan() {
-  const write = (key, value) => {
-    if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `${key}=${value}\n`)
-  }
+  const decision = planRun({
+    event: process.env.EVENT,
+    inputVersion: process.env.INPUT_VERSION,
+    changelog: readFileSync('CHANGELOG.md', 'utf8'),
+    packageVersion: JSON.parse(readFileSync('package.json', 'utf8')).version,
+    changed: (process.env.CHANGED ?? '').split('\n').filter((p) => p.trim() !== ''),
+  })
 
-  if (process.env.EVENT !== 'schedule') {
-    write('mode', 'cut')
-    write('version', process.env.INPUT_VERSION ?? '')
-    console.log(`Dispatched: cutting ${process.env.INPUT_VERSION}.`)
-    return 0
+  const out = process.env.GITHUB_OUTPUT
+  if (out) {
+    appendFileSync(out, `mode=${decision.mode}\n`)
+    if (decision.version !== null) appendFileSync(out, `version=${decision.version}\n`)
   }
-
-  if (!hasPendingNotes(readFileSync('CHANGELOG.md', 'utf8'))) {
-    write('mode', 'measure')
-    console.log('No notes under `## Unreleased`: measuring the latest release without cutting one.')
-    return 0
-  }
-
-  const current = JSON.parse(readFileSync('package.json', 'utf8')).version
-  const changed = (process.env.CHANGED ?? '').split('\n').filter((p) => p.trim() !== '')
-  const version = nextVersion(current, changed)
-  write('mode', 'cut')
-  write('version', version)
-  console.log(`Notes pending since v${current}: cutting ${version}.`)
+  console.log(
+    decision.mode === 'measure'
+      ? 'No notes under `## Unreleased`: measuring the latest release without cutting one.'
+      : `Cutting ${decision.version}.`,
+  )
   return 0
 }
 

@@ -186,6 +186,12 @@ resolved rather than re-deriving the rule:
 | `schedule` or `workflow_dispatch` | the highest release tag |
 | anything else | the sha that triggered it, which is never publishable |
 
+`conformance.yml` has no schedule of its own any more. The Sunday run comes from
+`release.yml`, which either cuts a release and dispatches conformance at the new
+tag, or dispatches it with a blank `ref`; both pass `weekly=true`, which is what
+the weekly-only steps key on. The resolver still handles `schedule`, but
+nothing sends it one now.
+
 "Highest" is by version number, not by when the tag object was written and
 not by commit topology: `v2.0.0` and `v2.1.0` were backfilled after `v3.0.0`
 already existed, so creation order is already unsound here.

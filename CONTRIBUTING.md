@@ -240,7 +240,7 @@ latest release without cutting one. A scheduled cut is a minor version when
 anything under `tests/` or `src/`, or `vitest.config.ts`, changed since the
 last tag, and a patch otherwise. It never picks a major. If the cut refuses (a
 red check on `main`, a draft still open), the week is measured against the
-previous release and the refusal is reported on the `scheduled-red` issue.
+latest release tag and the refusal is reported on the `scheduled-red` issue.
 
 A release can also be cut by hand, with a version of your choosing: dispatch
 the **Cut a release** workflow in the Actions tab, with a version like
