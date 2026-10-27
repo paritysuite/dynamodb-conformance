@@ -25,6 +25,8 @@ export const INDETERMINATE_REASONS = [
   'vector-index-timeout',
   /** A vector index never reflected the expected items within its ceiling. */
   'vector-consistency-timeout',
+  /** An S3 import never left IN_PROGRESS within its ceiling. */
+  'import-timeout',
   /** A throttle survived the SDK's configured retry (see src/client.ts). */
   'throttle-exhausted',
   /** A transport failure or 5xx: the request may never have been evaluated. */
