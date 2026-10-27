@@ -8,6 +8,12 @@ section its date and version, so several branches can write ahead of one.
 
 ## Unreleased
 
+Releases are now cut every Sunday. When there are notes waiting, the weekly
+run cuts a release before measuring, so a change merged during the week is on
+the board by the following Sunday rather than whenever a release is next cut
+by hand. A week with no notes is measured against the latest release, as
+before. Either way there is still one run against real DynamoDB a week.
+
 eu-south-2 joins eu-west-2 on the fourteen UpdateItem size, validation-ordering
 and nesting-depth rows, which leaves me-central-1 the only region on the other
 side of them. us-east-1 joins it on the five Scan rows, leaving 12 regions on the

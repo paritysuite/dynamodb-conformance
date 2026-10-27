@@ -13,7 +13,10 @@ import {
   bumpManifests,
   cutRelease,
   draftToPublish,
+  hasPendingNotes,
   measuredVersionOf,
+  nextVersion,
+  planRun,
 } from './release.mjs'
 
 const PREAMBLE = `# Conformance suite history
@@ -362,11 +365,169 @@ describe('draftToPublish', () => {
   })
 })
 
+describe('hasPendingNotes', () => {
+  it('finds notes under `## Unreleased`', () => {
+    expect(hasPendingNotes(changelog(UNRELEASED, DATED))).toBe(true)
+  })
+
+  it('reads the bodyless heading left between releases as nothing to release', () => {
+    expect(hasPendingNotes(changelog('## Unreleased\n', DATED))).toBe(false)
+  })
+
+  it('reads a changelog with no pending heading as nothing to release', () => {
+    expect(hasPendingNotes(changelog(DATED))).toBe(false)
+  })
+
+  it('finds notes in a second pending section when the first is empty', () => {
+    expect(hasPendingNotes(changelog('## Unreleased\n', '## Unreleased\n\nA row moves.\n', DATED))).toBe(
+      true,
+    )
+  })
+
+  it('agrees with the cut on what counts as notes', () => {
+    // The weekly run cuts exactly when the cut would succeed on the notes.
+    const empty = changelog('## Unreleased\n', DATED)
+    expect(() => cutRelease(empty, { version: '9.9.9', date: '2026-10-25' })).toThrow(/empty/)
+    expect(hasPendingNotes(empty)).toBe(false)
+  })
+})
+
+describe('nextVersion', () => {
+  it('is a patch when only registry rows, docs or tooling changed', () => {
+    expect(nextVersion('3.7.0', ['registry/splits.json', 'CHANGELOG.md', 'scripts/release.mjs'])).toBe('3.7.1')
+  })
+
+  it('is a minor when the tests, the harness or the run config changed', () => {
+    expect(nextVersion('3.7.1', ['tests/tier1/putItem.test.ts'])).toBe('3.8.0')
+    expect(nextVersion('3.7.1', ['src/helpers.ts'])).toBe('3.8.0')
+    expect(nextVersion('3.7.1', ['vitest.config.ts'])).toBe('3.8.0')
+  })
+
+  it('does not mistake a path that merely mentions tests for the suite', () => {
+    expect(nextVersion('3.7.0', ['scripts/release.test.mjs', 'site/test/x.mjs'])).toBe('3.7.1')
+  })
+
+  it('is a patch when nothing changed path-wise, and never a major', () => {
+    expect(nextVersion('3.7.0', [])).toBe('3.7.1')
+    expect(nextVersion('3.9.4', ['tests/a.test.ts'])).toBe('3.10.0')
+  })
+
+  it('refuses a version it cannot read', () => {
+    expect(() => nextVersion('v3.7.0', [])).toThrow()
+  })
+})
+
+describe('planRun', () => {
+  const withNotes = changelog(UNRELEASED, DATED)
+  const without = changelog('## Unreleased\n', DATED)
+
+  it('cuts the dispatched version as given, notes or not', () => {
+    expect(planRun({ event: 'workflow_dispatch', inputVersion: '4.0.0', changelog: without, packageVersion: '3.7.0' })).toEqual(
+      { mode: 'cut', version: '4.0.0' },
+    )
+  })
+
+  it('measures without cutting on a Sunday with no notes', () => {
+    expect(planRun({ event: 'schedule', changelog: without, packageVersion: '3.7.0', changed: ['tests/a.test.ts'] })).toEqual({
+      mode: 'measure',
+      version: null,
+    })
+  })
+
+  it('cuts a patch on a Sunday with notes and no suite change', () => {
+    expect(
+      planRun({ event: 'schedule', changelog: withNotes, packageVersion: '3.7.0', changed: ['registry/splits.json', 'CHANGELOG.md'] }),
+    ).toEqual({ mode: 'cut', version: '3.7.1' })
+  })
+
+  it('cuts a minor on a Sunday with notes and a suite change', () => {
+    expect(planRun({ event: 'schedule', changelog: withNotes, packageVersion: '3.7.1', changed: ['src/helpers.ts'] })).toEqual({
+      mode: 'cut',
+      version: '3.8.0',
+    })
+  })
+})
+
 describe('release.yml', () => {
   const workflow = loadYaml(readFileSync('.github/workflows/release.yml', 'utf8'))
 
-  it('is dispatch-only, so a release is never a side effect of a merge', () => {
-    expect(Object.keys(workflow.true ?? workflow.on)).toEqual(['workflow_dispatch'])
+  it('runs on dispatch and the weekly schedule only, so a release is never a side effect of a merge', () => {
+    const on = workflow.true ?? workflow.on
+    expect(Object.keys(on).sort()).toEqual(['schedule', 'workflow_dispatch'])
+    expect(on.schedule).toEqual([{ cron: '0 4 * * 0' }])
+  })
+
+  it('owns the weekly run: conformance.yml no longer schedules its own', () => {
+    // Two Sunday crons would measure twice, the thing this design exists to
+    // avoid.
+    const conformance = loadYaml(readFileSync('.github/workflows/conformance.yml', 'utf8'))
+    expect(Object.keys(conformance.true ?? conformance.on)).not.toContain('schedule')
+    expect((conformance.true ?? conformance.on).workflow_dispatch.inputs.weekly.type).toBe('boolean')
+  })
+
+  it('turns weekly reporting on through the input, so a dispatched weekly red still files an issue', () => {
+    const yamlText = readFileSync('.github/workflows/conformance.yml', 'utf8')
+    expect(yamlText).not.toMatch(/failure\(\) && github\.event_name == 'schedule'/)
+    expect(yamlText.match(/failure\(\) && inputs\.weekly/g)).toHaveLength(3)
+  })
+
+  it('plans from the dispatch input, and cuts the version the plan settled on', () => {
+    // The plan reads the person's version on a dispatch; every step of the cut
+    // reads the plan's, so a scheduled cut and a dispatched one share one path.
+    const planStep = workflow.jobs.plan.steps.find((s) => s.id === 'plan')
+    expect(planStep.env.INPUT_VERSION).toBe('${{ inputs.version }}')
+    const cutEnvs = workflow.jobs.release.steps.filter((s) => s.env?.VERSION !== undefined)
+    expect(cutEnvs.length).toBeGreaterThan(0)
+    for (const step of cutEnvs) expect(step.env.VERSION).toBe('${{ needs.plan.outputs.version }}')
+  })
+
+  it('cuts only when the plan says so', () => {
+    expect(workflow.jobs.release.needs).toBe('plan')
+    expect(workflow.jobs.release.if).toBe("needs.plan.outputs.mode == 'cut'")
+  })
+
+  it('measures the week when the schedule did not cut, and only then', () => {
+    // A cut that dispatched is the week's run; measuring again would run real
+    // AWS twice. A cut that refused before dispatching must still get the week
+    // measured.
+    const measure = workflow.jobs.measure
+    expect(measure.needs).toEqual(['plan', 'release'])
+    // !cancelled(), not always(): a person cancelling the Sunday run must not
+    // still start a real-AWS run.
+    expect(measure.if.replace(/\s+/g, ' ').trim()).toBe(
+      "!cancelled() && github.event_name == 'schedule' && " +
+        "(needs.plan.result != 'success' || needs.plan.outputs.mode == 'measure' || " +
+        "(needs.release.result != 'success' && needs.release.outputs.dispatched != 'true'))",
+    )
+    const yamlText = readFileSync('.github/workflows/release.yml', 'utf8')
+    expect(yamlText).toMatch(/gh workflow run conformance\.yml -R "\$GITHUB_REPOSITORY" --ref main -f "weekly=true"/)
+  })
+
+  it('records the dispatch the moment it happens', () => {
+    const yamlText = readFileSync('.github/workflows/release.yml', 'utf8')
+    expect(workflow.jobs.release.outputs.dispatched).toBe('${{ steps.measure.outputs.dispatched }}')
+    expect(yamlText).toMatch(/gh workflow run conformance\.yml --ref main -f "ref=v\$VERSION" -f "weekly=\$WEEKLY"\n\s*echo "dispatched=true"/)
+  })
+
+  it('confirms a dispatch only against dispatched runs, so a push run cannot stand in for it', () => {
+    const yamlText = readFileSync('.github/workflows/release.yml', 'utf8')
+    const lists = yamlText.match(/gh run list[^\n]*--workflow conformance\.yml[^\n]*/g) ?? []
+    expect(lists.length).toBe(4)
+    for (const line of lists) expect(line).toContain('--event workflow_dispatch')
+  })
+
+  it('reports a refused cut even when the fallback dispatch failed, and says when the tag was already pushed', () => {
+    const report = workflow.jobs.measure.steps.find((s) => s.name === 'Report the refused cut')
+    expect(report.if).toBe("${{ !cancelled() && needs.plan.outputs.mode != 'measure' }}")
+    expect(report.env.PUSHED).toBe('${{ needs.release.outputs.pushed }}')
+    expect(workflow.jobs.release.outputs.pushed).toBe('${{ steps.push.outputs.pushed }}')
+    const push = workflow.jobs.release.steps.find((s) => s.id === 'push')
+    expect(push.run).toMatch(/git push --atomic[\s\S]*echo "pushed=true"/)
+  })
+
+  it('dispatches with the App token on both paths', () => {
+    expect(workflow.jobs.measure.steps[0].with['permission-actions']).toBe('write')
+    expect(workflow.jobs.measure.steps[1].env.GH_TOKEN).toBe('${{ steps.dispatch-token.outputs.token }}')
   })
 
   it('takes the version as its only input', () => {
