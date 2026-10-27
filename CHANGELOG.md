@@ -8,6 +8,8 @@ section its date and version, so several branches can write ahead of one.
 
 ## Unreleased
 
+## 2026-10-27 (3.8.0)
+
 Releases are now cut every Sunday. When there are notes waiting, the weekly
 run cuts a release before measuring, so a change merged during the week is on
 the board by the following Sunday rather than whenever a release is next cut
