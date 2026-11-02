@@ -8,6 +8,12 @@ section its date and version, so several branches can write ahead of one.
 
 ## Unreleased
 
+Query's XOR ConditionalOperator beside an unknown Select is now pinned to the
+older enum wording, `Value 'XOR' at 'conditionalOperator' ... [AND, OR]`.
+eu-west-2 and us-east-1 gave the bare `[ALL, OR]` form when the test was written
+on 2026-10-09, and the weekly run on 2026-11-01 went red when eu-west-2 had moved.
+Twenty requests to each region on 2026-11-02 all gave the older wording.
+
 ## 2026-10-27 (3.8.0)
 
 Releases are now cut every Sunday. When there are notes waiting, the weekly
