@@ -75,8 +75,9 @@ describe('Query — validation ordering', { tags: ['query', 'data-plane', 'negat
 
 describe('Query — ConditionalOperator beside Select', { tags: ['query', 'legacy', 'data-plane', 'negative-path'] }, () => {
   it('reports XOR with two QueryFilter conditions before an unknown Select', async () => {
-    // Bare, in the newer enum form, and on its own: the Select error is not
-    // joined to it. Both regions (eu-west-2, us-east-1, 2026-10-09).
+    // In the older enum form, and on its own: the Select error is not joined
+    // to it. eu-west-2 and us-east-1 gave the bare newer form on 2026-10-09
+    // and moved to this one by 2026-11-01.
     try {
       await ddb.send(
         new QueryCommand({
@@ -92,7 +93,9 @@ describe('Query — ConditionalOperator beside Select', { tags: ['query', 'legac
       expect(e).toBeInstanceOf(DynamoDBServiceException)
       const err = e as DynamoDBServiceException
       expect(err.name).toBe('ValidationException')
-      expect(err.message).toBe('Failed to satisfy constraint: Member must satisfy enum value set: [ALL, OR]')
+      expect(err.message).toBe(
+        "Value 'XOR' at 'conditionalOperator' failed to satisfy constraint: Member must satisfy enum value set: [AND, OR]",
+      )
     }
   })
 })
