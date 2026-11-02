@@ -58,18 +58,18 @@ Rows are sorted by grade, and rows sharing a grade by the figure the letter is r
 
 `me-central-1`, `me-south-1` have been dropped from the observed set and are not scored against.
 
-_Suite v3.8.0, measured against real DynamoDB on 2026-10-27. Region health as of 2026-10-31._
+_Suite v3.9.0, measured against real DynamoDB on 2026-11-02. Region health as of 2026-10-31._
 
 | Target | Grade | Version | Divergence | Coverage | Fail | Skip | Tier 1 | Tier 2 | Tier 3 | Regions |
 |--------|-------|---------|-----------|----------|------|------|--------|--------|--------|---------|
 | [DynamoDB](https://aws.amazon.com/dynamodb/) | baseline | live (AWS) | 0.0% | 100.0% | 0 | 0 | 0.0% | 0.0% | 0.0% | 32 of 32 |
-| [Ministack](https://github.com/ministackorg/ministack) | A | b58186186515 | 0.1% | 100.0% | 1 | 0 | 0.0% | 0.2% | 0.0% | 11 of 32 |
+| [Ministack](https://github.com/ministackorg/ministack) | A | 71b13e204507 | 0.1% | 100.0% | 2 | 0 | 0.0% | 0.2% | 0.1% | 11 of 32 |
 | [Dynoxide](https://github.com/nubo-db/dynoxide) · self-contained binary | A | 1.5.0 | 2.0% | 99.2% | 34 | 14 | 0.0% | 0.0% | 4.7% | 21 of 32 |
 | ↳ WebAssembly / OPFS | B | 1.5.0 | 1.3% | 87.8% | 21 | 204 | 0.0% | 0.0% | 2.9% | 21 of 32 |
-| [Floci](https://github.com/floci-io/floci) | B | e0b292df4dc9 | 14.4% | 99.6% | 242 | 7 | 0.2% | 6.2% | 29.2% | 21 of 32 |
+| [Floci](https://github.com/floci-io/floci) | B | 5ee85db604c4 | 9.3% | 99.8% | 156 | 4 | 0.0% | 0.0% | 21.4% | 21 of 32 |
 | [ExtendDB](https://github.com/ExtendDB/extenddb) · PostgreSQL | C | v0.1.14 | 10.1% | 70.0% | 170 | 504 | 0.0% | 2.7% | 21.7% | 11 of 32 |
 | ↳ SQLite | C | v0.1.14 | 10.6% | 73.4% | 178 | 446 | 0.0% | 4.2% | 21.8% | 11 of 32 |
-| [LocalStack](https://github.com/localstack/localstack) | C | 2026.10.3 | 19.5% | 95.6% | 328 | 73 | 0.2% | 13.5% | 36.5% | 11 of 32 |
+| [LocalStack](https://github.com/localstack/localstack) | C | 2026.10.4 | 19.5% | 95.6% | 328 | 73 | 0.2% | 13.5% | 36.5% | 11 of 32 |
 | [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) | D | 6ada631ec7aa | 24.8% | 95.3% | 416 | 79 | 7.6% | 11.9% | 44.4% | 32 of 32 |
 | [Dynalite](https://github.com/architect/dynalite) | D | 4.0.0 | 12.6% | 57.9% | 211 | 707 | 11.1% | 6.2% | 17.6% | 11 of 32 |
 | [Kumo](https://github.com/sivchari/kumo) | F | 7b15ae8b6e4b | 44.4% | 69.7% | 745 | 508 | 47.3% | 13.1% | 61.9% | 32 of 32 |
