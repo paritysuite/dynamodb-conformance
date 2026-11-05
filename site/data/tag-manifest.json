@@ -812,6 +812,12 @@
         "lsi"
       ]
     },
+    "tests/tier2/partiql/orReads.test.ts": {
+      "PartiQL - OR reads in one partition: paging": [
+        "partiql",
+        "data-plane"
+      ]
+    },
     "tests/tier2/partiql/setFunctions.test.ts": {
       "PartiQL - set_add and set_delete": [
         "partiql",
