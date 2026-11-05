@@ -46,7 +46,9 @@ describe('Table and index operations measure a name', { tags: ['create-table', '
   const created: string[] = []
 
   afterAll(async () => {
-    await Promise.all(created.map(deleteTable))
+    // A target lax on CreateTable may still refuse the same name on Delete or
+    // Describe, and cleanup must not turn that into a failure of its own.
+    await Promise.all(created.map((name) => deleteTable(name).catch(() => {})))
   })
 
   async function refusal(send: () => Promise<unknown>, tableName?: string): Promise<string> {

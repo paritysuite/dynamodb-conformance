@@ -315,7 +315,8 @@ describe('PartiQL - OR reads in one partition: paging', { tags: ['partiql', 'dat
   })
 
   // These end inside an open range or on a non-key filter, where DynamoDB may
-  // or may not add an empty last page. Only the rows walked are pinned.
+  // or may not add an empty last page. The rows walked and that the walk ends
+  // are pinned, not how many pages it takes.
   describe('reads whose last page varies', () => {
     const P = UNION
 
