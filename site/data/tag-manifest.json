@@ -1137,6 +1137,16 @@
         "lsi"
       ]
     },
+    "tests/tier3/error-messages/leadingUnderscore.test.ts": {
+      "Leading underscore — exact error messages": [
+        "query",
+        "scan",
+        "put-item",
+        "update-item",
+        "data-plane",
+        "negative-path"
+      ]
+    },
     "tests/tier3/error-messages/partiql.test.ts": {
       "PartiQL — exact error messages": [
         "partiql",
@@ -1476,6 +1486,15 @@
       "Key-value length limits": [
         "put-item",
         "get-item",
+        "data-plane"
+      ]
+    },
+    "tests/tier3/limits/leadingUnderscore.test.ts": {
+      "Leading underscore in expressions": [
+        "query",
+        "scan",
+        "put-item",
+        "update-item",
         "data-plane"
       ]
     },
