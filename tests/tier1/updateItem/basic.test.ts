@@ -938,6 +938,52 @@ describe('UpdateItem — ReturnValues granularity', { tags: ['update-item', 'dat
     expect(res.Attributes!.a.S).toBe('x')
   })
 
+  // An update that creates the item has no old image, so the old-image
+  // return values come back empty however the update is written.
+  // Captured in eu-west-2 and us-east-1, 2026-11-05.
+  async function upsert(pk: string, ReturnValues: 'ALL_OLD' | 'UPDATED_OLD' | 'ALL_NEW', update: object) {
+    keys.push({ pk: { S: pk } })
+    return ddb.send(
+      new UpdateItemCommand({ TableName: hashTableDef.name, Key: { pk: { S: pk } }, ReturnValues, ...update }),
+    )
+  }
+  const setV = { UpdateExpression: 'SET v = :v', ExpressionAttributeValues: { ':v': { S: 'x' } } }
+
+  it('ALL_OLD on a create returns no Attributes', async () => {
+    const res = await upsert('rv-create-all-old', 'ALL_OLD', setV)
+    expect(res.Attributes).toBeUndefined()
+  })
+
+  it('UPDATED_OLD on a create returns no Attributes', async () => {
+    const res = await upsert('rv-create-updated-old', 'UPDATED_OLD', setV)
+    expect(res.Attributes).toBeUndefined()
+  })
+
+  it('ALL_OLD on a create with no update expression returns no Attributes', async () => {
+    const res = await upsert('rv-create-key-only', 'ALL_OLD', {})
+    expect(res.Attributes).toBeUndefined()
+  })
+
+  it('ALL_OLD on a create with only a REMOVE returns no Attributes', async () => {
+    const res = await upsert('rv-create-remove', 'ALL_OLD', { UpdateExpression: 'REMOVE v' })
+    expect(res.Attributes).toBeUndefined()
+  })
+
+  it('ALL_NEW on a create returns the key and the new attribute', async () => {
+    const res = await upsert('rv-create-all-new', 'ALL_NEW', setV)
+    expect(res.Attributes).toEqual({ pk: { S: 'rv-create-all-new' }, v: { S: 'x' } })
+  })
+
+  it('ALL_OLD on an existing item returns the item as it was', async () => {
+    const pk = 'rv-existing-all-old'
+    await upsert(pk, 'ALL_NEW', { UpdateExpression: 'SET v = :v', ExpressionAttributeValues: { ':v': { S: 'old' } } })
+    const res = await upsert(pk, 'ALL_OLD', {
+      UpdateExpression: 'SET v = :v',
+      ExpressionAttributeValues: { ':v': { S: 'new' } },
+    })
+    expect(res.Attributes).toEqual({ pk: { S: pk }, v: { S: 'old' } })
+  })
+
   it('UPDATED_NEW on a nested SET returns only the changed fragment', async () => {
     const pk = 'rv-nested'
     keys.push({ pk: { S: pk } })
