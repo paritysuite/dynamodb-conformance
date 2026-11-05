@@ -56,56 +56,71 @@ describe('Item operations count a table name in characters', { tags: ['put-item'
     const name = 'é'.repeat(200)
     expect(await refusal(put(name))).toBe(one(nameError(name, PATTERN)))
   })
+})
 
-  describe('split by region', () => {
-    it('PutItem reports only the length for two accented letters', async (ctx) => {
-      expect(await refusal(() => observeSplit(ctx.task, put('éé')))).toBe(one(nameError('éé', TOO_SHORT)))
-    })
+// The older validation layer, still serving me-central-1 (and eu-north-1 on
+// Scan), counts these names in UTF-16 units, so registry/splits.json carries
+// its answers beside the pinned one.
+describe('Item operations count a table name in characters, split by region', { tags: ['put-item', 'update-item', 'get-item', 'delete-item', 'query', 'scan', 'data-plane', 'negative-path'] }, () => {
+  it('PutItem reports only the length for two accented letters', async (ctx) => {
+    // Split behaviour (registry row put-item-two-accented-table-name).
+    expect(await refusal(() => observeSplit(ctx.task, put('éé')))).toBe(one(nameError('éé', TOO_SHORT)))
+  })
 
-    it('PutItem finds two emoji too short', async (ctx) => {
-      expect(await refusal(() => observeSplit(ctx.task, put(TWO_EMOJI)))).toBe(one(nameError(TWO_EMOJI, TOO_SHORT)))
-    })
+  it('PutItem finds two emoji too short', async (ctx) => {
+    // Split behaviour (registry row put-item-two-emoji-table-name).
+    expect(await refusal(() => observeSplit(ctx.task, put(TWO_EMOJI)))).toBe(one(nameError(TWO_EMOJI, TOO_SHORT)))
+  })
 
-    it('PutItem does not find 128 emoji too long', async (ctx) => {
-      expect(await refusal(() => observeSplit(ctx.task, put(MANY_EMOJI)))).toBe(one(nameError(MANY_EMOJI, PATTERN)))
-    })
+  it('PutItem does not find 128 emoji too long', async (ctx) => {
+    // Split behaviour (registry row put-item-128-emoji-table-name).
+    expect(await refusal(() => observeSplit(ctx.task, put(MANY_EMOJI)))).toBe(one(nameError(MANY_EMOJI, PATTERN)))
+  })
 
-    it('UpdateItem finds two emoji too short, after the pattern', async (ctx) => {
-      expect(await refusal(() => observeSplit(ctx.task, update(TWO_EMOJI)))).toBe(
-        `2 validation errors detected: ${nameError(TWO_EMOJI, PATTERN)}; ${nameError(TWO_EMOJI, TOO_SHORT)}`,
-      )
-    })
+  it('UpdateItem finds two emoji too short, after the pattern', async (ctx) => {
+    // Split behaviour (registry row update-item-two-emoji-table-name).
+    expect(await refusal(() => observeSplit(ctx.task, update(TWO_EMOJI)))).toBe(
+      `2 validation errors detected: ${nameError(TWO_EMOJI, PATTERN)}; ${nameError(TWO_EMOJI, TOO_SHORT)}`,
+    )
+  })
 
-    it('GetItem finds two emoji too short', async (ctx) => {
-      expect(await refusal(() => observeSplit(ctx.task, get(TWO_EMOJI)))).toBe(one(nameError(TWO_EMOJI, TOO_SHORT)))
-    })
+  it('GetItem finds two emoji too short', async (ctx) => {
+    // Split behaviour (registry row get-item-two-emoji-table-name).
+    expect(await refusal(() => observeSplit(ctx.task, get(TWO_EMOJI)))).toBe(one(nameError(TWO_EMOJI, TOO_SHORT)))
+  })
 
-    it('GetItem does not find 128 emoji too long', async (ctx) => {
-      expect(await refusal(() => observeSplit(ctx.task, get(MANY_EMOJI)))).toBe(one(nameError(MANY_EMOJI, PATTERN)))
-    })
+  it('GetItem does not find 128 emoji too long', async (ctx) => {
+    // Split behaviour (registry row get-item-128-emoji-table-name).
+    expect(await refusal(() => observeSplit(ctx.task, get(MANY_EMOJI)))).toBe(one(nameError(MANY_EMOJI, PATTERN)))
+  })
 
-    it('DeleteItem finds two emoji too short', async (ctx) => {
-      expect(await refusal(() => observeSplit(ctx.task, del(TWO_EMOJI)))).toBe(one(nameError(TWO_EMOJI, TOO_SHORT)))
-    })
+  it('DeleteItem finds two emoji too short', async (ctx) => {
+    // Split behaviour (registry row delete-item-two-emoji-table-name).
+    expect(await refusal(() => observeSplit(ctx.task, del(TWO_EMOJI)))).toBe(one(nameError(TWO_EMOJI, TOO_SHORT)))
+  })
 
-    it('DeleteItem does not find 128 emoji too long', async (ctx) => {
-      expect(await refusal(() => observeSplit(ctx.task, del(MANY_EMOJI)))).toBe(one(nameError(MANY_EMOJI, PATTERN)))
-    })
+  it('DeleteItem does not find 128 emoji too long', async (ctx) => {
+    // Split behaviour (registry row delete-item-128-emoji-table-name).
+    expect(await refusal(() => observeSplit(ctx.task, del(MANY_EMOJI)))).toBe(one(nameError(MANY_EMOJI, PATTERN)))
+  })
 
-    it('Query finds two emoji too short', async (ctx) => {
-      expect(await refusal(() => observeSplit(ctx.task, query(TWO_EMOJI)))).toBe(one(nameError(TWO_EMOJI, TOO_SHORT)))
-    })
+  it('Query finds two emoji too short', async (ctx) => {
+    // Split behaviour (registry row query-two-emoji-table-name).
+    expect(await refusal(() => observeSplit(ctx.task, query(TWO_EMOJI)))).toBe(one(nameError(TWO_EMOJI, TOO_SHORT)))
+  })
 
-    it('Query does not find 128 emoji too long', async (ctx) => {
-      expect(await refusal(() => observeSplit(ctx.task, query(MANY_EMOJI)))).toBe(one(nameError(MANY_EMOJI, PATTERN)))
-    })
+  it('Query does not find 128 emoji too long', async (ctx) => {
+    // Split behaviour (registry row query-128-emoji-table-name).
+    expect(await refusal(() => observeSplit(ctx.task, query(MANY_EMOJI)))).toBe(one(nameError(MANY_EMOJI, PATTERN)))
+  })
 
-    it('Scan finds two emoji too short', async (ctx) => {
-      expect(await refusal(() => observeSplit(ctx.task, scan(TWO_EMOJI)))).toBe(one(nameError(TWO_EMOJI, TOO_SHORT)))
-    })
+  it('Scan finds two emoji too short', async (ctx) => {
+    // Split behaviour (registry row scan-two-emoji-table-name).
+    expect(await refusal(() => observeSplit(ctx.task, scan(TWO_EMOJI)))).toBe(one(nameError(TWO_EMOJI, TOO_SHORT)))
+  })
 
-    it('Scan does not find 128 emoji too long', async (ctx) => {
-      expect(await refusal(() => observeSplit(ctx.task, scan(MANY_EMOJI)))).toBe(one(nameError(MANY_EMOJI, PATTERN)))
-    })
+  it('Scan does not find 128 emoji too long', async (ctx) => {
+    // Split behaviour (registry row scan-128-emoji-table-name).
+    expect(await refusal(() => observeSplit(ctx.task, scan(MANY_EMOJI)))).toBe(one(nameError(MANY_EMOJI, PATTERN)))
   })
 })

@@ -1309,6 +1309,16 @@
         "scan",
         "data-plane",
         "negative-path"
+      ],
+      "Item operations count a table name in characters, split by region": [
+        "put-item",
+        "update-item",
+        "get-item",
+        "delete-item",
+        "query",
+        "scan",
+        "data-plane",
+        "negative-path"
       ]
     },
     "tests/tier3/error-messages/transactGetItems.test.ts": {
