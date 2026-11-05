@@ -76,6 +76,22 @@ describe('PartiQL index qualifier — exact error messages', { tags: ['partiql',
     )
   })
 
+  // Captured in eu-west-2 and us-east-1, 2026-11-03. An OR over the unprojected
+  // attribute gets the same message as a single condition on it, whether the
+  // index key is one value or an IN list the branches share.
+  it.each([
+    ['one key value', `gsiPk2 = 'k'`],
+    ['an IN list', `gsiPk2 IN ['k', 'a']`],
+  ])('unprojected attribute in an OR filter on a KEYS_ONLY GSI, keyed on %s - exact message', async (_label, key) => {
+    const err = await rejection(
+      `SELECT * FROM "${TABLE}"."gsi-keys" WHERE ${key} AND (${PARTIQL_UNPROJECTED_ATTR} = 1 OR ${PARTIQL_UNPROJECTED_ATTR} = 2)`,
+    )
+    expect(err.name).toBe('ValidationException')
+    expect(err.message).toBe(
+      `One or more parameter values were invalid: Secondary index gsi-keys does not project one or more filter attributes: [${PARTIQL_UNPROJECTED_ATTR}]`,
+    )
+  })
+
   // The projection rejection is worded differently, and this half does name the
   // index kind.
   it('unprojected projection attribute on a GSI — exact message', async () => {
