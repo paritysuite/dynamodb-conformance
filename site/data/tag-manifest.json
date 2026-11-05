@@ -1099,6 +1099,17 @@
         "negative-path"
       ]
     },
+    "tests/tier3/error-messages/controlPlaneNameUnits.test.ts": {
+      "Table and index operations measure a name": [
+        "create-table",
+        "describe-table",
+        "delete-table",
+        "update-table",
+        "list-tables",
+        "control-plane",
+        "negative-path"
+      ]
+    },
     "tests/tier3/error-messages/createTable.test.ts": {
       "CreateTable — exact error messages": [
         "create-table",
@@ -1285,6 +1296,18 @@
         "search-vectors",
         "data-plane",
         "vector",
+        "negative-path"
+      ]
+    },
+    "tests/tier3/error-messages/tableNameUnits.test.ts": {
+      "Item operations count a table name in characters": [
+        "put-item",
+        "update-item",
+        "get-item",
+        "delete-item",
+        "query",
+        "scan",
+        "data-plane",
         "negative-path"
       ]
     },
@@ -1657,6 +1680,22 @@
         "legacy",
         "data-plane",
         "negative-path"
+      ],
+      "Deep writes check the table name in two stages": [
+        "put-item",
+        "update-item",
+        "delete-item",
+        "legacy",
+        "data-plane",
+        "negative-path"
+      ],
+      "Deep writes count a table name in UTF-16 units": [
+        "put-item",
+        "update-item",
+        "delete-item",
+        "legacy",
+        "data-plane",
+        "negative-path"
       ]
     },
     "tests/tier3/validation-ordering/deleteItem.test.ts": {
@@ -1769,6 +1808,28 @@
         ],
         "mixing ProjectionExpression on one table and AttributesToGet on another is rejected": [
           "legacy"
+        ]
+      }
+    },
+    "tests/tier3/error-messages/controlPlaneNameUnits.test.ts": {
+      "Table and index operations measure a name": {
+        "CreateTable finds a GSI name of two emoji too short": [
+          "gsi"
+        ],
+        "CreateTable does not find a GSI name of 128 emoji too long": [
+          "gsi"
+        ],
+        "CreateTable finds an LSI name of two emoji too short": [
+          "lsi"
+        ],
+        "CreateTable does not find an LSI name of 128 emoji too long": [
+          "lsi"
+        ],
+        "UpdateTable finds a new GSI name of two emoji too short": [
+          "gsi"
+        ],
+        "UpdateTable does not find a new GSI name of 128 emoji too long": [
+          "gsi"
         ]
       }
     },
