@@ -21,6 +21,8 @@ export const INDETERMINATE_REASONS = [
   'table-active-timeout',
   /** A GSI never reflected the expected items within its ceiling. */
   'gsi-consistency-timeout',
+  /** An eventually consistent read never saw every row just written within its ceiling. */
+  'read-settle-timeout',
   /** A vector index never reached ACTIVE (backfill done) within its ceiling. */
   'vector-index-timeout',
   /** A vector index never reflected the expected items within its ceiling. */

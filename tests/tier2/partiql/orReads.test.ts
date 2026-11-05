@@ -2,6 +2,7 @@ import { ExecuteStatementCommand, PutItemCommand } from '@aws-sdk/client-dynamod
 import type { AttributeValue } from '@aws-sdk/client-dynamodb'
 import { ddb } from '../../../src/client.js'
 import { isUnsupportedFault } from '../../../src/infra.js'
+import { IndeterminateError } from '../../../src/indeterminate.js'
 import { declareTables, compositeTableDef, compositeNTableDef, cleanupItems } from '../../../src/helpers.js'
 
 declareTables(compositeTableDef, compositeNTableDef)
@@ -86,12 +87,22 @@ const rowsWalked = (pages: Page[]) => pages.flatMap((p) => p.items).sort()
  */
 async function settle(table: string, pk: string, count: number): Promise<void> {
   let streak = 0
+  let seen = 0
   for (let i = 0; i < 60 && streak < 3; i++) {
     const res = await ddb.send(new ExecuteStatementCommand({
       Statement: `SELECT * FROM "${table}" WHERE pk = '${pk}'`,
     }))
-    streak = (res.Items ?? []).length === count ? streak + 1 : 0
+    seen = (res.Items ?? []).length
+    streak = seen === count ? streak + 1 : 0
     if (streak < 3) await new Promise((r) => setTimeout(r, 250))
+  }
+  // Too few rows means the writes never showed up, which is no answer at all.
+  // Too many is a real answer, so the cases go on and fail on it.
+  if (streak < 3 && seen < count) {
+    throw new IndeterminateError(
+      'read-settle-timeout',
+      `Timeout waiting for ${count} rows in partition ${pk} of ${table}; the last read saw ${seen}`,
+    )
   }
 }
 
@@ -314,6 +325,8 @@ describe('PartiQL - OR reads in one partition: paging', { tags: ['partiql', 'dat
       ['an OR filter on a non-key attribute under Limit 2', `(x = 1 OR x = 2)`, 2, ['row-1', 'row-2']],
     ])('%s returns exactly its rows across the walk', async (_label, cond, Limit, expected) => {
       const pages = await walk(`SELECT * FROM "${T}" WHERE pk = '${P}' AND ${cond}`, { Limit })
+      // However many pages it takes, the walk has to end.
+      expect(pages.at(-1)?.token).toBe(false)
       expect(rowsWalked(pages)).toEqual(expected)
     })
   })

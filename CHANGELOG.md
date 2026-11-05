@@ -22,7 +22,8 @@ key costs a fixed 2.0, or 4.0 consistent, beside sort-key ranges.
 Items tied on an index key come back in a fixed order that isn't the table's
 sort-key order, and descending is its exact reverse. The order was the same in
 nine fresh tables across two regions and two AWS accounts, whatever order the
-items were written in, so Query and PartiQL on an LSI and a GSI now pin it.
+items were written in, so Query on an LSI and a GSI, and PartiQL on an LSI,
+now pin it.
 
 The PartiQL refusals these reads run into are pinned word for word: a negated
 sort key inside an OR filter, a partition key given the wrong type or a

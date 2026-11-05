@@ -6,7 +6,7 @@ import {
   DynamoDBServiceException,
 } from '@aws-sdk/client-dynamodb'
 import { ddb } from '../../../src/client.js'
-import { absentTableName, compositeTableDef, declareTables } from '../../../src/helpers.js'
+import { absentTableName, cleanupItems, compositeTableDef, declareTables } from '../../../src/helpers.js'
 import { observeSplit } from '../../../src/observation-sink.js'
 
 declareTables(compositeTableDef)
@@ -33,6 +33,14 @@ const T = compositeTableDef.name
 const keyed = { TableName: T, KeyConditionExpression: 'pk = :p', ExpressionAttributeValues: { ':p': { S: 'us-msg' } } }
 
 describe('Leading underscore — exact error messages', { tags: ['query', 'scan', 'put-item', 'update-item', 'data-plane', 'negative-path'] }, () => {
+  // Only a target that wrongly accepts the write expressions leaves these.
+  afterAll(async () => {
+    await cleanupItems(T, [
+      { pk: { S: 'us-msg' }, sk: { S: 'cond' } },
+      { pk: { S: 'us-msg' }, sk: { S: 'upd' } },
+    ])
+  })
+
   it('in a Query FilterExpression', async () => {
     const got = await refusal(() => ddb.send(new QueryCommand({ ...keyed, FilterExpression: 'attribute_exists(_x)' })))
     expect(got.name).toBe('ValidationException')

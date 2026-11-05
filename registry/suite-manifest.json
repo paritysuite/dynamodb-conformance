@@ -1,6 +1,6 @@
 {
   "generated": "2026-11-05",
-  "commit": "dfc1b18efd175ca5b137d0130b8635893674379c",
+  "commit": "bc06e0fe525ddc5785364c00ecaed734872afeb8",
   "count": 1915,
   "tests": [
     "tests/tier1/batchGetItem/basic.test.ts::BatchGetItem — ProjectionExpression returns only projected attributes",
@@ -1633,9 +1633,9 @@
     "tests/tier3/limits/keyLength.test.ts::Key-value length limits accepts a partition key at the 2048-byte limit",
     "tests/tier3/limits/keyLength.test.ts::Key-value length limits rejects a partition key over the 2048-byte limit on write",
     "tests/tier3/limits/keyLength.test.ts::Key-value length limits rejects an over-limit partition key on the read path",
+    "tests/tier3/limits/leadingUnderscore.test.ts::Leading underscore in expressions accepts an aliased key name in a KeyConditionExpression",
     "tests/tier3/limits/leadingUnderscore.test.ts::Leading underscore in expressions accepts an underscore inside a name without an alias",
     "tests/tier3/limits/leadingUnderscore.test.ts::Leading underscore in expressions accepts one through an alias in a ConditionExpression",
-    "tests/tier3/limits/leadingUnderscore.test.ts::Leading underscore in expressions accepts one through an alias in a KeyConditionExpression",
     "tests/tier3/limits/leadingUnderscore.test.ts::Leading underscore in expressions accepts one through an alias in a Scan filter",
     "tests/tier3/limits/leadingUnderscore.test.ts::Leading underscore in expressions accepts one through an alias in a filter and a projection",
     "tests/tier3/limits/leadingUnderscore.test.ts::Leading underscore in expressions accepts one through an alias in an UpdateExpression",

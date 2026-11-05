@@ -155,17 +155,19 @@ describe('Leading underscore in expressions', { tags: ['query', 'scan', 'put-ite
     expect(res.Items?.map((i) => i.sk.S)).toEqual(['row'])
   })
 
-  it('accepts one through an alias in a KeyConditionExpression', async () => {
+  // The table's keys have no underscore, so this pins only that an alias
+  // works in a key condition, beside the refusals for an unaliased one.
+  it('accepts an aliased key name in a KeyConditionExpression', async () => {
     const res = await ddb.send(
       new QueryCommand({
         TableName: T,
-        KeyConditionExpression: '#p = :p',
-        ExpressionAttributeNames: { '#p': 'pk' },
-        ExpressionAttributeValues: { ':p': { S: PK } },
+        KeyConditionExpression: '#p = :p AND #s = :s',
+        ExpressionAttributeNames: { '#p': 'pk', '#s': 'sk' },
+        ExpressionAttributeValues: { ':p': { S: PK }, ':s': { S: 'row' } },
         ConsistentRead: true,
       }),
     )
-    expect(res.Count).toBeGreaterThanOrEqual(1)
+    expect(res.Items?.map((i) => i.sk.S)).toEqual(['row'])
   })
 
   it('accepts one through an alias in a ConditionExpression', async () => {

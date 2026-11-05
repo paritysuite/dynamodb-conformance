@@ -948,34 +948,38 @@ describe('UpdateItem — ReturnValues granularity', { tags: ['update-item', 'dat
     )
   }
   const setV = { UpdateExpression: 'SET v = :v', ExpressionAttributeValues: { ':v': { S: 'x' } } }
+  // A fresh key on every attempt, so a retried test never finds the item its
+  // first attempt created.
+  const fresh = (base: string) => `${base}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 
   it('ALL_OLD on a create returns no Attributes', async () => {
-    const res = await upsert('rv-create-all-old', 'ALL_OLD', setV)
+    const res = await upsert(fresh('rv-create-all-old'), 'ALL_OLD', setV)
     expect(res.Attributes).toBeUndefined()
   })
 
   it('UPDATED_OLD on a create returns no Attributes', async () => {
-    const res = await upsert('rv-create-updated-old', 'UPDATED_OLD', setV)
+    const res = await upsert(fresh('rv-create-updated-old'), 'UPDATED_OLD', setV)
     expect(res.Attributes).toBeUndefined()
   })
 
   it('ALL_OLD on a create with no update expression returns no Attributes', async () => {
-    const res = await upsert('rv-create-key-only', 'ALL_OLD', {})
+    const res = await upsert(fresh('rv-create-key-only'), 'ALL_OLD', {})
     expect(res.Attributes).toBeUndefined()
   })
 
   it('ALL_OLD on a create with only a REMOVE returns no Attributes', async () => {
-    const res = await upsert('rv-create-remove', 'ALL_OLD', { UpdateExpression: 'REMOVE v' })
+    const res = await upsert(fresh('rv-create-remove'), 'ALL_OLD', { UpdateExpression: 'REMOVE v' })
     expect(res.Attributes).toBeUndefined()
   })
 
   it('ALL_NEW on a create returns the key and the new attribute', async () => {
-    const res = await upsert('rv-create-all-new', 'ALL_NEW', setV)
-    expect(res.Attributes).toEqual({ pk: { S: 'rv-create-all-new' }, v: { S: 'x' } })
+    const pk = fresh('rv-create-all-new')
+    const res = await upsert(pk, 'ALL_NEW', setV)
+    expect(res.Attributes).toEqual({ pk: { S: pk }, v: { S: 'x' } })
   })
 
   it('ALL_OLD on an existing item returns the item as it was', async () => {
-    const pk = 'rv-existing-all-old'
+    const pk = fresh('rv-existing-all-old')
     await upsert(pk, 'ALL_NEW', { UpdateExpression: 'SET v = :v', ExpressionAttributeValues: { ':v': { S: 'old' } } })
     const res = await upsert(pk, 'ALL_OLD', {
       UpdateExpression: 'SET v = :v',

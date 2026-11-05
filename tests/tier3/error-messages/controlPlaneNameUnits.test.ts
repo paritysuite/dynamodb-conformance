@@ -41,8 +41,8 @@ function expectErrorSet(message: string, errors: string[]) {
 }
 
 describe('Table and index operations measure a name', { tags: ['create-table', 'describe-table', 'delete-table', 'update-table', 'list-tables', 'control-plane', 'negative-path'] }, () => {
-  // An index-name case names a table that is valid, so a create that is
-  // wrongly accepted is cleaned up here.
+  // A create that is wrongly accepted is cleaned up here, whether it was
+  // refused for its table name or for an index name.
   const created: string[] = []
 
   afterAll(async () => {
@@ -71,11 +71,11 @@ describe('Table and index operations measure a name', { tags: ['create-table', '
 
   describe('table names, in UTF-16 units', () => {
     it('CreateTable does not find two emoji too short', async () => {
-      expect(await refusal(create(TWO_EMOJI))).toBe(detected(nameError(TWO_EMOJI, 'tableName', PATTERN)))
+      expect(await refusal(create(TWO_EMOJI), TWO_EMOJI)).toBe(detected(nameError(TWO_EMOJI, 'tableName', PATTERN)))
     })
 
     it('CreateTable finds 128 emoji too long', async () => {
-      expect(await refusal(create(MANY_EMOJI))).toBe(
+      expect(await refusal(create(MANY_EMOJI), MANY_EMOJI)).toBe(
         detected(nameError(MANY_EMOJI, 'tableName', TOO_LONG), nameError(MANY_EMOJI, 'tableName', PATTERN)),
       )
     })

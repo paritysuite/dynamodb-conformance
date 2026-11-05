@@ -39,9 +39,6 @@ async function read(Statement: string, ConsistentRead?: boolean) {
   }
 }
 
-const isUnsupported = (e: unknown) =>
-  isUnsupportedFault(e) || (e instanceof Error && e.name === 'UnrecognizedClientException')
-
 describe('PartiQL - read capacity of OR and IN on the sort key', { tags: ['partiql', 'data-plane'] }, () => {
   let supported = true
   const T = compositeTableDef.name
@@ -68,7 +65,7 @@ describe('PartiQL - read capacity of OR and IN on the sort key', { tags: ['parti
     } catch (e: unknown) {
       // The same canary the other PartiQL files run: a target signalling the
       // operation is unimplemented skips rather than failing every case.
-      if (isUnsupported(e)) {
+      if (isUnsupportedFault(e) || (e instanceof Error && e.name === 'UnrecognizedClientException')) {
         supported = false
         return
       }
@@ -281,7 +278,7 @@ describe('PartiQL - read capacity of a partition key that cannot be a key', { ta
         Statement: `SELECT * FROM "${compositeTableDef.name}" WHERE pk = 'partiql-unkeyable-canary'`,
       }))
     } catch (e: unknown) {
-      if (isUnsupported(e)) {
+      if (isUnsupportedFault(e) || (e instanceof Error && e.name === 'UnrecognizedClientException')) {
         supported = false
         return
       }
