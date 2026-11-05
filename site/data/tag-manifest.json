@@ -1617,6 +1617,14 @@
         "delete-item",
         "data-plane",
         "negative-path"
+      ],
+      "Deep writes list every bad member in order": [
+        "put-item",
+        "update-item",
+        "delete-item",
+        "legacy",
+        "data-plane",
+        "negative-path"
       ]
     },
     "tests/tier3/validation-ordering/deleteItem.test.ts": {
