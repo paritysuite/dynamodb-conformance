@@ -754,3 +754,22 @@ export const compositeBTableDef: TestTableDef = {
   hashKey: { name: 'pk', type: 'S' },
   rangeKey: { name: 'sk', type: 'B' },
 }
+
+// Replaces a command's serialised body before signing. The SDK drops null
+// members and refuses wrong-typed ones, so a raw body is the only way to send
+// them.
+export function withBody<C extends { middlewareStack: { add: (...args: any[]) => void } }>(
+  command: C,
+  body: Record<string, unknown>,
+): C {
+  const json = JSON.stringify(body)
+  command.middlewareStack.add(
+    (next: (args: any) => Promise<unknown>) => async (args: any) => {
+      args.request.body = json
+      args.request.headers['content-length'] = String(Buffer.byteLength(json))
+      return next(args)
+    },
+    { step: 'build', priority: 'high', name: 'rawBody' },
+  )
+  return command
+}

@@ -5,7 +5,7 @@ import {
   type SearchVectorsCommandInput,
 } from '@aws-sdk/client-dynamodb'
 import { ddb } from '../../../src/client.js'
-import { absentTableName, uniqueTableName, deleteTable } from '../../../src/helpers.js'
+import { absentTableName, uniqueTableName, deleteTable, withBody } from '../../../src/helpers.js'
 import {
   skipUnlessVectorSearch,
   supportsVectorSearch,
@@ -209,26 +209,15 @@ describe('SearchVectors — request shape errors', { tags: ['search-vectors', 'd
   }
 
   // The SDK drops null members, so the body is replaced before signing.
-  function withBody(body: Record<string, unknown>): SearchVectorsCommand {
-    const command = new SearchVectorsCommand(valid as SearchVectorsCommandInput)
-    const json = JSON.stringify(body)
-    command.middlewareStack.add(
-      (next) => async (args: any) => {
-        args.request.body = json
-        args.request.headers['content-length'] = String(Buffer.byteLength(json))
-        return next(args)
-      },
-      { step: 'build', priority: 'high', name: 'searchVectorsRawBody' },
-    )
-    return command
-  }
+  const withNulls = (body: Record<string, unknown>) =>
+    withBody(new SearchVectorsCommand(valid as SearchVectorsCommandInput), body)
 
   it('refuses an explicit null member as a SerializationException', async () => {
     const got = [
-      await answer(withBody({ ...valid, IndexName: null })),
-      await answer(withBody({ ...valid, TableName: null })),
-      await answer(withBody({ ...valid, SearchVector: null })),
-      await answer(withBody({ ...valid, TopK: null })),
+      await answer(withNulls({ ...valid, IndexName: null })),
+      await answer(withNulls({ ...valid, TableName: null })),
+      await answer(withNulls({ ...valid, SearchVector: null })),
+      await answer(withNulls({ ...valid, TopK: null })),
     ]
     expect(got.map((g) => g.name)).toEqual(Array(4).fill('SerializationException'))
     expect(got[0].message).toMatch(/^invalid type: null, expected a string at line 1 column \d+$/)
