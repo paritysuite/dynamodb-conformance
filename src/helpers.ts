@@ -699,6 +699,68 @@ export const partiqlIndexTableDef: TestTableDef = {
  */
 export const PARTIQL_UNPROJECTED_ATTR = 'nonproj'
 
+/**
+ * A table for reading rows tied on an index key. Each caller creates its own
+ * from a fresh name, so the order it reads back comes from the key values alone
+ * rather than from anything a shared table picked up earlier in the run.
+ *
+ * `l-all` is an LSI on (pk, l) and `g-all` a GSI on (g, l), both projecting
+ * everything. Every row under `pk = 'tie'` carries `l = 't'` and `g = 'tie'`, so
+ * both indexes hold six rows on a single key.
+ */
+export function tieOrderTableInput(tableName: string): CreateTableCommandInput {
+  return {
+    TableName: tableName,
+    BillingMode: 'PAY_PER_REQUEST',
+    AttributeDefinitions: ['pk', 'sk', 'l', 'g'].map((name) => ({
+      AttributeName: name,
+      AttributeType: 'S' as const,
+    })),
+    KeySchema: [
+      { AttributeName: 'pk', KeyType: 'HASH' },
+      { AttributeName: 'sk', KeyType: 'RANGE' },
+    ],
+    LocalSecondaryIndexes: [
+      {
+        IndexName: 'l-all',
+        KeySchema: [
+          { AttributeName: 'pk', KeyType: 'HASH' },
+          { AttributeName: 'l', KeyType: 'RANGE' },
+        ],
+        Projection: { ProjectionType: 'ALL' },
+      },
+    ],
+    GlobalSecondaryIndexes: [
+      {
+        IndexName: 'g-all',
+        KeySchema: [
+          { AttributeName: 'g', KeyType: 'HASH' },
+          { AttributeName: 'l', KeyType: 'RANGE' },
+        ],
+        Projection: { ProjectionType: 'ALL' },
+      },
+    ],
+  }
+}
+
+/**
+ * The rows for tieOrderTableInput, in the order they are written. That order is
+ * deliberately neither sorted nor reverse-sorted, so a read that returns write
+ * order, or plain sort-key order, cannot pass for the tie order by accident.
+ *
+ * Partition `tie` holds `row-a` to `row-f`, all tied on both indexes. Partition
+ * `k` holds `row-1` to `row-4` with `l` = a, b, b, c, so `row-2` and `row-3` tie
+ * on the LSI.
+ */
+export const TIE_ORDER_ITEMS: Record<string, AttributeValue>[] = [
+  ...['row-d', 'row-f', 'row-a', 'row-c', 'row-e', 'row-b'].map((sk) => ({
+    pk: { S: 'tie' }, sk: { S: sk }, l: { S: 't' }, g: { S: 'tie' },
+  })),
+  ...([['row-3', '3', 'b'], ['row-1', '1', 'a'], ['row-4', '4', 'c'], ['row-2', '2', 'b']] as const).map(
+    ([sk, x, l]) => ({ pk: { S: 'k' }, sk: { S: sk }, x: { N: x }, l: { S: l }, g: { S: 'k' } }),
+  ),
+]
+
 // The tables the 400KB item-size work writes to, and nothing else does.
 //
 // Those tests write items a few bytes under the item limit, dozens of them, and

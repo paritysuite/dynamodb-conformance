@@ -419,6 +419,14 @@
         "lsi"
       ]
     },
+    "tests/tier1/query/indexTieOrder.test.ts": {
+      "Query - order of rows tied on an index key": [
+        "query",
+        "data-plane",
+        "gsi",
+        "lsi"
+      ]
+    },
     "tests/tier1/query/keyConditionParens.test.ts": {
       "Query — KeyConditionExpression with parentheses": [
         "query",
@@ -798,6 +806,14 @@
     },
     "tests/tier2/partiql/indexQualifier.test.ts": {
       "ExecuteStatement — index qualifier": [
+        "partiql",
+        "data-plane",
+        "gsi",
+        "lsi"
+      ]
+    },
+    "tests/tier2/partiql/indexTieOrder.test.ts": {
+      "ExecuteStatement - order of rows tied on an index key": [
         "partiql",
         "data-plane",
         "gsi",
