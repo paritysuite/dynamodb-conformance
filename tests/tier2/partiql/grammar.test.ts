@@ -10,12 +10,13 @@ import {
   declareTables,
   hashTableDef,
   hashNTableDef,
+  compositeTableDef,
   compositeNTableDef,
   cleanupItems,
   expectDynamoError,
 } from '../../../src/helpers.js'
 
-declareTables(hashTableDef, hashNTableDef, compositeNTableDef)
+declareTables(hashTableDef, hashNTableDef, compositeTableDef, compositeNTableDef)
 
 // How DynamoDB's PartiQL parser reads the forms a statement can take beyond the
 // basics: number literals written with an exponent or without a leading digit,
@@ -31,11 +32,16 @@ describe('PartiQL - grammar', { tags: ['partiql', 'data-plane'] }, () => {
   const S = hashTableDef.name
   const N = hashNTableDef.name
   const SN = compositeNTableDef.name
+  const SS = compositeTableDef.name
 
   const numberKeys = ['7310000', '7.3', '-7.3'].map((n) => ({ pk: { N: n } }))
   const insertedNumberKeys = ['7320000', '7.325', '7330000'].map((n) => ({ pk: { N: n } }))
   const stringKeys = ['pq-grammar-a', 'pq-grammar-b', 'pq-grammar-c'].map((s) => ({ pk: { S: s } }))
   const orderKeys = ['1', '2', '3'].map((n) => ({ pk: { S: 'pq-grammar-order' }, sk: { N: n } }))
+  // Four rows in one partition, x = 1 to 4, for an OR filter beside ORDER BY.
+  const orRows = [1, 2, 3, 4].map((x) => ({ pk: { S: 'pq-grammar-or' }, sk: { S: `row-${x}` }, x: { N: String(x) } }))
+  const orKeys = orRows.map(({ pk, sk }) => ({ pk, sk }))
+  const repeatedNumberKey = { pk: { N: '7340000' } }
 
   beforeAll(async () => {
     try {
@@ -59,18 +65,23 @@ describe('PartiQL - grammar', { tags: ['partiql', 'data-plane'] }, () => {
     for (const key of orderKeys) {
       await ddb.send(new PutItemCommand({ TableName: SN, Item: key }))
     }
+    for (const row of orRows) {
+      await ddb.send(new PutItemCommand({ TableName: SS, Item: row }))
+    }
+    await ddb.send(new PutItemCommand({ TableName: N, Item: { ...repeatedNumberKey, tag: { S: 'grammar' } } }))
   })
 
   beforeEach(({ skip }) => { if (!supported) skip() })
 
   afterAll(async () => {
-    await cleanupItems(N, [...numberKeys, ...insertedNumberKeys])
+    await cleanupItems(N, [...numberKeys, ...insertedNumberKeys, repeatedNumberKey])
     await cleanupItems(S, stringKeys)
     await cleanupItems(SN, orderKeys)
+    await cleanupItems(SS, orKeys)
   })
 
-  async function select(Statement: string): Promise<Record<string, AttributeValue>[]> {
-    const res = await ddb.send(new ExecuteStatementCommand({ Statement, ConsistentRead: true }))
+  async function select(Statement: string, Parameters?: AttributeValue[]): Promise<Record<string, AttributeValue>[]> {
+    const res = await ddb.send(new ExecuteStatementCommand({ Statement, Parameters, ConsistentRead: true }))
     return res.Items ?? []
   }
 
@@ -177,6 +188,40 @@ describe('PartiQL - grammar', { tags: ['partiql', 'data-plane'] }, () => {
   it('ORDER BY the sort key ASC returns the rows in ascending order', async () => {
     const items = await select(`SELECT * FROM "${SN}" WHERE pk = 'pq-grammar-order' ORDER BY sk ASC`)
     expect(items.map((i) => i.sk.N)).toEqual(['1', '2', '3'])
+  })
+
+  // Captured in eu-west-2 and us-east-1, 2026-11-05. An OR that stays inside
+  // one partition still reads that partition in key order, so ORDER BY on the
+  // sort key is accepted beside it.
+  it('ORDER BY the sort key DESC is accepted on an OR filter inside one partition', async () => {
+    const items = await select(`SELECT * FROM "${SS}" WHERE pk = 'pq-grammar-or' AND (x = 1 OR x = 2) ORDER BY sk DESC`)
+    expect(items.map((i) => i.sk.S)).toEqual(['row-2', 'row-1'])
+  })
+
+  it('ORDER BY the sort key is accepted on an OR filter inside one partition', async () => {
+    const items = await select(`SELECT * FROM "${SS}" WHERE pk = 'pq-grammar-or' AND (x = 1 OR x = 3) ORDER BY sk`)
+    expect(items.map((i) => i.sk.S)).toEqual(['row-1', 'row-3'])
+  })
+
+  // ── The same partition key written twice ─────────────────────────────
+
+  // Captured in eu-west-2 and us-east-1, 2026-11-03. Two equalities on the
+  // partition key that name the same value are one key, not a contradiction.
+  it('a number key written twice in two spellings of the same value reads that key', async () => {
+    const items = await select(`SELECT * FROM "${N}" WHERE pk = 7340000 AND pk = 7340000.0`)
+    expect(items).toHaveLength(1)
+    expect(items[0].pk).toEqual({ N: '7340000' })
+  })
+
+  it('a number key given as two equal parameters reads that key', async () => {
+    const items = await select(`SELECT * FROM "${N}" WHERE pk = ? AND pk = ?`, [{ N: '7340000' }, { N: '7340000.0' }])
+    expect(items).toHaveLength(1)
+    expect(items[0].pk).toEqual({ N: '7340000' })
+  })
+
+  it('a string key written twice as the same literal reads the partition', async () => {
+    const items = await select(`SELECT * FROM "${SS}" WHERE pk = 'pq-grammar-or' AND pk = 'pq-grammar-or'`)
+    expect(items.map((i) => i.sk.S)).toEqual(['row-1', 'row-2', 'row-3', 'row-4'])
   })
 
   // ── Refusals that must not run as something else ────────────────────

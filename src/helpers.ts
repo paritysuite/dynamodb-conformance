@@ -757,12 +757,13 @@ export const compositeBTableDef: TestTableDef = {
 
 // Replaces a command's serialised body before signing. The SDK drops null
 // members and refuses wrong-typed ones, so a raw body is the only way to send
-// them.
+// them. A string body is sent as written, for number spellings such as `1.0`
+// or `1e+20` that JSON.stringify would rewrite.
 export function withBody<C extends { middlewareStack: { add: (...args: any[]) => void } }>(
   command: C,
-  body: Record<string, unknown>,
+  body: Record<string, unknown> | string,
 ): C {
-  const json = JSON.stringify(body)
+  const json = typeof body === 'string' ? body : JSON.stringify(body)
   command.middlewareStack.add(
     (next: (args: any) => Promise<unknown>) => async (args: any) => {
       args.request.body = json
