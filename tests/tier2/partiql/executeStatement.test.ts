@@ -7,7 +7,7 @@ import {
 } from '@aws-sdk/client-dynamodb'
 import { ddb } from '../../../src/client.js'
 import { isUnsupportedFault } from '../../../src/infra.js'
-import { declareTables, hashTableDef, compositeTableDef, cleanupItems, expectDynamoError, absentTableName } from '../../../src/helpers.js'
+import { declareTables, hashTableDef, compositeTableDef, cleanupItems, expectDynamoError, absentTableName, withBody } from '../../../src/helpers.js'
 import type { AttributeValue } from '@aws-sdk/client-dynamodb'
 
 declareTables(hashTableDef, compositeTableDef)
@@ -1347,6 +1347,81 @@ describe('ExecuteStatement — PartiQL', { tags: ['partiql', 'data-plane'] }, ()
       TableName: hashTableDef.name, Key: { pk: { S: pk } }, ConsistentRead: true,
     }))
     expect(after.Item).toBeUndefined()
+  })
+
+  // ── Limit ────────────────────────────────────────────────────────────
+
+  // Captured in eu-west-2 and us-east-1, 2026-11-03 and 2026-11-05. A Limit
+  // far past the row count reads everything on one page, however it is
+  // written, and a fractional Limit is truncated rather than refused.
+  describe('Limit', () => {
+    const pk = 'partiql-limit'
+    const rows = ['row-1', 'row-2', 'row-3', 'row-4']
+    const partition = () => `SELECT * FROM "${compositeTableDef.name}" WHERE pk = '${pk}'`
+    const keySet = () => `SELECT * FROM "${compositeTableDef.name}" WHERE pk = '${pk}' AND (sk = 'row-1' OR sk = 'row-3')`
+
+    beforeAll(async () => {
+      if (!supported) return
+      for (const sk of rows) {
+        compositeKeysToCleanup.push({ pk: { S: pk }, sk: { S: sk } })
+        await ddb.send(new PutItemCommand({
+          TableName: compositeTableDef.name,
+          Item: { pk: { S: pk }, sk: { S: sk } },
+        }))
+      }
+    })
+
+    // The SDK sends Limit as a JSON number it has formatted itself, so the
+    // other spellings go in a body written by hand.
+    function rawPage(Statement: string, limit: string, NextToken?: string) {
+      const token = NextToken === undefined ? '' : `,"NextToken":${JSON.stringify(NextToken)}`
+      const body = `{"Statement":${JSON.stringify(Statement)},"ConsistentRead":true,"Limit":${limit}${token}}`
+      return ddb.send(withBody(new ExecuteStatementCommand({ Statement, ConsistentRead: true }), body))
+    }
+
+    const sortKeys = (items: Record<string, AttributeValue>[] | undefined) => (items ?? []).map((i) => i.sk.S)
+
+    it('a Limit at or past the 32-bit range returns the whole partition on one page', async () => {
+      for (const Limit of [2147483647, 2147483648, 2 ** 62, 2 ** 63]) {
+        const res = await ddb.send(new ExecuteStatementCommand({ Statement: partition(), Limit, ConsistentRead: true }))
+        expect(sortKeys(res.Items), String(Limit)).toEqual(rows)
+        expect(res.NextToken, String(Limit)).toBeUndefined()
+      }
+    })
+
+    it('a Limit near the 64-bit range returns a whole set of keys on one page', async () => {
+      for (const Limit of [2 ** 62, 2 ** 63]) {
+        const res = await ddb.send(new ExecuteStatementCommand({ Statement: keySet(), Limit, ConsistentRead: true }))
+        expect(sortKeys(res.Items), String(Limit)).toEqual(['row-1', 'row-3'])
+        expect(res.NextToken, String(Limit)).toBeUndefined()
+      }
+    })
+
+    it('a Limit written with an exponent or past 64 bits returns the whole partition on one page', async () => {
+      for (const limit of ['1E+2', '1e+20', '100000000000000000000', '18446744073709551617']) {
+        const res = await rawPage(partition(), limit)
+        expect(sortKeys(res.Items), limit).toEqual(rows)
+        expect(res.NextToken, limit).toBeUndefined()
+      }
+    })
+
+    for (const limit of ['1.0', '1.5']) {
+      it(`a Limit of ${limit} reads as 1, one row a page`, async () => {
+        // Whether an empty page follows the last row is not pinned; every page
+        // with rows holds exactly one, and together they cover the partition.
+        const pages: (string | undefined)[][] = []
+        let NextToken: string | undefined
+        for (let i = 0; i < rows.length + 2; i++) {
+          const res = await rawPage(partition(), limit, NextToken)
+          pages.push(sortKeys(res.Items))
+          NextToken = res.NextToken
+          if (!NextToken) break
+        }
+        expect(NextToken).toBeUndefined()
+        const filled = pages.filter((p) => p.length > 0)
+        expect(filled).toEqual(rows.map((r) => [r]))
+      })
+    }
   })
 
   // ── Error tests ───────────────────────────────────────────────────────

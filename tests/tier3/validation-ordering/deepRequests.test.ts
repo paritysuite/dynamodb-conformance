@@ -9,7 +9,7 @@ import {
 } from '@aws-sdk/client-dynamodb'
 import { ddb } from '../../../src/client.js'
 import { skipUnlessSupported } from '../../../src/infra.js'
-import { absentTableName } from '../../../src/helpers.js'
+import { absentTableName, withBody } from '../../../src/helpers.js'
 
 // Which error DynamoDB reports when a request carries a value nested past its
 // limits and something else is wrong as well. Captured in eu-west-2 and
@@ -27,10 +27,28 @@ import { absentTableName } from '../../../src/helpers.js'
 const NEST =
   'Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit'
 const nestForKey = (key: string) => `ExpressionAttributeValues contains invalid value: ${NEST} for key ${key}`
-const XOR_OLDER =
-  "1 validation error detected: Value 'XOR' at 'conditionalOperator' failed to satisfy constraint: Member must satisfy enum value set: [OR, AND]"
-const RV_OLDER =
-  "1 validation error detected: Value 'BOGUS' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]"
+
+// The older layer's member errors, and the envelope that joins them.
+const enumMember = (value: string, at: string, set: string) =>
+  `Value '${value}' at '${at}' failed to satisfy constraint: Member must satisfy enum value set: [${set}]`
+const RV = (value = 'BOGUS') => enumMember(value, 'returnValues', 'ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW')
+const CO = enumMember('XOR', 'conditionalOperator', 'OR, AND')
+const RCC = (value = 'BOGUS') => enumMember(value, 'returnConsumedCapacity', 'INDEXES, TOTAL, NONE')
+const RICM = enumMember('BOGUS', 'returnItemCollectionMetrics', 'SIZE, NONE')
+const RVOCCF = enumMember('BOGUS', 'returnValuesOnConditionCheckFailure', 'ALL_OLD, NONE')
+const missing = (at: string) => `Value null at '${at}' failed to satisfy constraint: Member must not be null`
+const detected = (...errors: string[]) =>
+  `${errors.length} validation error${errors.length === 1 ? '' : 's'} detected: ${errors.join('; ')}`
+
+// A table name's constraints, in the older layer's wording.
+const nameError = (value: string, rule: string) => `Value '${value}' at 'tableName' failed to satisfy constraint: Member must ${rule}`
+const EMPTY = 'have length greater than or equal to 1'
+const TOO_SHORT = 'have length greater than or equal to 3'
+const TOO_LONG = 'have length less than or equal to 255'
+const PATTERN = 'satisfy regular expression pattern: [a-zA-Z0-9_.-]+'
+
+const XOR_OLDER = detected(CO)
+const RV_OLDER = detected(RV())
 const SYNTAX = 'Invalid ConditionExpression: Syntax error; token: "=", near: "= = b"'
 const EMPTY_NAME = 'Empty attribute name'
 
@@ -44,6 +62,9 @@ function deep(depth: number): AttributeValue {
 
 const S = (s: string): AttributeValue => ({ S: s })
 const key = (pk: AttributeValue) => ({ pk, sk: S('1') })
+
+// An Expected value nested 100 levels, which sends a write to the older layer.
+const EXPECTED = { data: { Value: deep(100) }, other: { Value: S('a') } }
 
 async function refusal(send: () => Promise<unknown>): Promise<string> {
   try {
@@ -348,5 +369,415 @@ describe('Deep requests — DeleteItem ReturnValues', { tags: ['delete-item', 'd
       ddb.send(new DeleteItemCommand({ TableName: A, Key: key(S('a')), ...cond(100), ReturnValues: 'UPDATED_NEW' })),
     )
     expect(message).toBe('ReturnValues can only be ALL_OLD or NONE')
+  })
+})
+
+describe('Deep writes list every bad member in order', { tags: ['put-item', 'update-item', 'delete-item', 'legacy', 'data-plane', 'negative-path'] }, () => {
+  // Captured in 33 regions, 2026-11-05; every region gives the same answers.
+  //
+  // With an Expected value nested 100 levels, PutItem, UpdateItem and
+  // DeleteItem are read by the older layer, which lists every bad member in a
+  // fixed order per operation and joins them under one envelope:
+  //   PutItem:    returnValues, conditionalOperator, item, returnValuesOnConditionCheckFailure,
+  //               returnConsumedCapacity, returnItemCollectionMetrics
+  //   UpdateItem: returnConsumedCapacity, returnValues, conditionalOperator,
+  //               returnValuesOnConditionCheckFailure, returnItemCollectionMetrics, key
+  //   DeleteItem: returnValues, conditionalOperator, returnValuesOnConditionCheckFailure,
+  //               returnConsumedCapacity, returnItemCollectionMetrics, key
+  // The depth itself is never reported while a member is wrong.
+  const ALL_BAD = {
+    ConditionalOperator: 'XOR',
+    ReturnValues: 'BOGUS',
+    ReturnConsumedCapacity: 'BOGUS',
+    ReturnItemCollectionMetrics: 'BOGUS',
+    ReturnValuesOnConditionCheckFailure: 'BOGUS',
+  } as any
+  const put = (input: Record<string, unknown>) => () =>
+    ddb.send(new PutItemCommand({ TableName: A, Item: key(S('a')), Expected: EXPECTED, ...input } as any))
+  const update = (input: Record<string, unknown>) => () =>
+    ddb.send(new UpdateItemCommand({ TableName: A, Key: key(S('a')), Expected: EXPECTED, ...input } as any))
+  const del = (input: Record<string, unknown>) => () =>
+    ddb.send(new DeleteItemCommand({ TableName: A, Key: key(S('a')), Expected: EXPECTED, ...input } as any))
+
+  describe('PutItem', () => {
+    it('joins a bad ReturnValues and XOR', async () => {
+      expect(await refusal(put({ ConditionalOperator: 'XOR', ReturnValues: 'BOGUS' }))).toBe(detected(RV(), CO))
+    })
+
+    it('lists ReturnValues, XOR, then a bad ReturnConsumedCapacity', async () => {
+      const message = await refusal(put({ ConditionalOperator: 'XOR', ReturnValues: 'BOGUS', ReturnConsumedCapacity: 'BOGUS' }))
+      expect(message).toBe(detected(RV(), CO, RCC()))
+    })
+
+    it('lists ReturnValues, XOR, then a bad ReturnItemCollectionMetrics', async () => {
+      const message = await refusal(put({ ConditionalOperator: 'XOR', ReturnValues: 'BOGUS', ReturnItemCollectionMetrics: 'BOGUS' }))
+      expect(message).toBe(detected(RV(), CO, RICM))
+    })
+
+    it('lists ReturnValues then ReturnConsumedCapacity without XOR', async () => {
+      const message = await refusal(put({ ReturnValues: 'BOGUS', ReturnConsumedCapacity: 'BOGUS' }))
+      expect(message).toBe(detected(RV(), RCC()))
+    })
+
+    it('leaves a valid ReturnValues out of the list', async () => {
+      const message = await refusal(put({ ConditionalOperator: 'XOR', ReturnValues: 'NONE', ReturnConsumedCapacity: 'BOGUS' }))
+      expect(message).toBe(detected(CO, RCC()))
+    })
+
+    it('lists all five bad members in order', async () => {
+      expect(await refusal(put(ALL_BAD))).toBe(detected(RV(), CO, RVOCCF, RCC(), RICM))
+    })
+
+    it('lists a missing Item third among all five bad members', async () => {
+      const message = await refusal(() =>
+        ddb.send(new PutItemCommand({ TableName: A, Expected: EXPECTED, ...ALL_BAD } as any)),
+      )
+      expect(message).toBe(detected(RV(), CO, missing('item'), RVOCCF, RCC(), RICM))
+    })
+
+    it('reads a null Item as missing', async () => {
+      const body = { TableName: A, Item: null, Expected: EXPECTED, ReturnValues: 'BOGUS' }
+      const message = await refusal(() => ddb.send(withBody(new PutItemCommand({ TableName: A, Item: key(S('a')) }), body)))
+      expect(message).toBe(detected(RV(), missing('item')))
+    })
+  })
+
+  describe('UpdateItem', () => {
+    it('joins a bad ReturnValues and XOR', async () => {
+      expect(await refusal(update({ ConditionalOperator: 'XOR', ReturnValues: 'BOGUS' }))).toBe(detected(RV(), CO))
+    })
+
+    it('lists a bad ReturnConsumedCapacity ahead of ReturnValues and XOR', async () => {
+      const message = await refusal(update({ ConditionalOperator: 'XOR', ReturnValues: 'BOGUS', ReturnConsumedCapacity: 'BOGUS' }))
+      expect(message).toBe(detected(RCC(), RV(), CO))
+    })
+
+    it('lists ReturnValues, XOR, then a bad ReturnItemCollectionMetrics', async () => {
+      const message = await refusal(update({ ConditionalOperator: 'XOR', ReturnValues: 'BOGUS', ReturnItemCollectionMetrics: 'BOGUS' }))
+      expect(message).toBe(detected(RV(), CO, RICM))
+    })
+
+    it('lists ReturnConsumedCapacity, ReturnValues, XOR, then ReturnItemCollectionMetrics', async () => {
+      const message = await refusal(
+        update({ ConditionalOperator: 'XOR', ReturnValues: 'BOGUS', ReturnConsumedCapacity: 'BOGUS', ReturnItemCollectionMetrics: 'BOGUS' }),
+      )
+      expect(message).toBe(detected(RCC(), RV(), CO, RICM))
+    })
+
+    it('lists all five bad members in order', async () => {
+      expect(await refusal(update(ALL_BAD))).toBe(detected(RCC(), RV(), CO, RVOCCF, RICM))
+    })
+
+    it('lists a missing Key last among all five bad members', async () => {
+      const message = await refusal(() =>
+        ddb.send(new UpdateItemCommand({ TableName: A, Expected: EXPECTED, ...ALL_BAD } as any)),
+      )
+      expect(message).toBe(detected(RCC(), RV(), CO, RVOCCF, RICM, missing('key')))
+    })
+
+    it('lists a missing Key after ReturnValues and XOR', async () => {
+      const message = await refusal(() =>
+        ddb.send(new UpdateItemCommand({ TableName: A, Expected: EXPECTED, ConditionalOperator: 'XOR', ReturnValues: 'BOGUS' } as any)),
+      )
+      expect(message).toBe(detected(RV(), CO, missing('key')))
+    })
+
+    it('reads a null Key as missing', async () => {
+      const body = { TableName: A, Key: null, Expected: EXPECTED, ConditionalOperator: 'XOR', ReturnValues: 'BOGUS' }
+      const message = await refusal(() => ddb.send(withBody(new UpdateItemCommand({ TableName: A, Key: key(S('a')) }), body)))
+      expect(message).toBe(detected(RV(), CO, missing('key')))
+    })
+
+    it('keeps the envelope for a bad ReturnConsumedCapacity alone', async () => {
+      expect(await refusal(update({ ReturnConsumedCapacity: 'BOGUS' }))).toBe(detected(RCC()))
+    })
+
+    it('keeps the envelope for a bad ReturnValuesOnConditionCheckFailure alone', async () => {
+      expect(await refusal(update({ ReturnValuesOnConditionCheckFailure: 'BOGUS' }))).toBe(detected(RVOCCF))
+    })
+
+    it('treats a value that reads like an error header as a plain value', async () => {
+      const value = '1 validation error detected: z'
+      expect(await refusal(update({ ReturnConsumedCapacity: value }))).toBe(detected(RCC(value)))
+    })
+  })
+
+  describe('DeleteItem', () => {
+    it('joins a bad ReturnValues and XOR', async () => {
+      expect(await refusal(del({ ConditionalOperator: 'XOR', ReturnValues: 'BOGUS' }))).toBe(detected(RV(), CO))
+    })
+
+    it('lists ReturnValues, XOR, then a bad ReturnConsumedCapacity', async () => {
+      const message = await refusal(del({ ConditionalOperator: 'XOR', ReturnValues: 'BOGUS', ReturnConsumedCapacity: 'BOGUS' }))
+      expect(message).toBe(detected(RV(), CO, RCC()))
+    })
+
+    it('lists ReturnValues, XOR, then a bad ReturnItemCollectionMetrics', async () => {
+      const message = await refusal(del({ ConditionalOperator: 'XOR', ReturnValues: 'BOGUS', ReturnItemCollectionMetrics: 'BOGUS' }))
+      expect(message).toBe(detected(RV(), CO, RICM))
+    })
+
+    it('lists ReturnValues, XOR, ReturnConsumedCapacity, then ReturnItemCollectionMetrics', async () => {
+      const message = await refusal(
+        del({ ConditionalOperator: 'XOR', ReturnValues: 'BOGUS', ReturnConsumedCapacity: 'BOGUS', ReturnItemCollectionMetrics: 'BOGUS' }),
+      )
+      expect(message).toBe(detected(RV(), CO, RCC(), RICM))
+    })
+
+    it('lists ReturnValues, XOR, then a bad ReturnValuesOnConditionCheckFailure', async () => {
+      const message = await refusal(
+        del({ ConditionalOperator: 'XOR', ReturnValues: 'BOGUS', ReturnValuesOnConditionCheckFailure: 'BOGUS' }),
+      )
+      expect(message).toBe(detected(RV(), CO, RVOCCF))
+    })
+
+    it('lists all five bad members in order', async () => {
+      expect(await refusal(del(ALL_BAD))).toBe(detected(RV(), CO, RVOCCF, RCC(), RICM))
+    })
+
+    it('lists a missing Key last among all five bad members', async () => {
+      const message = await refusal(() =>
+        ddb.send(new DeleteItemCommand({ TableName: A, Expected: EXPECTED, ...ALL_BAD } as any)),
+      )
+      expect(message).toBe(detected(RV(), CO, RVOCCF, RCC(), RICM, missing('key')))
+    })
+
+    it('reads a null Key as missing', async () => {
+      const body = { TableName: A, Key: null, Expected: EXPECTED, ConditionalOperator: 'XOR' }
+      const message = await refusal(() => ddb.send(withBody(new DeleteItemCommand({ TableName: A, Key: key(S('a')) }), body)))
+      expect(message).toBe(detected(CO, missing('key')))
+    })
+
+    it('reports XOR alone ahead of the nesting error', async () => {
+      expect(await refusal(del({ ConditionalOperator: 'XOR' }))).toBe(detected(CO))
+    })
+
+    it('reports only XOR beside a ReturnValues of ALL_NEW', async () => {
+      expect(await refusal(del({ ConditionalOperator: 'XOR', ReturnValues: 'ALL_NEW' }))).toBe(detected(CO))
+    })
+
+    it('drops a ReturnValues of ALL_NEW beside a bad ReturnConsumedCapacity', async () => {
+      expect(await refusal(del({ ReturnValues: 'ALL_NEW', ReturnConsumedCapacity: 'BOGUS' }))).toBe(detected(RCC()))
+    })
+
+    it('keeps a value holding "; " as one error', async () => {
+      const message = await refusal(del({ ConditionalOperator: 'XOR', ReturnValues: 'A; B', ReturnConsumedCapacity: 'BOGUS' }))
+      expect(message).toBe(detected(RV('A; B'), CO, RCC()))
+    })
+  })
+})
+
+describe('Deep writes check the table name in two stages', { tags: ['put-item', 'update-item', 'delete-item', 'legacy', 'data-plane', 'negative-path'] }, () => {
+  // Captured in 33 regions, 2026-11-05; every region gives the same answers.
+  //
+  // With an Expected value nested 100 levels, a missing or empty table name is
+  // a member error, listed in a fixed place among the others: after
+  // returnItemCollectionMetrics on PutItem, after returnConsumedCapacity on
+  // UpdateItem, and after key on DeleteItem. Its length and pattern are
+  // checked only once every member passes, and then every broken constraint
+  // is listed, length first.
+  const ALL_BAD = {
+    ConditionalOperator: 'XOR',
+    ReturnValues: 'BOGUS',
+    ReturnConsumedCapacity: 'BOGUS',
+    ReturnItemCollectionMetrics: 'BOGUS',
+    ReturnValuesOnConditionCheckFailure: 'BOGUS',
+  } as any
+  const PUT_ITEM = { Item: key(S('a')), Expected: EXPECTED }
+  const WITH_KEY = { Key: key(S('a')), Expected: EXPECTED }
+  const put = (input: Record<string, unknown>) => () => ddb.send(new PutItemCommand({ Expected: EXPECTED, ...input } as any))
+  const update = (input: Record<string, unknown>) => () => ddb.send(new UpdateItemCommand({ Expected: EXPECTED, ...input } as any))
+  const del = (input: Record<string, unknown>) => () => ddb.send(new DeleteItemCommand({ Expected: EXPECTED, ...input } as any))
+
+  describe('PutItem', () => {
+    it('lists a missing name after a bad ReturnValues', async () => {
+      expect(await refusal(put({ ...PUT_ITEM, ReturnValues: 'BOGUS' }))).toBe(detected(RV(), missing('tableName')))
+    })
+
+    it('reports a missing name alone in the envelope', async () => {
+      expect(await refusal(put(PUT_ITEM))).toBe(detected(missing('tableName')))
+    })
+
+    it('lists a missing name last, after every bad member and the missing Item', async () => {
+      expect(await refusal(put(ALL_BAD))).toBe(
+        detected(RV(), CO, missing('item'), RVOCCF, RCC(), RICM, missing('tableName')),
+      )
+    })
+
+    it('lists an empty name as a member error after a bad ReturnValues', async () => {
+      expect(await refusal(put({ ...PUT_ITEM, TableName: '', ReturnValues: 'BOGUS' }))).toBe(detected(RV(), nameError('', EMPTY)))
+    })
+
+    it('lists an empty name after a missing Item', async () => {
+      expect(await refusal(put({ TableName: '' }))).toBe(detected(missing('item'), nameError('', EMPTY)))
+    })
+
+    it('drops a short name beside a bad ReturnValues', async () => {
+      expect(await refusal(put({ ...PUT_ITEM, TableName: 'ab', ReturnValues: 'BOGUS' }))).toBe(detected(RV()))
+    })
+
+    it('drops a name with bad characters beside a bad ReturnValues', async () => {
+      expect(await refusal(put({ ...PUT_ITEM, TableName: 'bad name!', ReturnValues: 'BOGUS' }))).toBe(detected(RV()))
+    })
+
+    it('drops a short name beside a missing Item', async () => {
+      expect(await refusal(put({ TableName: 'ab' }))).toBe(detected(missing('item')))
+    })
+
+    it('drops a 300-character name beside XOR and a bad ReturnValues', async () => {
+      const message = await refusal(put({ ...PUT_ITEM, TableName: 'x'.repeat(300), ConditionalOperator: 'XOR', ReturnValues: 'BOGUS' }))
+      expect(message).toBe(detected(RV(), CO))
+    })
+
+    it('reports a short name once every member passes', async () => {
+      expect(await refusal(put({ ...PUT_ITEM, TableName: 'ab' }))).toBe(detected(nameError('ab', TOO_SHORT)))
+    })
+
+    it('lists the length then the pattern for a short name with bad characters', async () => {
+      expect(await refusal(put({ ...PUT_ITEM, TableName: 'a!' }))).toBe(
+        detected(nameError('a!', TOO_SHORT), nameError('a!', PATTERN)),
+      )
+    })
+
+    it('lists the length then the pattern for a long name with bad characters', async () => {
+      const name = '!'.repeat(300)
+      expect(await refusal(put({ ...PUT_ITEM, TableName: name }))).toBe(detected(nameError(name, TOO_LONG), nameError(name, PATTERN)))
+    })
+
+    it('reports only the length for a long name with a valid pattern', async () => {
+      const name = 'x'.repeat(300)
+      expect(await refusal(put({ ...PUT_ITEM, TableName: name }))).toBe(detected(nameError(name, TOO_LONG)))
+    })
+  })
+
+  describe('UpdateItem', () => {
+    it('lists a missing name second, after a bad ReturnConsumedCapacity', async () => {
+      expect(await refusal(update(ALL_BAD))).toBe(
+        detected(RCC(), missing('tableName'), RV(), CO, RVOCCF, RICM, missing('key')),
+      )
+    })
+
+    it('lists an empty name as a member error after a bad ReturnConsumedCapacity', async () => {
+      const message = await refusal(update({ ...WITH_KEY, TableName: '', ReturnConsumedCapacity: 'BOGUS' }))
+      expect(message).toBe(detected(RCC(), nameError('', EMPTY)))
+    })
+
+    it('drops a short name beside a bad ReturnConsumedCapacity', async () => {
+      expect(await refusal(update({ ...WITH_KEY, TableName: 'ab', ReturnConsumedCapacity: 'BOGUS' }))).toBe(detected(RCC()))
+    })
+
+    it('drops a short name with bad characters beside a bad ReturnConsumedCapacity', async () => {
+      expect(await refusal(update({ ...WITH_KEY, TableName: 'a!', ReturnConsumedCapacity: 'BOGUS' }))).toBe(detected(RCC()))
+    })
+
+    it('drops a 300-character name beside a missing Key', async () => {
+      expect(await refusal(update({ TableName: 'x'.repeat(300) }))).toBe(detected(missing('key')))
+    })
+
+    it('lists the length then the pattern for a short name with bad characters', async () => {
+      expect(await refusal(update({ ...WITH_KEY, TableName: 'a!' }))).toBe(
+        detected(nameError('a!', TOO_SHORT), nameError('a!', PATTERN)),
+      )
+    })
+
+    it('lists the length then the pattern for a long name with bad characters', async () => {
+      const name = '!'.repeat(300)
+      expect(await refusal(update({ ...WITH_KEY, TableName: name }))).toBe(detected(nameError(name, TOO_LONG), nameError(name, PATTERN)))
+    })
+  })
+
+  describe('DeleteItem', () => {
+    it('lists a missing name after XOR', async () => {
+      expect(await refusal(del({ ...WITH_KEY, ConditionalOperator: 'XOR' }))).toBe(detected(CO, missing('tableName')))
+    })
+
+    it('lists a missing name last, after every bad member and the missing Key', async () => {
+      expect(await refusal(del(ALL_BAD))).toBe(
+        detected(RV(), CO, RVOCCF, RCC(), RICM, missing('key'), missing('tableName')),
+      )
+    })
+
+    it('reads a null name as missing and drops a ReturnValues of ALL_NEW beside XOR', async () => {
+      const body = { TableName: null, ...WITH_KEY, ReturnValues: 'ALL_NEW', ConditionalOperator: 'XOR' }
+      const message = await refusal(() => ddb.send(withBody(new DeleteItemCommand({ TableName: A, Key: key(S('a')) }), body)))
+      expect(message).toBe(detected(CO, missing('tableName')))
+    })
+
+    it('reports an empty name alone in the envelope', async () => {
+      expect(await refusal(del({ ...WITH_KEY, TableName: '' }))).toBe(detected(nameError('', EMPTY)))
+    })
+
+    it('drops a name with bad characters beside XOR', async () => {
+      expect(await refusal(del({ ...WITH_KEY, TableName: 'a!', ConditionalOperator: 'XOR' }))).toBe(detected(CO))
+    })
+
+    it('lists the length then the pattern for a short name with bad characters', async () => {
+      expect(await refusal(del({ ...WITH_KEY, TableName: 'a!' }))).toBe(
+        detected(nameError('a!', TOO_SHORT), nameError('a!', PATTERN)),
+      )
+    })
+
+    it('reports only the pattern for a long enough name with bad characters', async () => {
+      expect(await refusal(del({ ...WITH_KEY, TableName: 'bad name!' }))).toBe(detected(nameError('bad name!', PATTERN)))
+    })
+
+    it('reports the name errors ahead of a ReturnValues of ALL_NEW', async () => {
+      const message = await refusal(del({ ...WITH_KEY, TableName: 'a!', ReturnValues: 'ALL_NEW' }))
+      expect(message).toBe(detected(nameError('a!', TOO_SHORT), nameError('a!', PATTERN)))
+    })
+
+    it('keeps the bare ReturnValues sentence for ALL_NEW alone', async () => {
+      expect(await refusal(del({ ...WITH_KEY, TableName: A, ReturnValues: 'ALL_NEW' }))).toBe('ReturnValues can only be ALL_OLD or NONE')
+    })
+  })
+})
+
+describe('Deep writes count a table name in UTF-16 units', { tags: ['put-item', 'update-item', 'delete-item', 'legacy', 'data-plane', 'negative-path'] }, () => {
+  // Captured in 33 regions, 2026-11-05; every region gives the same answers.
+  //
+  // The older layer measures the name in UTF-16 code units. An emoji outside
+  // the Basic Multilingual Plane is two units, so two of them are long enough
+  // and 128 are too long, while each accented letter is one unit.
+  const TWO_EMOJI = '😀😀'
+  const MANY_EMOJI = '😀'.repeat(128)
+  const put = (TableName: string) => () => ddb.send(new PutItemCommand({ TableName, Item: key(S('a')), Expected: EXPECTED }))
+  const update = (TableName: string) => () => ddb.send(new UpdateItemCommand({ TableName, Key: key(S('a')), Expected: EXPECTED }))
+  const del = (TableName: string) => () => ddb.send(new DeleteItemCommand({ TableName, Key: key(S('a')), Expected: EXPECTED }))
+
+  it('PutItem finds two accented letters too short', async () => {
+    expect(await refusal(put('éé'))).toBe(detected(nameError('éé', TOO_SHORT), nameError('éé', PATTERN)))
+  })
+
+  it('PutItem does not find 200 accented letters too long', async () => {
+    const name = 'é'.repeat(200)
+    expect(await refusal(put(name))).toBe(detected(nameError(name, PATTERN)))
+  })
+
+  it('PutItem does not find two emoji too short', async () => {
+    expect(await refusal(put(TWO_EMOJI))).toBe(detected(nameError(TWO_EMOJI, PATTERN)))
+  })
+
+  it('UpdateItem finds two accented letters too short', async () => {
+    expect(await refusal(update('éé'))).toBe(detected(nameError('éé', TOO_SHORT), nameError('éé', PATTERN)))
+  })
+
+  it('UpdateItem does not find two emoji too short', async () => {
+    expect(await refusal(update(TWO_EMOJI))).toBe(detected(nameError(TWO_EMOJI, PATTERN)))
+  })
+
+  it('UpdateItem finds 128 emoji too long', async () => {
+    expect(await refusal(update(MANY_EMOJI))).toBe(detected(nameError(MANY_EMOJI, TOO_LONG), nameError(MANY_EMOJI, PATTERN)))
+  })
+
+  it('DeleteItem finds two accented letters too short', async () => {
+    expect(await refusal(del('éé'))).toBe(detected(nameError('éé', TOO_SHORT), nameError('éé', PATTERN)))
+  })
+
+  it('DeleteItem does not find two emoji too short', async () => {
+    expect(await refusal(del(TWO_EMOJI))).toBe(detected(nameError(TWO_EMOJI, PATTERN)))
+  })
+
+  it('DeleteItem finds 128 emoji too long', async () => {
+    expect(await refusal(del(MANY_EMOJI))).toBe(detected(nameError(MANY_EMOJI, TOO_LONG), nameError(MANY_EMOJI, PATTERN)))
   })
 })

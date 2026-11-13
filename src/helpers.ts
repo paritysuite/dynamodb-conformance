@@ -3,6 +3,7 @@ import {
   DeleteTableCommand,
   DeleteItemCommand,
   DescribeTableCommand,
+  ExecuteStatementCommand,
   UpdateTableCommand,
   UpdateContinuousBackupsCommand,
   ListTablesCommand,
@@ -548,6 +549,89 @@ export async function waitForGsiConsistency(opts: WaitForGsiOptions): Promise<vo
   )
 }
 
+interface WaitForReadsToSettleOptions {
+  tableName: string
+  /** Read through this index (an LSI, so it can be read consistently) rather than the table. */
+  indexName?: string
+  partitionKey: { name: string; value: AttributeValue }
+  expectedCount: number
+  timeoutMs?: number
+}
+
+/**
+ * Wait until an eventually consistent PartiQL read of one partition sees every
+ * row just written, three reads running, so a test that pins exact pages
+ * doesn't read a replica the writes haven't reached yet.
+ *
+ * Throws only when the answer is genuinely missing: a consistent Query and a
+ * consistent PartiQL read both see every row, and the eventually consistent
+ * reads never caught up. Anything that is an answer returns instead, so the
+ * tests run and fail on it: too many rows, a consistent read that is short as
+ * well, or a statement the target rejects outright.
+ *
+ * Await it from a test or a beforeEach, never from a describe-level beforeAll.
+ * Vitest reports every test under a failed beforeAll as skipped, which reads
+ * as "not implemented" rather than as a failed observation.
+ */
+export async function waitForReadsToSettle(opts: WaitForReadsToSettleOptions): Promise<void> {
+  const { tableName, indexName, partitionKey, expectedCount, timeoutMs = 15_000 } = opts
+  const from = indexName ? `"${tableName}"."${indexName}"` : `"${tableName}"`
+  const Statement = `SELECT * FROM ${from} WHERE ${partitionKey.name} = ?`
+  const Parameters = [partitionKey.value]
+
+  /** Rows a read returned, or null when the target answered with a rejection. */
+  async function rows(read: () => Promise<number>): Promise<number | null> {
+    try {
+      return await read()
+    } catch (e: unknown) {
+      if (indeterminateFrom(e)) throw e
+      return null
+    }
+  }
+  const viaPartiql = (ConsistentRead: boolean) =>
+    rows(async () => {
+      const res = await ddb.send(new ExecuteStatementCommand({ Statement, Parameters, ConsistentRead }))
+      return (res.Items ?? []).length
+    })
+
+  const start = Date.now()
+  let streak = 0
+  let seen = 0
+  for (;;) {
+    const read = await viaPartiql(false)
+    if (read === null || read > expectedCount) return
+    seen = read
+    streak = seen === expectedCount ? streak + 1 : 0
+    if (streak === 3) return
+    if (Date.now() - start >= timeoutMs) break
+    await sleep(250)
+  }
+
+  // The eventually consistent reads never saw every row. That is a failed
+  // observation only if the rows are there to see and PartiQL can see them.
+  const stored = await rows(async () => {
+    const res = await ddb.send(
+      new QueryCommand({
+        TableName: tableName,
+        IndexName: indexName,
+        KeyConditionExpression: '#pk = :pk',
+        ExpressionAttributeNames: { '#pk': partitionKey.name },
+        ExpressionAttributeValues: { ':pk': partitionKey.value },
+        ConsistentRead: true,
+      }),
+    )
+    return res.Count ?? 0
+  })
+  if (stored !== expectedCount) return
+  if ((await viaPartiql(true)) !== expectedCount) return
+
+  throw new IndeterminateError(
+    'read-settle-timeout',
+    `Timeout waiting for an eventually consistent read to see ${expectedCount} rows in ` +
+      `partition ${JSON.stringify(partitionKey.value)} of ${from}; the last read saw ${seen}`,
+  )
+}
+
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms))
 }
@@ -699,6 +783,68 @@ export const partiqlIndexTableDef: TestTableDef = {
  */
 export const PARTIQL_UNPROJECTED_ATTR = 'nonproj'
 
+/**
+ * A table for reading rows tied on an index key. Each caller creates its own
+ * from a fresh name, so the order it reads back comes from the key values alone
+ * rather than from anything a shared table picked up earlier in the run.
+ *
+ * `l-all` is an LSI on (pk, l) and `g-all` a GSI on (g, l), both projecting
+ * everything. Every row under `pk = 'tie'` carries `l = 't'` and `g = 'tie'`, so
+ * both indexes hold six rows on a single key.
+ */
+export function tieOrderTableInput(tableName: string): CreateTableCommandInput {
+  return {
+    TableName: tableName,
+    BillingMode: 'PAY_PER_REQUEST',
+    AttributeDefinitions: ['pk', 'sk', 'l', 'g'].map((name) => ({
+      AttributeName: name,
+      AttributeType: 'S' as const,
+    })),
+    KeySchema: [
+      { AttributeName: 'pk', KeyType: 'HASH' },
+      { AttributeName: 'sk', KeyType: 'RANGE' },
+    ],
+    LocalSecondaryIndexes: [
+      {
+        IndexName: 'l-all',
+        KeySchema: [
+          { AttributeName: 'pk', KeyType: 'HASH' },
+          { AttributeName: 'l', KeyType: 'RANGE' },
+        ],
+        Projection: { ProjectionType: 'ALL' },
+      },
+    ],
+    GlobalSecondaryIndexes: [
+      {
+        IndexName: 'g-all',
+        KeySchema: [
+          { AttributeName: 'g', KeyType: 'HASH' },
+          { AttributeName: 'l', KeyType: 'RANGE' },
+        ],
+        Projection: { ProjectionType: 'ALL' },
+      },
+    ],
+  }
+}
+
+/**
+ * The rows for tieOrderTableInput, in the order they are written. That order is
+ * deliberately neither sorted nor reverse-sorted, so a read that returns write
+ * order, or plain sort-key order, cannot pass for the tie order by accident.
+ *
+ * Partition `tie` holds `row-a` to `row-f`, all tied on both indexes. Partition
+ * `k` holds `row-1` to `row-4` with `l` = a, b, b, c, so `row-2` and `row-3` tie
+ * on the LSI.
+ */
+export const TIE_ORDER_ITEMS: Record<string, AttributeValue>[] = [
+  ...['row-d', 'row-f', 'row-a', 'row-c', 'row-e', 'row-b'].map((sk) => ({
+    pk: { S: 'tie' }, sk: { S: sk }, l: { S: 't' }, g: { S: 'tie' },
+  })),
+  ...([['row-3', '3', 'b'], ['row-1', '1', 'a'], ['row-4', '4', 'c'], ['row-2', '2', 'b']] as const).map(
+    ([sk, x, l]) => ({ pk: { S: 'k' }, sk: { S: sk }, x: { N: x }, l: { S: l }, g: { S: 'k' } }),
+  ),
+]
+
 // The tables the 400KB item-size work writes to, and nothing else does.
 //
 // Those tests write items a few bytes under the item limit, dozens of them, and
@@ -753,4 +899,24 @@ export const compositeBTableDef: TestTableDef = {
   name: uniqueTableName('compositeB'),
   hashKey: { name: 'pk', type: 'S' },
   rangeKey: { name: 'sk', type: 'B' },
+}
+
+// Replaces a command's serialised body before signing. The SDK drops null
+// members and refuses wrong-typed ones, so a raw body is the only way to send
+// them. A string body is sent as written, for number spellings such as `1.0`
+// or `1e+20` that JSON.stringify would rewrite.
+export function withBody<C extends { middlewareStack: { add: (...args: any[]) => void } }>(
+  command: C,
+  body: Record<string, unknown> | string,
+): C {
+  const json = typeof body === 'string' ? body : JSON.stringify(body)
+  command.middlewareStack.add(
+    (next: (args: any) => Promise<unknown>) => async (args: any) => {
+      args.request.body = json
+      args.request.headers['content-length'] = String(Buffer.byteLength(json))
+      return next(args)
+    },
+    { step: 'build', priority: 'high', name: 'rawBody' },
+  )
+  return command
 }
