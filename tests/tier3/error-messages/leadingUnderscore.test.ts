@@ -101,7 +101,7 @@ describe('Leading underscore — exact error messages', { tags: ['query', 'scan'
   })
 
   // The write expressions carry the single-error envelope in every region on
-  // the newer validation layer. me-central-1 still answers without it.
+  // the newer validation layer. me-central-1 answered without it on 2026-11-05.
   it('in a ConditionExpression', async (ctx) => {
     // Split behaviour (registry row condition-expression-leading-underscore-message).
     const got = await refusal(() =>

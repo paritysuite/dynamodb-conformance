@@ -16,9 +16,9 @@ import { observeSplit } from '../../../src/observation-sink.js'
 // A shallow request counts the name in characters, so two emoji are too short
 // and 128 emoji are not too long. It reports the first broken constraint
 // alone, except on UpdateItem, which lists the pattern and then the length.
-// me-central-1, and eu-north-1 on Scan, still count UTF-16 units and list both
-// constraints, so the cases that tell the two apart are split by region and
-// pin the eu-west-2 answer.
+// On 2026-11-05, me-central-1, and eu-north-1 on Scan, counted UTF-16 units and
+// listed both constraints, so the cases that tell the two apart are split by
+// region and pin the eu-west-2 answer.
 
 const TWO_EMOJI = '😀😀'
 const MANY_EMOJI = '😀'.repeat(128)
@@ -58,9 +58,9 @@ describe('Item operations count a table name in characters', { tags: ['put-item'
   })
 })
 
-// The older validation layer, still serving me-central-1 (and eu-north-1 on
-// Scan), counts these names in UTF-16 units, so registry/splits.json carries
-// its answers beside the pinned one.
+// The older validation layer, which served me-central-1 (and eu-north-1 on
+// Scan) on 2026-11-05, counts these names in UTF-16 units, so
+// registry/splits.json carries its answers beside the pinned one.
 describe('Item operations count a table name in characters, split by region', { tags: ['put-item', 'update-item', 'get-item', 'delete-item', 'query', 'scan', 'data-plane', 'negative-path'] }, () => {
   it('PutItem reports only the length for two accented letters', async (ctx) => {
     // Split behaviour (registry row put-item-two-accented-table-name).

@@ -54,10 +54,14 @@ member errors, while length and pattern errors only show when nothing else is
 wrong.
 
 Fourteen new rows in `registry/splits.json` record where me-central-1, and
-eu-north-1 on Scan, still give the older validation layer's answer to the
-shallow table-name and leading-underscore cases. The other regions agree with
-eu-west-2. The answers from all 33 regions on 2026-11-05 are in
-`captures/2026-11-05-shallow-validation-rollout.json`.
+eu-north-1 on Scan, gave the older validation layer's answer to the shallow
+table-name and leading-underscore cases on 2026-11-05. The other regions agree
+with eu-west-2. The answers from all 33 regions on 2026-11-05 are in
+`captures/2026-11-05-shallow-validation-rollout.json`. On three later runs on
+2026-11-13, me-central-1 gave eu-west-2's answer to the twelve cases that aren't
+Scan (once cut short, on UpdateItem) and eu-north-1 gave it on Scan, so the rows
+keep the 2026-11-05 answers until a sweep has run the tests. Those runs are in
+`captures/2026-11-13-shallow-validation-follow-up.json`.
 
 ## 2026-11-02 (3.9.0)
 
