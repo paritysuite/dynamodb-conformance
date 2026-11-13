@@ -1,8 +1,11 @@
 import {
+  GetItemCommand,
   PutItemCommand,
   QueryCommand,
   ScanCommand,
   UpdateItemCommand,
+  type AttributeValue,
+  type ScanCommandOutput,
 } from '@aws-sdk/client-dynamodb'
 import { ddb } from '../../../src/client.js'
 import {
@@ -143,16 +146,24 @@ describe('Leading underscore in expressions', { tags: ['query', 'scan', 'put-ite
   })
 
   it('accepts one through an alias in a Scan filter', async () => {
-    const res = await ddb.send(
-      new ScanCommand({
-        TableName: T,
-        FilterExpression: 'pk = :p AND sk = :s AND attribute_exists(#x)',
-        ExpressionAttributeNames: { '#x': '_x' },
-        ExpressionAttributeValues: { ':p': { S: PK }, ':s': { S: 'row' } },
-        ConsistentRead: true,
-      }),
-    )
-    expect(res.Items?.map((i) => i.sk.S)).toEqual(['row'])
+    // The table is shared, so the row can sit on any page of the Scan.
+    const found: Record<string, AttributeValue>[] = []
+    let lastKey: Record<string, AttributeValue> | undefined = undefined
+    do {
+      const page: ScanCommandOutput = await ddb.send(
+        new ScanCommand({
+          TableName: T,
+          FilterExpression: 'pk = :p AND sk = :s AND attribute_exists(#x)',
+          ExpressionAttributeNames: { '#x': '_x' },
+          ExpressionAttributeValues: { ':p': { S: PK }, ':s': { S: 'row' } },
+          ExclusiveStartKey: lastKey,
+          ConsistentRead: true,
+        }),
+      )
+      found.push(...(page.Items ?? []))
+      lastKey = page.LastEvaluatedKey
+    } while (lastKey)
+    expect(found.map((i) => i.sk.S)).toEqual(['row'])
   })
 
   // The table's keys have no underscore, so this pins only that an alias
@@ -179,6 +190,10 @@ describe('Leading underscore in expressions', { tags: ['query', 'scan', 'put-ite
         ExpressionAttributeNames: { '#x': '_x' },
       }),
     )
+    const got = await ddb.send(
+      new GetItemCommand({ TableName: T, Key: { pk: { S: PK }, sk: { S: 'cond-alias' } }, ConsistentRead: true }),
+    )
+    expect(got.Item).toEqual({ pk: { S: PK }, sk: { S: 'cond-alias' } })
   })
 
   it('accepts one through an alias in an UpdateExpression', async () => {

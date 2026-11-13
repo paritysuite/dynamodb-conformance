@@ -255,13 +255,15 @@ describe('PartiQL - read capacity of OR and IN on the sort key', { tags: ['parti
 // Captured in eu-west-2 and us-east-1, 2026-11-04 and 2026-11-05.
 //
 // A partition key that can't name a partition (a boolean, or a number on a
-// string key) beside closed sort-key ranges is accepted, finds nothing, and
-// costs a fixed 2 eventually consistent and 4 under ConsistentRead, however
-// many ranges there are. The charge has varied with the table before, so it is
-// read on a small table of its own.
+// string key) beside closed sort-key ranges is accepted and finds nothing. The
+// read covers the whole table, so it costs what reading the whole table does,
+// however many ranges there are: 2 eventually consistent and 4 under
+// ConsistentRead on the small on-demand table created here. A larger table
+// costs more, which is why the test has a table of its own.
 describe('PartiQL - read capacity of a partition key that cannot be a key', { tags: ['partiql', 'data-plane'] }, () => {
   let supported = true
   const T = uniqueTableName('pqUnkeyable')
+  let ready: Promise<void> = Promise.resolve()
 
   const RANGES = [
     `(sk >= 'a' AND sk <= 'b')`,
@@ -283,22 +285,28 @@ describe('PartiQL - read capacity of a partition key that cannot be a key', { ta
         return
       }
     }
-    await ddb.send(new CreateTableCommand({
-      TableName: T,
-      BillingMode: 'PAY_PER_REQUEST',
-      AttributeDefinitions: [
-        { AttributeName: 'pk', AttributeType: 'S' },
-        { AttributeName: 'sk', AttributeType: 'S' },
-      ],
-      KeySchema: [
-        { AttributeName: 'pk', KeyType: 'HASH' },
-        { AttributeName: 'sk', KeyType: 'RANGE' },
-      ],
-    }))
-    await waitUntilActive(T)
-    for (const sk of ['row-1', 'row-2', 'row-3']) {
-      await ddb.send(new PutItemCommand({ TableName: T, Item: { pk: { S: 'k' }, sk: { S: sk } } }))
-    }
+    // Started here and awaited before each case, so a table that never becomes
+    // ACTIVE fails every case as a failed observation instead of skipping them
+    // all.
+    ready = (async () => {
+      await ddb.send(new CreateTableCommand({
+        TableName: T,
+        BillingMode: 'PAY_PER_REQUEST',
+        AttributeDefinitions: [
+          { AttributeName: 'pk', AttributeType: 'S' },
+          { AttributeName: 'sk', AttributeType: 'S' },
+        ],
+        KeySchema: [
+          { AttributeName: 'pk', KeyType: 'HASH' },
+          { AttributeName: 'sk', KeyType: 'RANGE' },
+        ],
+      }))
+      await waitUntilActive(T)
+      for (const sk of ['row-1', 'row-2', 'row-3']) {
+        await ddb.send(new PutItemCommand({ TableName: T, Item: { pk: { S: 'k' }, sk: { S: sk } } }))
+      }
+    })()
+    ready.catch(() => {})
   })
 
   afterAll(async () => {
@@ -306,7 +314,10 @@ describe('PartiQL - read capacity of a partition key that cannot be a key', { ta
     await deleteTable(T)
   })
 
-  beforeEach(({ skip }) => { if (!supported) skip() })
+  beforeEach(async ({ skip }) => {
+    if (!supported) skip()
+    await ready
+  })
 
   it.each([
     { label: 'pk = true', literal: 'true', count: 1, ranges: 'one closed range' },

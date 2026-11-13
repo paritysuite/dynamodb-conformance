@@ -27,32 +27,42 @@ async function sortKeys(Statement: string): Promise<(string | undefined)[]> {
 
 describe('ExecuteStatement - order of rows tied on an index key', { tags: ['partiql', 'data-plane', 'gsi', 'lsi'] }, () => {
   let supported = true
+  let ready: Promise<void> = Promise.resolve()
 
-  beforeAll(async () => {
-    await ddb.send(new CreateTableCommand(tieOrderTableInput(tableName)))
-    await waitUntilActive(tableName)
+  // Started here and awaited before each case, so a table that never becomes
+  // ACTIVE fails every case as a failed observation instead of skipping them
+  // all.
+  beforeAll(() => {
+    ready = (async () => {
+      await ddb.send(new CreateTableCommand(tieOrderTableInput(tableName)))
+      await waitUntilActive(tableName)
 
-    try {
-      await ddb.send(new ExecuteStatementCommand({
-        Statement: `SELECT * FROM "${tableName}" WHERE pk = 'partiql-canary'`,
-      }))
-    } catch (e: unknown) {
-      // The suite's definition of "not implemented", so a target declining
-      // PartiQL skips rather than failing every case here.
-      if (isUnsupportedFault(e) || (e instanceof Error && e.name === 'UnrecognizedClientException')) {
-        supported = false
-        return
+      try {
+        await ddb.send(new ExecuteStatementCommand({
+          Statement: `SELECT * FROM "${tableName}" WHERE pk = 'partiql-canary'`,
+        }))
+      } catch (e: unknown) {
+        // The suite's definition of "not implemented", so a target declining
+        // PartiQL skips rather than failing every case here.
+        if (isUnsupportedFault(e) || (e instanceof Error && e.name === 'UnrecognizedClientException')) {
+          supported = false
+          return
+        }
       }
-    }
 
-    // Only the LSI is read here, and an LSI is written with the table, so there
-    // is no index fill to wait for.
-    for (const Item of TIE_ORDER_ITEMS) {
-      await ddb.send(new PutItemCommand({ TableName: tableName, Item }))
-    }
+      // Only the LSI is read here, and an LSI is written with the table, so
+      // there is no index fill to wait for.
+      for (const Item of TIE_ORDER_ITEMS) {
+        await ddb.send(new PutItemCommand({ TableName: tableName, Item }))
+      }
+    })()
+    ready.catch(() => {})
   })
 
-  beforeEach(({ skip }) => { if (!supported) skip() })
+  beforeEach(async ({ skip }) => {
+    await ready
+    if (!supported) skip()
+  })
 
   afterAll(async () => {
     await deleteTable(tableName)

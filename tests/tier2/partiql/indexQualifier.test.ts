@@ -14,6 +14,7 @@ import {
   PARTIQL_UNPROJECTED_ATTR,
   cleanupItems,
   waitForGsiConsistency,
+  waitForReadsToSettle,
 } from '../../../src/helpers.js'
 
 declareTables(partiqlIndexTableDef)
@@ -109,6 +110,7 @@ const attrsOf = (item: Record<string, AttributeValue>) => Object.keys(item).sort
 
 describe('ExecuteStatement — index qualifier', { tags: ['partiql', 'data-plane', 'gsi', 'lsi'] }, () => {
   let supported = true
+  let lsiSetSettled: Promise<void> = Promise.resolve()
 
   beforeAll(async () => {
     try {
@@ -127,6 +129,17 @@ describe('ExecuteStatement — index qualifier', { tags: ['partiql', 'data-plane
     for (const Item of [...ITEMS, ...LSI_SET_ITEMS]) {
       await ddb.send(new PutItemCommand({ TableName: TABLE, Item }))
     }
+
+    // The LSI key-set walks pin exact pages on eventually consistent reads.
+    // Awaited by those walks rather than here, so reads that never settle fail
+    // them as a failed observation instead of skipping the whole file.
+    lsiSetSettled = waitForReadsToSettle({
+      tableName: TABLE,
+      indexName: 'lsi-all',
+      partitionKey: { name: 'pk', value: { S: 'lk' } },
+      expectedCount: LSI_SET_ITEMS.length,
+    })
+    lsiSetSettled.catch(() => {})
 
     // A GSI fills asynchronously, and a read of one still filling is
     // indistinguishable from an engine returning the wrong rows.
@@ -463,6 +476,7 @@ describe('ExecuteStatement — index qualifier', { tags: ['partiql', 'data-plane
 
     /** Walk a statement a page at a time and record what each page held. */
     async function walk(Statement: string, extra: Record<string, unknown> = {}) {
+      await lsiSetSettled
       const pages: { items: (string | undefined)[]; token: boolean; total: number }[] = []
       let NextToken: string | undefined
       // Capped so an engine that never stops minting tokens fails rather than hangs.

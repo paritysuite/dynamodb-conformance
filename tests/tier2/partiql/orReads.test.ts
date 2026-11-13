@@ -2,15 +2,20 @@ import { ExecuteStatementCommand, PutItemCommand } from '@aws-sdk/client-dynamod
 import type { AttributeValue } from '@aws-sdk/client-dynamodb'
 import { ddb } from '../../../src/client.js'
 import { isUnsupportedFault } from '../../../src/infra.js'
-import { IndeterminateError } from '../../../src/indeterminate.js'
-import { declareTables, compositeTableDef, compositeNTableDef, cleanupItems } from '../../../src/helpers.js'
+import {
+  declareTables,
+  compositeTableDef,
+  compositeNTableDef,
+  cleanupItems,
+  waitForReadsToSettle,
+} from '../../../src/helpers.js'
 
 declareTables(compositeTableDef, compositeNTableDef)
 
 // How a PartiQL SELECT whose OR branches stay in one partition pages under
 // `Limit`. Captured in eu-west-2 and us-east-1, 2026-11-03 to 2026-11-05. Every
 // full page sequence pinned here (items, token and cost on each page) gave the
-// same answer on at least ten walks across fresh tables. Where a page ends
+// same answer on every walk in both regions. Where a page ends
 // inside an open range DynamoDB sometimes keeps the token for one more, empty
 // page and sometimes doesn't, so those reads assert only the rows walked.
 //
@@ -80,34 +85,13 @@ async function walk(
 /** Every row a walk returned, in sort order, duplicates kept. */
 const rowsWalked = (pages: Page[]) => pages.flatMap((p) => p.items).sort()
 
-/**
- * Wait until an eventually consistent read of a partition sees every row,
- * three reads running, so the walks below don't read a replica the writes
- * haven't reached yet.
- */
-async function settle(table: string, pk: string, count: number): Promise<void> {
-  let streak = 0
-  let seen = 0
-  for (let i = 0; i < 60 && streak < 3; i++) {
-    const res = await ddb.send(new ExecuteStatementCommand({
-      Statement: `SELECT * FROM "${table}" WHERE pk = '${pk}'`,
-    }))
-    seen = (res.Items ?? []).length
-    streak = seen === count ? streak + 1 : 0
-    if (streak < 3) await new Promise((r) => setTimeout(r, 250))
-  }
-  // Too few rows means the writes never showed up, which is no answer at all.
-  // Too many is a real answer, so the cases go on and fail on it.
-  if (streak < 3 && seen < count) {
-    throw new IndeterminateError(
-      'read-settle-timeout',
-      `Timeout waiting for ${count} rows in partition ${pk} of ${table}; the last read saw ${seen}`,
-    )
-  }
-}
+/** Wait until eventually consistent reads of a partition see all its rows. */
+const settle = (tableName: string, pk: string, expectedCount: number) =>
+  waitForReadsToSettle({ tableName, partitionKey: { name: 'pk', value: { S: pk } }, expectedCount })
 
 describe('PartiQL - OR reads in one partition: paging', { tags: ['partiql', 'data-plane'] }, () => {
   let supported = true
+  let settled: Promise<unknown> = Promise.resolve()
 
   beforeAll(async () => {
     try {
@@ -124,12 +108,20 @@ describe('PartiQL - OR reads in one partition: paging', { tags: ['partiql', 'dat
     }
     for (const Item of TABLE_ITEMS) await ddb.send(new PutItemCommand({ TableName: T, Item }))
     for (const Item of NUMBER_ITEMS) await ddb.send(new PutItemCommand({ TableName: TN, Item }))
-    for (const pk of [KEYS, MISSING, SINGLE, IN]) await settle(T, pk, 4)
-    for (const pk of [BOUNDS, UNION]) await settle(T, pk, 3)
-    await settle(TN, NUMBERS, 4)
+    // Started here and awaited before each case, so reads that never settle
+    // fail every case as a failed observation instead of skipping them all.
+    settled = Promise.all([
+      ...[KEYS, MISSING, SINGLE, IN].map((pk) => settle(T, pk, 4)),
+      ...[BOUNDS, UNION].map((pk) => settle(T, pk, 3)),
+      settle(TN, NUMBERS, 4),
+    ])
+    settled.catch(() => {})
   })
 
-  beforeEach(({ skip }) => { if (!supported) skip() })
+  beforeEach(async ({ skip }) => {
+    if (!supported) skip()
+    await settled
+  })
 
   afterAll(async () => {
     await cleanupItems(T, TABLE_ITEMS.map(({ pk, sk }) => ({ pk, sk })))

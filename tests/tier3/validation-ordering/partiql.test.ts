@@ -98,8 +98,8 @@ describe('PartiQL — validation ordering', { tags: ['partiql', 'data-plane', 'n
       }))
       expect.unreachable('should have thrown')
     } catch (err) {
-      expect(err).toBeInstanceOf(DynamoDBServiceException)
-      expect((err as DynamoDBServiceException).name).toBe('ResourceNotFoundException')
+      if (!(err instanceof DynamoDBServiceException)) throw err
+      expect(err.name).toBe('ResourceNotFoundException')
     }
   })
 
@@ -110,8 +110,8 @@ describe('PartiQL — validation ordering', { tags: ['partiql', 'data-plane', 'n
       }))
       expect.unreachable('should have thrown')
     } catch (err) {
-      expect(err).toBeInstanceOf(DynamoDBServiceException)
-      expect((err as DynamoDBServiceException).name).toBe('ResourceNotFoundException')
+      if (!(err instanceof DynamoDBServiceException)) throw err
+      expect(err.name).toBe('ResourceNotFoundException')
     }
   })
 
@@ -125,9 +125,9 @@ describe('PartiQL — validation ordering', { tags: ['partiql', 'data-plane', 'n
       }))
       expect.unreachable('should have thrown')
     } catch (err) {
-      expect(err).toBeInstanceOf(DynamoDBServiceException)
-      expect((err as DynamoDBServiceException).name).toBe('ValidationException')
-      expect((err as DynamoDBServiceException).message).toContain(`Value '${Limit}' at 'limit' failed to satisfy constraint`)
+      if (!(err instanceof DynamoDBServiceException)) throw err
+      expect(err.name).toBe('ValidationException')
+      expect(err.message).toContain(`Value '${Limit}' at 'limit' failed to satisfy constraint`)
     }
   })
 
@@ -139,8 +139,8 @@ describe('PartiQL — validation ordering', { tags: ['partiql', 'data-plane', 'n
       await ddb.send(withBody(new ExecuteStatementCommand({ Statement }), { Statement, Limit: '2' }))
       expect.unreachable('should have thrown')
     } catch (err) {
-      expect(err).toBeInstanceOf(DynamoDBServiceException)
-      expect((err as DynamoDBServiceException).name).toBe('SerializationException')
+      if (!(err instanceof DynamoDBServiceException)) throw err
+      expect(err.name).toBe('SerializationException')
     }
   })
 })

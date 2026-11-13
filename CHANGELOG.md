@@ -11,13 +11,15 @@ section its date and version, so several branches can write ahead of one.
 PartiQL reads whose OR branches stay in one partition now have paging and
 capacity tests. Under `Limit`, a set of sort keys ends on its last key, a
 missing last key keeps the token for one empty half-unit page, and a branch the
-read hasn't reached holds the token. Each shape gave the same pages on twelve
-walks across six fresh tables in eu-west-2 and us-east-1 on 2026-11-05. Page
-endings that DynamoDB answers at random, such as a page ending inside an open
-range, are checked only for the keys they return. Each branch costs a unit
-under `ConsistentRead` even when it finds nothing, a sort-key `IN` costs and
-pages exactly as the equivalent OR does, and a partition key that can't be a
-key costs a fixed 2.0, or 4.0 consistent, beside sort-key ranges.
+read hasn't reached holds the token. Each shape pinned page by page gave the
+same pages on every walk in eu-west-2 and us-east-1 between 2026-11-03 and
+2026-11-05. Page endings that DynamoDB answers at random, such as a page ending
+inside an open range, are checked only for the keys they return. Each branch
+costs a unit under `ConsistentRead` even when it finds nothing, a sort-key `IN`
+costs and pages exactly as the equivalent OR does, and a partition key that
+can't be a key reads the whole table, so beside sort-key ranges it costs what
+that read does: 2.0, or 4.0 consistent, on the small on-demand table the test
+uses.
 
 Items tied on an index key come back in a fixed order that isn't the table's
 sort-key order, and descending is its exact reverse. The order was the same in

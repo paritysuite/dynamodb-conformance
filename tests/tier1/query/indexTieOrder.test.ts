@@ -43,20 +43,32 @@ async function readTie(
   return (res.Items ?? []).map((i) => i.sk?.S)
 }
 
-beforeAll(async () => {
-  await ddb.send(new CreateTableCommand(tieOrderTableInput(tableName)))
-  await waitUntilActive(tableName)
-  for (const Item of TIE_ORDER_ITEMS) {
-    await ddb.send(new PutItemCommand({ TableName: tableName, Item }))
-  }
-  // All six, not the first: a GSI read part-way through filling returns a
-  // subset in the right order and would read as a wrong order.
-  await waitForGsiConsistency({
-    tableName,
-    indexName: 'g-all',
-    partitionKey: { name: 'g', value: { S: 'tie' } },
-    expectedCount: 6,
-  })
+let ready: Promise<void> = Promise.resolve()
+
+// Started here and awaited before each case, so a table or index that never
+// becomes ready fails every case as a failed observation instead of skipping
+// them all.
+beforeAll(() => {
+  ready = (async () => {
+    await ddb.send(new CreateTableCommand(tieOrderTableInput(tableName)))
+    await waitUntilActive(tableName)
+    for (const Item of TIE_ORDER_ITEMS) {
+      await ddb.send(new PutItemCommand({ TableName: tableName, Item }))
+    }
+    // All six, not the first: a GSI read part-way through filling returns a
+    // subset in the right order and would read as a wrong order.
+    await waitForGsiConsistency({
+      tableName,
+      indexName: 'g-all',
+      partitionKey: { name: 'g', value: { S: 'tie' } },
+      expectedCount: 6,
+    })
+  })()
+  ready.catch(() => {})
+})
+
+beforeEach(async () => {
+  await ready
 })
 
 afterAll(async () => {

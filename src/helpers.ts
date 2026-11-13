@@ -3,6 +3,7 @@ import {
   DeleteTableCommand,
   DeleteItemCommand,
   DescribeTableCommand,
+  ExecuteStatementCommand,
   UpdateTableCommand,
   UpdateContinuousBackupsCommand,
   ListTablesCommand,
@@ -545,6 +546,89 @@ export async function waitForGsiConsistency(opts: WaitForGsiOptions): Promise<vo
   throw new IndeterminateError(
     'gsi-consistency-timeout',
     `Timeout waiting for GSI ${indexName} consistency (expected ${expectedCount} items)`,
+  )
+}
+
+interface WaitForReadsToSettleOptions {
+  tableName: string
+  /** Read through this index (an LSI, so it can be read consistently) rather than the table. */
+  indexName?: string
+  partitionKey: { name: string; value: AttributeValue }
+  expectedCount: number
+  timeoutMs?: number
+}
+
+/**
+ * Wait until an eventually consistent PartiQL read of one partition sees every
+ * row just written, three reads running, so a test that pins exact pages
+ * doesn't read a replica the writes haven't reached yet.
+ *
+ * Throws only when the answer is genuinely missing: a consistent Query and a
+ * consistent PartiQL read both see every row, and the eventually consistent
+ * reads never caught up. Anything that is an answer returns instead, so the
+ * tests run and fail on it: too many rows, a consistent read that is short as
+ * well, or a statement the target rejects outright.
+ *
+ * Await it from a test or a beforeEach, never from a describe-level beforeAll.
+ * Vitest reports every test under a failed beforeAll as skipped, which reads
+ * as "not implemented" rather than as a failed observation.
+ */
+export async function waitForReadsToSettle(opts: WaitForReadsToSettleOptions): Promise<void> {
+  const { tableName, indexName, partitionKey, expectedCount, timeoutMs = 15_000 } = opts
+  const from = indexName ? `"${tableName}"."${indexName}"` : `"${tableName}"`
+  const Statement = `SELECT * FROM ${from} WHERE ${partitionKey.name} = ?`
+  const Parameters = [partitionKey.value]
+
+  /** Rows a read returned, or null when the target answered with a rejection. */
+  async function rows(read: () => Promise<number>): Promise<number | null> {
+    try {
+      return await read()
+    } catch (e: unknown) {
+      if (indeterminateFrom(e)) throw e
+      return null
+    }
+  }
+  const viaPartiql = (ConsistentRead: boolean) =>
+    rows(async () => {
+      const res = await ddb.send(new ExecuteStatementCommand({ Statement, Parameters, ConsistentRead }))
+      return (res.Items ?? []).length
+    })
+
+  const start = Date.now()
+  let streak = 0
+  let seen = 0
+  for (;;) {
+    const read = await viaPartiql(false)
+    if (read === null || read > expectedCount) return
+    seen = read
+    streak = seen === expectedCount ? streak + 1 : 0
+    if (streak === 3) return
+    if (Date.now() - start >= timeoutMs) break
+    await sleep(250)
+  }
+
+  // The eventually consistent reads never saw every row. That is a failed
+  // observation only if the rows are there to see and PartiQL can see them.
+  const stored = await rows(async () => {
+    const res = await ddb.send(
+      new QueryCommand({
+        TableName: tableName,
+        IndexName: indexName,
+        KeyConditionExpression: '#pk = :pk',
+        ExpressionAttributeNames: { '#pk': partitionKey.name },
+        ExpressionAttributeValues: { ':pk': partitionKey.value },
+        ConsistentRead: true,
+      }),
+    )
+    return res.Count ?? 0
+  })
+  if (stored !== expectedCount) return
+  if ((await viaPartiql(true)) !== expectedCount) return
+
+  throw new IndeterminateError(
+    'read-settle-timeout',
+    `Timeout waiting for an eventually consistent read to see ${expectedCount} rows in ` +
+      `partition ${JSON.stringify(partitionKey.value)} of ${from}; the last read saw ${seen}`,
   )
 }
 

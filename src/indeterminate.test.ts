@@ -20,7 +20,7 @@ vi.mock('./client.js', () => ({
 }))
 
 import { ddb } from './client.js'
-import { waitForGsiConsistency, waitUntilActive } from './helpers.js'
+import { waitForGsiConsistency, waitForReadsToSettle, waitUntilActive } from './helpers.js'
 import { waitUntilActiveInRegion } from './infra.js'
 
 const send = vi.mocked(ddb.send)
@@ -297,6 +297,80 @@ describe('waitForGsiConsistency', () => {
     )
     expect(err).toBeInstanceOf(IndeterminateError)
     expect((err as IndeterminateError).reason).toBe('gsi-consistency-timeout')
+  })
+})
+
+describe('waitForReadsToSettle', () => {
+  const opts = {
+    tableName: 't',
+    partitionKey: { name: 'pk', value: { S: 'x' } },
+    expectedCount: 3,
+    timeoutMs: 1,
+  }
+
+  /** Answer each read by kind: eventual PartiQL, consistent PartiQL, consistent Query. */
+  function answer(rows: { eventual: number | Error; partiql?: number; query?: number }) {
+    send.mockImplementation((async (cmd: { constructor: { name: string }; input: { ConsistentRead?: boolean } }) => {
+      await new Promise((r) => setTimeout(r, 5))
+      const items = (n: number) => ({ Items: Array.from({ length: n }, () => ({})) })
+      if (cmd.constructor.name === 'QueryCommand') return { Count: rows.query }
+      if (cmd.input.ConsistentRead) return items(rows.partiql!)
+      if (rows.eventual instanceof Error) throw rows.eventual
+      return items(rows.eventual)
+    }) as never)
+  }
+  const kinds = () =>
+    send.mock.calls.map(([cmd]) => {
+      const c = cmd as unknown as { constructor: { name: string }; input: { ConsistentRead?: boolean } }
+      return `${c.constructor.name}${c.input.ConsistentRead ? ':consistent' : ''}`
+    })
+
+  it('returns once three eventually consistent reads running see every row', async () => {
+    answer({ eventual: 3 })
+    await expect(waitForReadsToSettle({ ...opts, timeoutMs: 1_000 })).resolves.toBeUndefined()
+    expect(kinds()).toEqual(Array(3).fill('ExecuteStatementCommand'))
+  })
+
+  it('returns on the first read that sees too many rows, which is an answer', async () => {
+    answer({ eventual: 4 })
+    await expect(waitForReadsToSettle({ ...opts, timeoutMs: 1_000 })).resolves.toBeUndefined()
+    expect(send).toHaveBeenCalledTimes(1)
+  })
+
+  it('throws the read-settle reason when consistent reads see every row and eventual ones never do', async () => {
+    answer({ eventual: 2, query: 3, partiql: 3 })
+    const err = await waitForReadsToSettle(opts).catch((e: unknown) => e)
+    expect(err).toBeInstanceOf(IndeterminateError)
+    expect((err as IndeterminateError).reason).toBe('read-settle-timeout')
+  })
+
+  it('returns when a consistent Query is short too: the rows are not there to see', async () => {
+    answer({ eventual: 2, query: 2, partiql: 3 })
+    await expect(waitForReadsToSettle(opts)).resolves.toBeUndefined()
+  })
+
+  it('returns when a consistent PartiQL read is short: PartiQL itself is wrong', async () => {
+    answer({ eventual: 2, query: 3, partiql: 2 })
+    await expect(waitForReadsToSettle(opts)).resolves.toBeUndefined()
+    expect(kinds()).toEqual(['ExecuteStatementCommand', 'QueryCommand:consistent', 'ExecuteStatementCommand:consistent'])
+  })
+
+  it('returns on a rejection, which the tests then meet themselves', async () => {
+    answer({
+      eventual: new DynamoDBServiceException({
+        name: 'ValidationException',
+        $fault: 'client',
+        $metadata: { httpStatusCode: 400 },
+        message: 'Statement wasn\'t well formed',
+      } as ConstructorParameters<typeof DynamoDBServiceException>[0]),
+    })
+    await expect(waitForReadsToSettle(opts)).resolves.toBeUndefined()
+  })
+
+  it('rethrows a failed observation rather than reading it as a rejection', async () => {
+    answer({ eventual: new ThrottlingException({ message: 'slow down', $metadata: {} }) })
+    const err = await waitForReadsToSettle(opts).catch((e: unknown) => e)
+    expect(indeterminateFrom(err)?.reason).toBe('throttle-exhausted')
   })
 })
 
