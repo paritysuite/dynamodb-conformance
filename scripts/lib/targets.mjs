@@ -105,8 +105,8 @@ export const TARGETS = {
     // that is the axis separating it from the row nested under it: this one is
     // a binary you run, that one is WebAssembly in a browser. A storage name
     // ("native SQLite") paired a storage fact against a runtime fact and the
-    // two rows read as answers to different questions. ExtendDB's pair still
-    // names storage, because storage is what distinguishes those two.
+    // two rows read as answers to different questions. ExtendDB's builds still
+    // name storage, because storage is what distinguishes them.
     configuration: 'self-contained binary',
     url: 'https://github.com/nubo-db/dynoxide',
     requires: 'none - a single binary, with no runtime to install',
@@ -273,26 +273,23 @@ export const TARGETS = {
   // feature, and exactly one is compiled into a given binary. A backend is
   // therefore a different engine under one wire protocol, which is a variant of
   // this project rather than a row of its own. PostgreSQL is the reference
-  // backend and carries the parent row; SQLite shipped in v0.1.3 and nests
-  // below it. MongoDB is merged to main but is in no release, so it is not here.
+  // backend and carries the parent row; SQLite (from v0.1.3) and MongoDB (from
+  // v0.1.5) nest below it.
   extenddb: {
     display: 'ExtendDB',
     project: 'extenddb',
     reference: true,
     configuration: 'PostgreSQL',
     url: 'https://github.com/ExtendDB/extenddb',
-    requires: 'PostgreSQL 14+, and a Rust toolchain to build it',
-    // Source only, checked rather than assumed: every release has zero assets,
-    // the crate is not on crates.io, and while a Dockerfile and a Docker Hub
-    // repository now exist, the only tags published there are commit-addressed
-    // build candidates - no version tag and no `latest`. The install scripts
-    // build from source; they do not fetch a binary. Revisit when the promotion
-    // job lands: `curl -s https://hub.docker.com/v2/repositories/extenddb/
-    // extenddb-postgres/tags/latest` returning 200 is the check.
+    requires: 'PostgreSQL 14+, and Docker for the image or a Rust toolchain to build it',
+    // Docker is the official extenddb-postgres image. No binary is published,
+    // so the other route is a source build, which is how the suite runs it, at
+    // the release tag.
     note:
       'An adapter over an external PostgreSQL rather than a self-contained ' +
       'store. TLS and SigV4 are mandatory, and it listens on 18443.',
     distribution: [
+      { channel: 'docker', url: 'https://hub.docker.com/r/extenddb/extenddb-postgres' },
       { channel: 'source', url: 'https://github.com/ExtendDB/extenddb' },
     ],
   },
@@ -306,7 +303,7 @@ export const TARGETS = {
     // single SQLite file. Built WITHOUT the `dev-mode` feature: dev-mode serves
     // plain HTTP with open authorisation, which is a different security posture
     // and so not the same thing to measure. Holding that fixed leaves the
-    // storage engine as the only variable between these two rows.
+    // storage engine as the only variable between these rows.
     note:
       'The PostgreSQL build\'s server over a single SQLite file rather than ' +
       'an external database. TLS and SigV4 stay mandatory.',
@@ -314,6 +311,31 @@ export const TARGETS = {
       {
         channel: 'source',
         url: 'https://github.com/ExtendDB/extenddb/blob/main/crates/storage-sqlite/README.md',
+      },
+    ],
+  },
+  'extenddb-mongodb': {
+    display: 'ExtendDB (MongoDB)',
+    project: 'extenddb',
+    configuration: 'MongoDB',
+    url: 'https://github.com/ExtendDB/extenddb',
+    requires: 'a MongoDB 7.0+ replica set, and Docker for the image or a Rust toolchain to build it',
+    // The same server, wire protocol and auth stack as the parent row, over an
+    // external MongoDB, which has to run as a replica set (one node is enough)
+    // because the backend writes through multi-document transactions. Built
+    // without `dev-mode`, as the SQLite row is.
+    //
+    // Docker is the official extenddb-mongodb image. No binary is published,
+    // so the other route is a source build, which is how the suite runs it, at
+    // the release tag.
+    note:
+      'The PostgreSQL build\'s server over an external MongoDB replica set ' +
+      'rather than PostgreSQL. TLS and SigV4 stay mandatory.',
+    distribution: [
+      { channel: 'docker', url: 'https://hub.docker.com/r/extenddb/extenddb-mongodb' },
+      {
+        channel: 'source',
+        url: 'https://github.com/ExtendDB/extenddb/blob/main/docs/local-mongodb-setup.md',
       },
     ],
   },

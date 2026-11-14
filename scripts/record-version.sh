@@ -7,7 +7,8 @@
 #   scripts/record-version.sh <target>
 #
 # Per-target inputs:
-#   EXTENDDB_REF       extenddb, extenddb-sqlite - the release tag/ref built
+#   EXTENDDB_REF       extenddb, extenddb-sqlite, extenddb-mongodb - the
+#                      release tag/ref built
 #   DYNOXIDE_WASM_REF  dynoxide-wasm - the dynoxide release the bundle came from
 #   TARGET_IMAGE       container targets - the image ref, used to resolve a digest
 #
@@ -20,9 +21,10 @@
 #   aws-emulator          the installed binary's own `aws-emulator -v`
 #   alternator            `scylla --version` in the running container, else
 #                         the image digest
-#   extenddb              the built release tag; the SQLite row reports the
-#   extenddb-sqlite       same tag, being the same release built with a
-#                         different storage feature rather than its own build
+#   extenddb              the built release tag; the SQLite and MongoDB rows
+#   extenddb-sqlite       report the same tag, being the same release built
+#   extenddb-mongodb      with a different storage feature rather than its own
+#                         build
 #   container `:latest`   the resolved image digest (pins what latest was)
 set -uo pipefail
 
@@ -32,7 +34,7 @@ mkdir -p results
 ver=""
 case "$target" in
   dynamodb)   ver="live (AWS)" ;;
-  extenddb | extenddb-sqlite) ver="${EXTENDDB_REF:-}" ;;
+  extenddb | extenddb-sqlite | extenddb-mongodb) ver="${EXTENDDB_REF:-}" ;;
   dynoxide)   ver=$(npm view dynoxide version 2>/dev/null) ;;
   dynoxide-wasm)
     # The ref is a release tag (v1.0.0) while the board renders the version bare

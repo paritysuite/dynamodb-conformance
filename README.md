@@ -465,7 +465,8 @@ export AWS_ACCESS_KEY_ID=<access-key-id>        # a real key - ExtendDB verifies
 export AWS_SECRET_ACCESS_KEY=<secret-access-key>
 export AWS_REGION=us-east-1                      # SigV4 signing region for the local endpoint; ground truth is recorded per region, so no single region needs matching
 export DYNAMODB_ENDPOINT=https://127.0.0.1:8000
-CONFORMANCE_TARGET=extenddb npm test            # writes results/extenddb.json
+# Writes results/extenddb.json.
+CONFORMANCE_TARGET=extenddb npm test
 ```
 
 Use `127.0.0.1` or `localhost` (both are in the cert's SANs). ExtendDB does
@@ -479,7 +480,8 @@ database service. `scripts/run-extenddb.sh` handles the bring-up either way:
 
 ```bash
 eval "$(EXTENDDB_DIR=/path/to/extenddb EXTENDDB_BACKEND=sqlite ./scripts/run-extenddb.sh)"
-CONFORMANCE_TARGET=extenddb-sqlite npm test   # writes results/extenddb-sqlite.json
+# Writes results/extenddb-sqlite.json.
+CONFORMANCE_TARGET=extenddb-sqlite npm test
 ```
 
 By hand it is the PostgreSQL flow with one line changed, the feature at build
@@ -498,9 +500,44 @@ Checked against v0.1.3 rather than assumed.
 `init` refuses to overwrite an existing database, so a repeat local run wants
 `extenddb destroy` first.
 
+#### The MongoDB build
+
+MongoDB is the third backend, in every release from v0.1.5. It needs MongoDB
+7.0 or later running as a replica set, because the backend writes through
+multi-document transactions, which MongoDB only allows on one. A single node is
+enough:
+
+```bash
+docker run -d --name extenddb-mongo -p 127.0.0.1:27017:27017 mongo:7.0 --replSet rs0
+until docker exec extenddb-mongo mongosh --quiet --eval 'db.runCommand({ping: 1}).ok' 2>/dev/null | grep -qx 1; do sleep 2; done
+docker exec extenddb-mongo mongosh --quiet --eval \
+  'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
+until docker exec extenddb-mongo mongosh --quiet --eval 'rs.status().myState' 2>/dev/null | grep -qx 1; do sleep 2; done
+
+eval "$(EXTENDDB_DIR=/path/to/extenddb EXTENDDB_BACKEND=mongodb ./scripts/run-extenddb.sh)"
+# Writes results/extenddb-mongodb.json.
+CONFORMANCE_TARGET=extenddb-mongodb npm test
+```
+
+`MONGODB_URI` overrides the connection string, which defaults to
+`mongodb://127.0.0.1:27017/?replicaSet=rs0`. `init` has no connection flag for
+MongoDB: it reads the string from the config file it is given and falls back to
+`localhost:27017` without one, so by hand the config comes first:
+
+```bash
+cargo build --release -p extenddb --no-default-features --features mongodb
+printf '[storage]\nbackend = "mongodb"\n\n[storage.mongodb]\nconnection_string = "mongodb://127.0.0.1:27017/?replicaSet=rs0"\n' > extenddb.toml
+./target/release/extenddb init --backend mongodb --config extenddb.toml --overwrite
+```
+
+`init` regenerates the full config over that file and keeps the connection
+string. As with the other backends, a repeat local run wants a fresh database,
+or `extenddb destroy` first.
+
 ExtendDB also ships a `dev-mode` build feature that serves plain HTTP with open
 authorisation. The suite deliberately does not use it. It would change the
-security posture, and these two rows are meant to differ only in storage engine.
+security posture, and the ExtendDB rows are meant to differ only in storage
+engine.
 
 ### Floci
 

@@ -612,22 +612,20 @@ test("one build disagreeing opens the disclosure for all of them", () => {
   // The disclosure holds every build of a project and opens as a whole, so the
   // answer has to be the project's, not each build's - otherwise a build that
   // agrees publishes "starts closed" while a disagreeing sibling has already
-  // forced it open.
-  //
-  // Exercised through buildsAgree rather than sortRows, and that is a real
-  // limit rather than a preference: no project in the registry ships two
-  // builds, and an unregistered slug forms a project of its own, so a mixed
-  // group cannot be built through sortRows at all. sortRows takes this one
-  // answer and assigns it to every build, so the property holds structurally
-  // there; here is where the rule itself is pinned.
+  // forced it open. Pinned on the rule itself, then through sortRows, which
+  // assigns that one answer to every build.
   const parent = buildRow({ slug: "extenddb" });
   const agrees = buildRow({ slug: "extenddb-sqlite" });
-  const differs = buildRow({ slug: "extenddb-mongo", divergenceValue: 19.9, coverageValue: 50 });
+  const differs = buildRow({ slug: "extenddb-mongodb", divergenceValue: 19.9, coverageValue: 50 });
 
   assert.equal(buildsAgree({ ...parent, variants: [agrees] }), true, "an agreeing build alone should close");
   assert.equal(buildsAgree({ ...parent, variants: [agrees, differs] }), false, "one disagreeing build must open all of them");
   assert.equal(buildsAgree({ ...parent, variants: [] }), false, "a project with no builds has no disclosure to close");
   assert.equal(buildsAgree({ ...parent, carried: true, variants: [agrees] }), false, "a carried parent must open its builds");
+
+  sortRows([parent, agrees, differs]);
+  assert.equal(agrees.collapsed, false, "the agreeing build was closed while its sibling forced the disclosure open");
+  assert.equal(differs.collapsed, false);
 });
 
 test("a build promoted to parent carries no closed flag", () => {

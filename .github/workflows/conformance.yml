@@ -1417,7 +1417,7 @@ jobs:
     # The same ExtendDB release as the job above, built with the SQLite storage
     # feature instead of the default PostgreSQL one. The backend is compiled in,
     # so this is a second build rather than a second configuration of one - but
-    # it needs no database service, which makes it the cheaper of the two.
+    # it needs no database service, which makes it the cheapest of the three.
     #
     # Held to the same security posture as the PostgreSQL row: TLS, SigV4 and
     # the IAM store all stay on. ExtendDB's `dev-mode` feature would serve plain
@@ -1500,4 +1500,120 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: results-extenddb-sqlite
+          path: results/
+
+  test-extenddb-mongodb:
+    name: ExtendDB (MongoDB)
+    needs: changes
+    # The same ExtendDB release again, built with the MongoDB storage feature.
+    # The backend runs its writes in multi-document transactions, which MongoDB
+    # allows only on a replica set, so MongoDB is started as a single-node one
+    # and initiated before the bring-up script runs. That needs a `--replSet`
+    # argument, which a `services:` container cannot be given, so it is started
+    # in a step instead, from the image digest ExtendDB's own MongoDB compose
+    # stack pins.
+    #
+    # Held to the same security posture as the other two ExtendDB rows: TLS,
+    # SigV4 and the IAM store stay on, and `dev-mode` stays off.
+    if: github.event_name != 'pull_request'
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    # A cold Rust build plus the suite, with room to spare, so a MongoDB or
+    # ExtendDB that never comes up is cut off within the hour.
+    timeout-minutes: 60
+
+    steps:
+      # No git credential left in the workspace, for the same reason as the
+      # SQLite job: a third-party build runs as arbitrary code beside it.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.changes.outputs.ref }}
+          persist-credentials: false
+
+      - name: Resolve ExtendDB ref (latest release unless overridden)
+        id: ref
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_REF: ${{ github.event.inputs.extenddb_ref }}
+        run: |
+          REF="$REQUESTED_REF"
+          if [ -z "$REF" ]; then
+            REF=$(gh release view -R ExtendDB/extenddb --json tagName --jq .tagName)
+          fi
+          SHA=$(gh api "repos/ExtendDB/extenddb/commits/$REF" --jq .sha)
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "Building ExtendDB at $REF ($SHA)"
+
+      - name: Checkout ExtendDB
+        uses: actions/checkout@v7
+        with:
+          repository: ExtendDB/extenddb
+          ref: ${{ steps.ref.outputs.sha }}
+          path: extenddb
+          persist-credentials: false
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: extenddb
+          # Its own key, as with SQLite: a third feature set from the same
+          # checkout.
+          key: mongodb
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Start MongoDB as a single-node replica set
+        run: |
+          docker run -d --name mongodb -p 127.0.0.1:27017:27017 \
+            mongo:7.0@sha256:b096b4cb9269f3ebcf363be63f1c50920f786879d03a1890347a3bf33f1f0df0 \
+            mongod --replSet rs0 --bind_ip_all
+          # Up to two minutes for each of the two waits below.
+          wait_for() { # what, mongosh expression that prints 1 when ready
+            for _ in $(seq 1 60); do
+              if docker exec mongodb mongosh --quiet --eval "$2" 2>/dev/null | grep -x 1 >/dev/null; then
+                return 0
+              fi
+              sleep 2
+            done
+            docker logs --tail 100 mongodb
+            echo "::error::MongoDB did not $1 within 2 minutes"
+            exit 1
+          }
+          wait_for "answer a ping" 'db.runCommand({ping: 1}).ok'
+          # The member is named by the address ExtendDB reaches it on, since a
+          # replica-set client connects to the hosts the set advertises.
+          docker exec mongodb mongosh --quiet --eval \
+            'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
+          wait_for "become the replica set's primary" 'rs.status().myState'
+
+      - name: Build and start ExtendDB (MongoDB), mint conformance credentials
+        env:
+          EXTENDDB_DIR: ${{ github.workspace }}/extenddb
+          EXTENDDB_BACKEND: mongodb
+          MONGODB_URI: mongodb://127.0.0.1:27017/?replicaSet=rs0
+        run: ./scripts/run-extenddb.sh
+
+      - name: Run conformance suite
+        continue-on-error: true # ExtendDB has known gaps (e.g. PartiQL)
+        env:
+          CONFORMANCE_TARGET: extenddb-mongodb
+        run: npm test
+
+      - name: Record target version
+        continue-on-error: true
+        env:
+          EXTENDDB_REF: ${{ steps.ref.outputs.ref }}
+        run: scripts/record-version.sh extenddb-mongodb
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: results-extenddb-mongodb
           path: results/

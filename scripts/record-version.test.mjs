@@ -72,3 +72,9 @@ describe('alternator', () => {
     expect(record('alternator', { stubs, env })).toBe('9f86d081884c')
   })
 })
+
+describe('extenddb-mongodb', () => {
+  it('records the release tag it was built from, as the other ExtendDB rows do', () => {
+    expect(record('extenddb-mongodb', { env: { EXTENDDB_REF: 'v0.1.14' } })).toBe('v0.1.14')
+  })
+})

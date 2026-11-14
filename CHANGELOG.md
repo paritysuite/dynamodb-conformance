@@ -143,6 +143,12 @@ global secondary indexes on materialised views and Streams on change data
 capture. It runs from the official ScyllaDB container image, and its version
 column shows the ScyllaDB release the node reports.
 
+ExtendDB's MongoDB backend joins the run as a third build of the same release,
+beside PostgreSQL and SQLite. It runs against a single-node MongoDB 7.0 replica
+set and is held to the same TLS, SigV4 and IAM posture as the other two, so the
+storage engine is again the only thing that differs between them. ExtendDB's
+PostgreSQL row now lists its official Docker image beside the source.
+
 ## 2026-11-02 (3.9.0)
 
 Query's XOR ConditionalOperator beside an unknown Select is now pinned to the
