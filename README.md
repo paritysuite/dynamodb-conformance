@@ -4,7 +4,7 @@
 [![Licence: Apache 2.0](https://img.shields.io/badge/licence-Apache%202.0-blue.svg)](LICENSE)
 [![Live results](https://img.shields.io/badge/live%20results-paritysuite.org-brightgreen)](https://paritysuite.org)
 
-An independent test suite that validates any DynamoDB-compatible endpoint against real DynamoDB behaviour. It works against DynamoDB, DynamoDB Local, Dynoxide, Dynoxide (wasm), Dynalite, LocalStack, ExtendDB, Floci, Ministack, Kumo, AWS Emulator, Alternator, or anything else that implements the DynamoDB HTTP API.
+An independent test suite that validates any DynamoDB-compatible endpoint against real DynamoDB behaviour. It works against DynamoDB, DynamoDB Local, Dynoxide, Dynoxide (wasm), Dynalite, LocalStack, ExtendDB, Floci, Ministack, Kumo, AWS Emulator, Alternator, Phoenix-Adapters, or anything else that implements the DynamoDB HTTP API.
 
 ## Why this exists
 
@@ -574,6 +574,23 @@ docker stop localstack && docker rm localstack
 docker run -d --name ministack -p 4566:4566 ministackorg/ministack:latest
 DYNAMODB_ENDPOINT=http://localhost:4566 npm test
 docker stop ministack && docker rm ministack
+```
+
+### Phoenix-Adapters
+
+A REST layer over Apache Phoenix on HBase, run from the project's own Docker
+setup: six containers (ZooKeeper, an HDFS namenode and datanode, an HBase master
+and regionserver, and the REST service), two of them built from source. No
+release is published, so this builds `main`. The first build takes a while;
+later ones reuse the BuildKit cache.
+
+```bash
+git clone https://github.com/apache/phoenix-adapters.git
+cd phoenix-adapters
+docker compose -f docker/docker-compose.yml up -d --build --wait
+cd -
+DYNAMODB_ENDPOINT=http://localhost:8842 CONFORMANCE_TARGET=phoenix-adapters npm test
+(cd phoenix-adapters && docker compose -f docker/docker-compose.yml down -v)
 ```
 
 ### Real DynamoDB

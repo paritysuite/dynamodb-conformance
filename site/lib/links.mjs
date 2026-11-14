@@ -17,6 +17,7 @@ const WEBSITE = {
   extenddb: "https://extenddb.org/",
   "aws-emulator": "https://docs.aws.amazon.com/emulator/latest/userguide/what-is-service.html",
   alternator: "https://www.scylladb.com/",
+  "phoenix-adapters": "https://phoenix.apache.org/",
 };
 
 const CODE_HOSTS = new Set([

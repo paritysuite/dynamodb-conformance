@@ -10,6 +10,7 @@
 #   EXTENDDB_REF       extenddb, extenddb-sqlite, extenddb-mongodb - the
 #                      release tag/ref built
 #   DYNOXIDE_WASM_REF  dynoxide-wasm - the dynoxide release the bundle came from
+#   PHOENIX_ADAPTERS_REF  phoenix-adapters - the commit built
 #   TARGET_IMAGE       container targets - the image ref, used to resolve a digest
 #
 # Sources, by target:
@@ -25,6 +26,9 @@
 #   extenddb-sqlite       report the same tag, being the same release built
 #   extenddb-mongodb      with a different storage feature rather than its own
 #                         build
+#   phoenix-adapters      the built commit, short form: no release exists,
+#                         and its images are built locally and never pushed,
+#                         so there is no digest to fall back on either
 #   container `:latest`   the resolved image digest (pins what latest was)
 set -uo pipefail
 
@@ -50,6 +54,10 @@ case "$target" in
     [ -z "$ver" ] && ver=$(npm view @dynoxide/wasm-engine version 2>/dev/null)
     ;;
   dynalite)   ver=$(npm view dynalite version 2>/dev/null) ;;
+  phoenix-adapters)
+    ver="${PHOENIX_ADAPTERS_REF:-}"
+    ver="${ver:0:12}"
+    ;;
   localstack)
     ver=$(curl -fsS http://localhost:4566/_localstack/info 2>/dev/null | jq -r '.version // empty')
     ver=${ver%%:*} # drop any :git-hash suffix

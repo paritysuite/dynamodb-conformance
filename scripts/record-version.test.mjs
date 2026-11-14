@@ -78,3 +78,14 @@ describe('extenddb-mongodb', () => {
     expect(record('extenddb-mongodb', { env: { EXTENDDB_REF: 'v0.1.14' } })).toBe('v0.1.14')
   })
 })
+
+describe('phoenix-adapters', () => {
+  it('records the built commit, shortened', () => {
+    const env = { PHOENIX_ADAPTERS_REF: '04d5cbd9d5410000000000000000000000000000' }
+    expect(record('phoenix-adapters', { env })).toBe('04d5cbd9d541')
+  })
+
+  it('records no version when no commit is given', () => {
+    expect(record('phoenix-adapters')).toBe('-')
+  })
+})
