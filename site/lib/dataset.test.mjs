@@ -6,7 +6,8 @@ import { dirname, join } from "node:path";
 
 import { CAPABILITIES, isNotScored, sortRows } from "./scoring.mjs";
 import { buildIndex, buildLatest, buildRuns, TIERS, DATA_SCHEMA_VERSION } from "./dataset.mjs";
-import { SCENARIOS, markMixed } from "../fixtures/not-scored-models.mjs";
+import { RUN_LEVEL, SCENARIOS, markMixed, pipelineModel } from "../fixtures/not-scored-models.mjs";
+import { renderFeatureSummary, renderTargetCapabilities } from "./capabilities.mjs";
 
 // The committed history fallback is a real, fully-built model, so it doubles as
 // a fixture for the data endpoints without re-deriving one here.
@@ -598,4 +599,193 @@ test("a build reading the same figures as its reference build starts closed", ()
   // meaning "starts closed" rather than "withheld".
   assert.ok(targets.find((t) => t.slug === "dynoxide-wasm").counts.total > 0);
   assert.equal(targets.find((t) => t.slug === "dynoxide").collapsedIntoProject, false);
+});
+
+// A row's counts sum to its total, overall and per tier, on both endpoints:
+// passed, failed, skipped and the tests that got no answer. Before
+// `indeterminate` was published a not-scored row's counts fell short of its
+// total, and a consumer had no way to tell the shortfall from a bad sum.
+for (const entry of MODELS) {
+  const { name } = entry;
+  test(`every row's counts sum to its total, overall and per tier (${name})`, () => {
+    const { model: m } = entry;
+    const sums = (c) => c.passed + c.failed + c.skipped + c.indeterminate;
+    const rows = [
+      ...buildLatest(m, site).targets.map((t) => ["latest", t]),
+      ...buildRuns(m, site).runs.flatMap((r) => r.targets.map((t) => [r.id, t])),
+    ];
+    let tiers = 0;
+    for (const [where, t] of rows) {
+      assert.equal(typeof t.counts.indeterminate, "number", `${where} ${t.slug}: counts carry indeterminate`);
+      assert.equal(sums(t.counts), t.counts.total, `${where} ${t.slug}: counts sum to the total`);
+      assert.equal(t.counts.implemented, t.counts.passed + t.counts.failed, `${where} ${t.slug}: implemented`);
+      for (const [key, tier] of Object.entries(t.tiers)) {
+        if (!tier) continue;
+        tiers++;
+        assert.equal(typeof tier.indeterminate, "number", `${where} ${t.slug} ${key}: carries indeterminate`);
+        assert.equal(sums(tier), tier.total, `${where} ${t.slug} ${key}: sums to the total`);
+      }
+    }
+    assert.ok(rows.length > 0 && tiers > 0, `${rows.length} rows and ${tiers} tiers were checked`);
+  });
+
+  // Correctness is withheld beside "not scored", as the two figures are. A
+  // tier holding an unanswered test publishes none either; a scored row and an
+  // answered tier keep theirs.
+  test(`a not-scored row publishes no correctness figure (${name})`, () => {
+    const { model: m } = entry;
+    const rows = [...buildLatest(m, site).targets, ...buildRuns(m, site).runs.flatMap((r) => r.targets)];
+    for (const t of rows) {
+      if (t.baseline) continue;
+      if (t.grade.qualifier === "not scored") {
+        assert.deepEqual(t.correctness, { pct: "-", value: null }, `${t.slug}: no correctness beside "not scored"`);
+      } else if (t.counts.implemented > 0) {
+        assert.equal(typeof t.correctness.value, "number", `${t.slug}: a scored row keeps its correctness`);
+      }
+      for (const [key, tier] of Object.entries(t.tiers)) {
+        if (tier?.indeterminate > 0) assert.deepEqual(tier.correctness, { pct: "-", value: null }, `${t.slug} ${key}`);
+      }
+    }
+    for (const slug of entry.notScored) {
+      const t = buildLatest(m, site).targets.find((x) => x.slug === slug);
+      assert.deepEqual(t.correctness, { pct: "-", value: null }, `${name}: ${slug}`);
+    }
+  });
+
+  // A run with no answer at all has nothing to tally beneath its headline:
+  // every area and capability is unanswered, with no figure, and there are no
+  // findings. And on every row an area's counts fit inside the row's.
+  test(`a row not scored at run level has no area or capability figure and no findings (${name})`, () => {
+    const { model: m } = entry;
+    const latest = buildLatest(m, site);
+    let runLevel = 0;
+    let areas = 0;
+    for (const t of latest.targets) {
+      for (const a of t.areas) {
+        areas++;
+        assert.equal(a.passed + a.failed + a.skipped + a.indeterminate, a.total, `${t.slug} ${a.key}: sums to its total`);
+        // The counts that are the same in every region. Passes and fails are
+        // not compared one by one: an area is tallied from the results file,
+        // on the pinned region's answers, while the row is its headline
+        // region's, and a split test is a pass in one and a fail in the other.
+        const counts = { implemented: a.passed + a.failed, skipped: a.skipped, indeterminate: a.indeterminate, total: a.total };
+        for (const [k, v] of Object.entries(counts)) {
+          assert.ok(v <= t.counts[k], `${t.slug} ${a.key}: ${k} ${v} exceeds the row's ${t.counts[k]}`);
+        }
+      }
+      for (const c of t.capabilities) {
+        assert.equal(c.passed + c.failed + c.skipped + c.indeterminate, c.total, `${t.slug} ${c.key}: sums to its total`);
+      }
+      if (t.baseline || !(t.counts.total > 0 && t.counts.indeterminate === t.counts.total)) continue;
+      runLevel++;
+      const pt = m.perTarget[t.slug];
+      assert.ok(t.areas.length > 0, `${t.slug}: keeps its areas, without figures`);
+      for (const a of t.areas) {
+        assert.equal(a.divergence.value, null, `${t.slug} ${a.key}: no divergence`);
+        assert.equal(a.coverage.value, null, `${t.slug} ${a.key}: no coverage`);
+        assert.equal(a.passed + a.failed + a.skipped, 0, `${t.slug} ${a.key}: no answered test counted`);
+      }
+      for (const c of t.capabilities) {
+        assert.equal(c.passed + c.failed + c.skipped, 0, `${t.slug} ${c.key}: no answered test counted`);
+      }
+      assert.deepEqual(pt.findings, [], `${t.slug}: no findings`);
+      assert.deepEqual(pt.breakdown, [], `${t.slug}: no breakdown`);
+      assert.deepEqual(pt.supports, [], `${t.slug}: supports nothing it was not seen to`);
+      assert.equal(pt.runUnanswered, true, `${t.slug}: the page is told why`);
+      assert.deepEqual(pt.series.at(-1).findings, [], `${t.slug}: its run's page lists no findings`);
+    }
+    assert.ok(areas > 0, `${areas} areas were checked`);
+    // A scenario named for a run-level refusal must reach the check above.
+    if (/run level/.test(name)) assert.equal(runLevel, entry.notScored.length, `${name}: every refused row was checked`);
+  });
+
+  // A region's `rate` is the suite's pass rate there, and a region holding a
+  // test that got no answer has no figure, so it publishes no rate either.
+  test(`no region with an unanswered test publishes a rate (${name})`, () => {
+    const { model: m } = entry;
+    let regions = 0;
+    let unanswered = 0;
+    for (const t of buildLatest(m, site).targets) {
+      for (const r of t.regions) {
+        regions++;
+        if (!(r.indeterminate > 0)) continue;
+        unanswered++;
+        assert.equal(r.rate, null, `${t.slug} ${r.region}: rate beside ${r.indeterminate} unanswered`);
+        assert.equal(r.divergence.value, null, `${t.slug} ${r.region}: divergence`);
+      }
+    }
+    assert.ok(regions > 0, `${regions} regions were checked`);
+    if (entry.notScored.length) assert.ok(unanswered > 0, `${name}: ${unanswered} regions hold an unanswered test`);
+  });
+
+  // An area or capability where nothing was observed, no test passing or
+  // failing and at least one unanswered, reads `unanswered`, never
+  // `unsupported`: nobody saw the target decline it. One with an answer to
+  // some of its tests keeps the state those answers give.
+  test(`nothing observed reads unanswered, not unsupported (${name})`, () => {
+    const { model: m } = entry;
+    let entries = 0;
+    let unobserved = 0;
+    for (const t of buildLatest(m, site).targets) {
+      for (const x of [...t.areas, ...t.capabilities]) {
+        entries++;
+        const observed = x.passed + x.failed > 0;
+        if (!observed && x.indeterminate > 0) {
+          unobserved++;
+          assert.equal(x.state, "unanswered", `${t.slug} ${x.key}: ${x.state}`);
+        } else {
+          assert.notEqual(x.state, "unanswered", `${t.slug} ${x.key}: observed, or nothing unanswered`);
+        }
+      }
+    }
+    assert.ok(entries > 0, `${entries} areas and capabilities were checked`);
+    // A run-level refusal leaves every one of them unobserved, and so does an
+    // operation whose every test got no answer, so a scenario built for either
+    // has to reach the check above.
+    if (/run level/.test(name) || entry.wholeArea) assert.ok(unobserved > 0, `${name}: ${unobserved} had nothing observed`);
+    // At test level the whole-area scenario is the only route to the state,
+    // so it is checked on the area itself, not only somewhere on the board.
+    if (entry.wholeArea) {
+      const t = buildLatest(m, site).targets.find((x) => x.slug === entry.notScored[0]);
+      const whole = t.areas.filter((a) => a.indeterminate > 0 && a.indeterminate === a.total);
+      assert.ok(whole.length > 0, `${t.slug}: an area whose every test got no answer`);
+      for (const a of whole) assert.equal(a.state, "unanswered", `${t.slug} ${a.key}`);
+      assert.ok(t.areas.some((a) => a.passed + a.failed > 0), `${t.slug}: the rest of the run was answered`);
+    }
+  });
+}
+
+// A results file holding no test, with a run-level sidecar beside it. The
+// suite counts nothing for it, so the row's counts are all zero, and it is not
+// scored. Its features were never observed, so it reads as a run that got no
+// answer rather than as "not supported" fourteen times, and it has no
+// operation figure and no finding.
+test("a run that recorded no test reads as a run that got no answer", () => {
+  for (const sidecar of [RUN_LEVEL, null]) {
+    const { model: m } = pipelineModel((ts) => {
+      const t = ts.find((x) => x.slug === "dynalite");
+      t.raw.testResults = t.raw.testResults.map((tr) => ({ ...tr, assertionResults: [] }));
+      t.sidecar = sidecar;
+    });
+    const label = sidecar ? "with a sidecar" : "without one";
+    const pt = m.perTarget.dynalite;
+    const row = buildLatest(m, site).targets.find((t) => t.slug === "dynalite");
+    assert.deepEqual(row.counts, { passed: 0, failed: 0, skipped: 0, indeterminate: 0, implemented: 0, total: 0 }, label);
+    assert.equal(row.grade.qualifier, "not scored", label);
+    assert.deepEqual(row.correctness, { pct: "-", value: null }, label);
+    assert.equal(pt.runUnanswered, true, label);
+    assert.deepEqual(pt.findings, [], label);
+    assert.equal(row.capabilities.length, CAPABILITIES.length, label);
+    for (const c of row.capabilities) assert.equal(c.passed + c.failed + c.skipped + c.indeterminate, 0, `${label}: ${c.key}`);
+    for (const a of row.areas) assert.equal(a.divergence.value, null, `${label}: ${a.key}`);
+    // No test at all, but a run that got no answer: `unanswered`, as any such
+    // run's areas and capabilities read, rather than `unsupported`.
+    for (const x of [...row.areas, ...row.capabilities]) assert.equal(x.state, "unanswered", `${label}: ${x.key}`);
+    assert.ok(row.areas.length > 0, `${label}: ${row.areas.length} areas`);
+    const card = renderTargetCapabilities(pt);
+    const said = [...card.matchAll(/sr-only">([^<]*)</g)].map((x) => x[1]);
+    assert.equal(said.filter((l) => l.endsWith(": not scored, because the run got no answer")).length, CAPABILITIES.length, `${label}: ${said[0]}`);
+    const entry = renderFeatureSummary(pt, "core") + renderFeatureSummary(pt, "wider");
+    assert.doesNotMatch(card + entry, /not supported|supported|not tested/, label);
+  }
 });

@@ -10,7 +10,7 @@
 // the same day supersedes the earlier result), and a target not re-tested in a
 // run is carried forward at its last measured value.
 
-import { axesOf, dynamodbRow, gradeOf, label, display, regionalGapOf, repoUrl, sortRows, suiteSizeOf, CAPABILITIES, GRADING_CRITERIA_EFFECTIVE, GROUND_TRUTH_SLUG } from "./scoring.mjs";
+import { axesOf, dynamodbRow, gradeOf, isRunUnanswered, label, display, regionalGapOf, repoUrl, sortRows, suiteSizeOf, unansweredTallies, CAPABILITIES, GRADING_CRITERIA_EFFECTIVE, GROUND_TRUTH_SLUG } from "./scoring.mjs";
 
 /**
  * Whether a run may carry a letter: measured on or after the day the criteria
@@ -40,9 +40,25 @@ export const gradedUnderCriteria = (runDate) =>
 // The magnitude plus "less" or "more" says it without relying on the colour,
 // which the roughly one in twelve men with red-green colour blindness do not
 // get either.
+//
+// A run with no figure has nothing to move from or to. Two runs without one
+// are unchanged. Where only one side has a figure the change is in whether
+// the target was scored at all, which "unchanged" hid: a target losing its
+// letter and the run that won it back both read as a run where nothing
+// happened. The scored side says only that it was scored this run, which is
+// true whether the target had a letter before the gap or never had one, and
+// it is not measured against the last scored run before the gap. Every other movement compares a run with the one tested before it,
+// and a figure taken across a gap would mean a different span on that row
+// alone, so it says only that there is nothing to compare with.
 function deltaMovement(cur, prev) {
-  if (cur == null || prev == null) {
+  if (cur == null && prev == null) {
     return { state: "flat", arrow: "–", delta: null, deltaLabel: "–", deltaReading: "–", label: "unchanged" };
+  }
+  if (cur == null) {
+    return { state: "unscored", arrow: "–", delta: null, deltaLabel: "not scored", deltaReading: "not scored", label: "not scored this run" };
+  }
+  if (prev == null) {
+    return { state: "scored", arrow: "–", delta: null, deltaLabel: "scored", deltaReading: "scored", label: "scored this run; the run before was not scored, so there is no figure to compare with" };
   }
   const r = Math.round((cur - prev) * 10) / 10;
   if (r < 0) {
@@ -227,7 +243,7 @@ function enrichSnapshot(s, summary) {
   });
   const correctness = implemented === 0 ? null : (best.passed / implemented) * 100;
 
-  return {
+  const enriched = {
     ...s,
     // The port's own eu-west-2 figures, kept for the parity check that holds the
     // site to the suite's published summary.
@@ -270,6 +286,46 @@ function enrichSnapshot(s, summary) {
       (sm.regions ?? []).map((r) => ({ region: r.region, divergence: r.divergenceValue })),
     ),
     hasRegions: true,
+  };
+  return pinnedWhereUnanswered(enriched, s, best);
+}
+
+// A run with some tests that got no answer is not scored, so it has no
+// headline for a region to have earned, and the region overlay has nothing to
+// put on it. What it does carry is its counts, and the page lists its failures
+// and its unanswered tests from the results file, which is the pinned
+// region's measurement. Its counts and tiers stay on that same basis, so the
+// sentence above a list counts what the list holds and the endpoint agrees
+// with both. A run that got no answer as a whole is left on the overlay,
+// which is the only place a run-level fault reaches the row.
+const PINNED_FIELDS = ["tiers", "passed", "failed", "skipped", "count", "indeterminate", "implemented", "unsupported", "totalValue", "total"];
+function pinnedWhereUnanswered(enriched, s, best) {
+  const runLevel = best.count > 0 && (best.indeterminate ?? 0) === best.count;
+  if (runLevel || !((s.indeterminate ?? 0) > 0)) return enriched;
+  const pinned = { ...enriched };
+  for (const k of PINNED_FIELDS) pinned[k] = s[k];
+  return { ...pinned, divergenceValue: null, divergence: "-", coverageValue: null, coverage: "-", headlineRegion: null, divergenceWorst: null, divergenceWorstLabel: null };
+}
+
+// A snapshot whose whole run got no answer, with its per-operation detail
+// restated to match. Applied after the overlay, which is where a run-level
+// fault reaches the row, and to a run that recorded no test at all. The
+// areas, capabilities, breakdown and findings were tallied from the results
+// file, which cannot see a run-level fault, so they
+// still carry the tests' recorded statuses while the counts above them say no
+// test was answered. Every area and capability is counted as unanswered, as
+// the suite counts them, and the breakdown and findings are emptied: a run
+// with no answers has no failure to list. `runUnanswered` lets a page say so
+// rather than show an empty list as a clean run.
+function withheldForRun(s) {
+  return {
+    ...s,
+    runUnanswered: true,
+    areas: unansweredTallies(s.areas),
+    capabilities: unansweredTallies(s.capabilities),
+    breakdown: [],
+    findings: [],
+    unanswered: [],
   };
 }
 
@@ -317,7 +373,7 @@ export function leanForFallback(model) {
   // Recurses into nested variants: a variant row is the same shape as its
   // parent and carries its own findings, so stopping at the top level would let
   // the whole set back in through the nesting the moment a variant fails a test.
-  const drop = ({ findings, variants, ...rest }) =>
+  const drop = ({ findings, unanswered, variants, ...rest }) =>
     variants ? { ...rest, variants: variants.map(drop) } : rest;
   return {
     ...model,
@@ -346,7 +402,8 @@ export function buildModel(snapshots, summary = null) {
   const snaps = snapshots
     .filter((s) => Number.isFinite(s.startTime) && s.runDate && s.runDate !== "-")
     .sort((a, b) => a.startTime - b.startTime)
-    .map((s) => (overlay ? enrichSnapshot(s, overlay) : s));
+    .map((s) => (overlay ? enrichSnapshot(s, overlay) : s))
+    .map((s) => (isRunUnanswered(s) ? withheldForRun(s) : s));
 
   // Per target, the latest snapshot for each run date (latest startTime wins).
   const byTarget = new Map(); // slug -> Map(date -> snapshot)
@@ -527,6 +584,11 @@ export function buildModel(snapshots, summary = null) {
         // What this run actually found, so a run's view of this target shows
         // that run's gaps rather than today's.
         findings: s.findings ?? [],
+        // And the tests it got no answer to, only on a run that has some.
+        ...(s.unanswered?.length ? { unanswered: s.unanswered } : {}),
+        // Set only on a run that got no answer, so its page can say why it
+        // lists no findings rather than reading as a run where nothing failed.
+        ...(s.runUnanswered ? { runUnanswered: true } : {}),
         sha: s.sha,
       };
     });
@@ -559,6 +621,11 @@ export function buildModel(snapshots, summary = null) {
       // from fetch.mjs; nothing is re-stamped here. Older snapshots predate
       // findings and render from the plain titles in `breakdown` instead.
       findings: latestSnap?.findings ?? [],
+      // The tests the latest run got no answer to, each with its reason.
+      unanswered: latestSnap?.unanswered ?? [],
+      // The latest run got no answer at all, so the areas and capabilities
+      // carry no figures and the findings are empty for that reason.
+      ...(latestSnap?.runUnanswered ? { runUnanswered: true } : {}),
       areas: latestSnap?.areas ?? [],
       capabilities: latestSnap?.capabilities ?? [],
       supports: (latestSnap?.areas ?? []).filter((a) => a.state === "supported"),

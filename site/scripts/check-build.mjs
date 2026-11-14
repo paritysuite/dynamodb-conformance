@@ -35,6 +35,10 @@ import notScoredFixture from "../fixtures/board/_data/notScored.js";
 import { partitionProblems } from "../lib/letterless.mjs";
 import { OPERATION_MARKS } from "../lib/matrix.mjs";
 import { directoryEntriesIn, licenceGaps } from "../lib/licence-links.mjs";
+import { FEATURE_LABELS } from "../lib/capabilities.mjs";
+import { NO_ANSWER_HREF } from "../lib/unanswered.mjs";
+import { divergingTotal, kindOf, parseStatement, plainText, shortStates, statedIn, statementProblems, tierProblems } from "../lib/not-scored-check.mjs";
+import { figureDashIn } from "../lib/figure-dash.mjs";
 
 const failures = [];
 const check = (ok, label, detail = "") => {
@@ -219,6 +223,150 @@ try {
   );
   console.log(`        ${licencePages.length} target pages, ${directoryEntries.length} directory entries`);
 
+  // A run that got no answer at all publishes nothing beneath its headline:
+  // every operation and feature reads not scored for that reason, with no
+  // counts, and the findings section says why it lists none. Only such a run
+  // says so, so a run with an answer to even one test keeps its figures.
+  const runLevelMismatch = [];
+  let runLevelPages = 0;
+  let runLevelExpected = 0;
+  for (const t of JSON.parse(await readFile(join(out, "data", "latest.json"), "utf8")).targets) {
+    const page = docs.find((d) => d.path === `/targets/${t.slug}/index.html`);
+    if (!page || t.baseline) continue;
+    runLevelPages++;
+    // Read from the answered counts, so the check does not lean on the field
+    // that counts the unanswered ones.
+    // A run that recorded no test at all is the same case, with a total of 0.
+    const expected = t.counts.passed + t.counts.failed + t.counts.skipped === 0;
+    if (expected) runLevelExpected++;
+    // The spoken line, once per operation and feature; the tooltip repeats it.
+    const says = (page.html.match(/sr-only">[^<]*: not scored, because the run got no answer</g) ?? []).length;
+    const findingsLine = /None to list, because[\s\S]{0,200}?latest run got no answer/.test(page.html);
+    const counted = /\d+ diverging|\d+ not attempted|\(\d[\d,]* (?:pass|fail|skip)/.test(page.html);
+    const ok = expected
+      ? says === t.areas.length + t.capabilities.length && findingsLine && !counted
+      : says === 0 && !findingsLine;
+    if (!ok) runLevelMismatch.push(`${t.slug} (expected ${expected}, ${says} lines, findings line ${findingsLine}, counted ${counted})`);
+  }
+  check(
+    runLevelPages > 0 && runLevelMismatch.length === 0,
+    "a run that got no answer publishes no operation, feature or finding beneath its headline, and only such a run",
+    `${runLevelPages} page(s) read; ${runLevelMismatch.join(", ")}`,
+  );
+  console.log(`        ${runLevelPages} pages, ${runLevelExpected} expected to have got no answer`);
+
+  // A not-scored row says why, in figures the endpoint publishes, everywhere
+  // it is shown. Each statement carries `data-not-scored`, so the check reads
+  // the element the page means rather than any sentence that matches. The
+  // page's sentence is parsed back into its figures (how many got no answer,
+  // of how many, the reasons' counts, passed, failed, not attempted) and each
+  // is compared with the endpoint; the board's cell or build line and the
+  // directory's entry have to state the count as a whole number; and each
+  // tier bar has to state its own tier's count. The same holds on every
+  // per-run page and run board against runs.json.
+  const unansweredMismatch = [];
+  let unansweredRows = 0;
+  let unansweredRead = 0;
+  const pageOf = (path) => docs.find((d) => d.path === path)?.html ?? null;
+  const directoryHtml = emulatorDirectory?.html ?? "";
+  const onBoard = (html, slug) => html.includes(`data-standing-name="${slug}"`) || html.includes(`href="/targets/${slug}"`);
+  const checkRow = (t, { page, board, where }) => {
+    const kind = kindOf(t);
+    const problems = [];
+    if (page) problems.push(...statementProblems(statedIn(page, t.slug), t));
+    if (page && kind === "tests") problems.push(...tierProblems(page, t));
+    if (board != null && onBoard(board, t.slug)) {
+      const said = statedIn(board, t.slug);
+      if (!kind && said.length) problems.push("board states a not-scored count for a scored row");
+      if (kind && !shortStates(said, t)) problems.push(`board says ${JSON.stringify(said)}`);
+    }
+    if (problems.length) unansweredMismatch.push(`${where}: ${problems.join("; ")}`);
+    return kind;
+  };
+  const boardHtml = pageOf("/index.html") ?? "";
+  for (const t of latestTargets) {
+    const page = pageOf(`/targets/${t.slug}/index.html`);
+    if (!page || t.baseline) continue;
+    unansweredRead++;
+    const kind = checkRow(t, { page, board: boardHtml, where: `/targets/${t.slug}` });
+    if (kind) unansweredRows++;
+    if (directoryHtml.includes(`id="project-${t.slug}"`)) {
+      const said = statedIn(directoryHtml, t.slug);
+      if (kind ? !shortStates(said, t) : said.length) unansweredMismatch.push(`directory ${t.slug} says ${JSON.stringify(said)}`);
+    }
+  }
+  let runPagesRead = 0;
+  let runRowsExpected = 0;
+  for (const run of JSON.parse(await readFile(join(out, "data", "runs.json"), "utf8")).runs) {
+    const runBoard = pageOf(`/runs/${run.id}/index.html`);
+    for (const t of run.targets) {
+      if (t.baseline || t.carried) continue;
+      const page = pageOf(`/targets/${t.slug}/${run.id}/index.html`);
+      if (!page) continue;
+      runPagesRead++;
+      if (checkRow(t, { page, board: runBoard, where: `/targets/${t.slug}/${run.id}` })) runRowsExpected++;
+    }
+  }
+  check(
+    unansweredRead > 0 && runPagesRead > 0 && unansweredMismatch.length === 0,
+    "a not-scored row states why in the endpoint's own figures, on its page, its tier bars, its board row and its directory entry, for the latest run and every past one",
+    `${unansweredRead} target page(s) and ${runPagesRead} run page(s) read; ${unansweredMismatch.slice(0, 6).join(" | ")}`,
+  );
+  console.log(`        ${unansweredRead} pages, ${unansweredRows} expected to state why they are not scored; ${runPagesRead} run pages, ${runRowsExpected} expected`);
+
+  // The sentence's failed count is the list below it. A not-scored page
+  // states how many tests failed and lists them under "Where it falls short";
+  // if the two are read from different regions' runs, the page contradicts
+  // itself, saying 170 failed above 175 listed.
+  const listMismatch = [];
+  let listsRead = 0;
+  for (const t of latestTargets) {
+    if (kindOf(t) !== "tests") continue;
+    const page = pageOf(`/targets/${t.slug}/index.html`);
+    const said = page && parseStatement(statedIn(page, t.slug)[0] ?? "");
+    if (!said) continue;
+    listsRead++;
+    const listed = divergingTotal(page);
+    if (said.failed !== listed) listMismatch.push(`${t.slug}: says ${said.failed} failed, lists ${listed} diverging`);
+  }
+  check(
+    listMismatch.length === 0,
+    "a not-scored page's failed count is the number of divergences it lists",
+    `${listsRead} page(s) read; ${listMismatch.join(", ")}`,
+  );
+  console.log(`        ${listsRead} not-scored pages with a failed count read`);
+
+  // Each statement links "got no answer" to the rule, which has to exist.
+  const methodologyHtml = pageOf("/methodology/index.html") ?? "";
+  check(
+    methodologyHtml.includes(`id="${NO_ANSWER_HREF.split("#")[1]}"`),
+    "the methodology carries the section a not-scored statement links to",
+    NO_ANSWER_HREF,
+  );
+
+  // No sentence stands a dash in for a figure (lib/figure-dash.mjs says which
+  // shapes count), in a page's text or in the words an attribute speaks
+  // (aria-label, title), on the board, every run board, every target and
+  // per-run page, and the text corpus.
+  const spokenIn = (html) => [
+    plainText(html.replace(/<script[\s\S]*?<\/script>/g, "").replace(/<style[\s\S]*?<\/style>/g, "")),
+    ...[...html.matchAll(/(?:aria-label|title)="([^"]*)"/g)].map((m) => plainText(m[1])),
+  ];
+  const dashPages = [];
+  let dashRead = 0;
+  for (const d of docs) {
+    if (!/^\/(?:index\.html|targets\/|runs\/|llms-full\.txt)/.test(d.path)) continue;
+    dashRead++;
+    const hit = spokenIn(d.html).map(figureDashIn).find(Boolean);
+    if (hit) dashPages.push(`${d.path}: "${hit}"`);
+  }
+  check(
+    dashRead > 0 && dashPages.length === 0,
+    "no sentence on a board, a target or run page or the text corpus stands a dash in for a figure",
+    `${dashRead} page(s) read; ${dashPages.length} with a dash: ${dashPages.slice(0, 5).join("; ")}`,
+  );
+  console.log(`        ${dashRead} pages scanned, ${dashPages.length} with a dash for a figure`);
+
   // The legend above a target's operations names every mark the list can
   // print, and every mark the list did print. The marks are the hidden glyph
   // spans: in the legend paragraph, then in the list below it.
@@ -240,6 +388,19 @@ try {
     `${legendsRead} legend(s) read; ${legendGaps.join("; ")}`,
   );
   console.log(`        ${legendsRead} legends, ${OPERATION_MARKS.length} marks`);
+
+  // The directory's feature lists print each reading in words beside its mark,
+  // and "How to read feature support" above them says what each word means. It
+  // has to name every reading the lists can print, and every one they did.
+  const guide = /<details class="reading-guide">([\s\S]*?)<\/details>/.exec(emulatorDirectory?.html ?? "")?.[1] ?? "";
+  const guideText = guide.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").toLowerCase();
+  const printed = [...(emulatorDirectory?.html ?? "").matchAll(/<span aria-hidden="true">[^<]{1,2}<\/span> ([^<]+)<\/dd>/g)].map((m) => m[1].trim());
+  const unnamedReadings = [...new Set([...FEATURE_LABELS, ...printed])].filter((label) => !guideText.includes(label.toLowerCase()));
+  check(
+    guideText.length > 0 && printed.length > 0 && unnamedReadings.length === 0,
+    "the directory's feature legend names every reading its lists can print",
+    `${printed.length} readings printed, ${FEATURE_LABELS.length} possible${unnamedReadings.length ? `; unnamed: ${unnamedReadings.join(", ")}` : ""}`,
+  );
 
   // The same completeness question for the directory, which is now the page the
   // nav, both retired routes and the methodology all point at. Asserting the

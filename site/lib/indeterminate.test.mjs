@@ -151,9 +151,29 @@ test("the overlay cannot reintroduce a figure the scorer withheld", () => {
   // number for a run where four of ten observations failed to happen.
   const row = buildModel([snapshot], overlay).latest.standings.find((r) => r.slug === "alpha");
 
-  assert.equal(row.headlineRegion, REGION, "the overlay must have been applied at all");
+  assert.equal(row.hasRegions, true, "the overlay must have been applied at all");
   assert.equal(row.divergenceValue, null, "the overlay must not recompute a withheld figure");
   assert.equal(row.coverageValue, null);
+});
+
+test("a not-scored row keeps the counts its lists are read from, not another region's", () => {
+  // The page lists a not-scored run's failures and unanswered tests from the
+  // results file. A region that answered one of those failures differently
+  // must not move the counts above the lists, or the sentence says 2 failed
+  // over a list of 3.
+  const elsewhere = structuredClone(overlay);
+  const entry = elsewhere.byRunDate["2026-08-01"].targets.alpha;
+  entry.regions = [{ ...entry.regions[0], region: "us-east-1", passed: 5, failed: 1 }];
+  entry.suiteHeadlineRegion = "us-east-1";
+  const row = buildModel([snapshot], elsewhere).latest.standings.find((r) => r.slug === "alpha");
+
+  assert.equal(row.hasRegions, true, "the overlay must have been applied at all");
+  assert.deepEqual(
+    [row.passed, row.failed, row.skipped, row.indeterminate, row.count],
+    [scored.passed, scored.failed, scored.skipped, scored.indeterminate, scored.count],
+  );
+  assert.deepEqual(row.tiers, scored.tiers, "the tiers stay on the same basis as the counts");
+  assert.equal(row.headlineRegion, null, "no region earned a headline the row does not have");
 });
 
 test("a refused run in a target's timeline carries no figure either", () => {

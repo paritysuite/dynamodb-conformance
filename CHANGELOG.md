@@ -234,6 +234,32 @@ has missed the sweeps since 2026-10-17 and is not among the regions the board
 scores against, so for now such an engine fails them everywhere the board shows.
 The answers are in `captures/2026-11-14-transaction-value-layers.json`.
 
+A not-scored row now says why it is not scored, where it used to print its
+sentences with a dash in place of each figure. Its row on the board and its
+directory entry say how many of its tests got no answer, or that the whole run
+did. Its page and the text corpus say the same, and add the reason the suite
+recorded for each kind (a transport failure or 5xx, a table that never became
+active, and so on) and what the answered tests did. A row that implements none
+of the suite says that instead. The page lists the tests that got no answer by
+operation, each with its reason, and no longer lists them among the failures as
+divergences they never were. The counts above the lists, and the row's counts
+in the data endpoints, are read from the same results as the lists, so the failed
+count is the number of failures listed. The methodology gains a section stating
+the rule.
+
+The rest of the row reads the same way. A run that got no answer at all lists
+every operation and feature as not scored, with no pass or fail counts beneath
+them and no findings, where it used to show figures tallied from tests the run
+never answered. A feature holding some tests that got no answer reads as not
+scored too, as an operation holding one already did, rather than wearing a
+support state read from the rest. The data endpoints add `indeterminate` to each
+row's counts, tiers, operation areas and features, so the counts add up to the
+total on a row that is not scored as on any other; give an area or feature where
+nothing was observed the state `unanswered` rather than `unsupported`; and
+withhold `correctness`, and each region's pass rate, wherever the other two
+figures are withheld. Movement says when a target loses its score or gets one,
+as `not scored` and `scored`, instead of reading `unchanged` on both runs.
+
 ## 2026-11-02 (3.9.0)
 
 Query's XOR ConditionalOperator beside an unknown Select is now pinned to the

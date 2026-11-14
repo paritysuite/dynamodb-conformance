@@ -233,3 +233,63 @@ test("a target's own capability card is the card renderer over a model of one", 
   assert.equal(renderTargetCapabilities(null), "");
   assert.equal(renderTargetCapabilities({}), "");
 });
+
+// A feature holding a test that got no answer is not scored, as an operation
+// holding one is: its state is read from the answered tests alone. It keeps
+// its counts, as the operations list does, and a feature with every test
+// answered keeps its state. Read from the board a test-level refusal really
+// produces, where every tier holds unanswered tests.
+test("a feature with a test that got no answer reads not scored, with its counts", async () => {
+  const { SCENARIOS } = await import("../fixtures/not-scored-models.mjs");
+  const { formatNumber } = await import("./numbers.mjs");
+  const scenario = SCENARIOS.find((s) => s.mixed);
+  const [slug] = scenario.notScored;
+  const target = scenario.build().model.perTarget[slug];
+  const unanswered = target.capabilities.filter((c) => c.indeterminate > 0);
+  const answered = target.capabilities.filter((c) => !(c.indeterminate > 0));
+  assert.ok(unanswered.length > 0 && answered.length > 0, `${unanswered.length} unanswered, ${answered.length} answered`);
+
+  const card = renderTargetCapabilities(target);
+  const lines = [...card.matchAll(/sr-only">([^<]*)</g)].map((m) => m[1]);
+  const countsOf = (c) => [[c.passed, "pass"], [c.failed, "fail"], [c.skipped, "skip"]].filter(([n]) => n).map(([n, w]) => `${formatNumber(n)} ${w}`).join(", ");
+  for (const c of unanswered) {
+    const n = c.indeterminate;
+    const ct = countsOf(c);
+    const line = `${target.display} ${c.label}: not scored, because ${formatNumber(n)} ${n === 1 ? "test" : "tests"} got no answer${ct ? ` (${ct})` : ""}`;
+    assert.ok(lines.includes(line), `${c.label}: ${lines.find((l) => l.includes(` ${c.label}:`))}`);
+  }
+  for (const c of answered) {
+    assert.ok(lines.some((l) => l.startsWith(`${target.display} ${c.label}: `) && !l.includes("not scored")), `${c.label} keeps its state`);
+  }
+  assert.equal([...card.matchAll(/aria-hidden="true">\?</g)].length, unanswered.length);
+
+  const entry = renderFeatureSummary(target, "core") + renderFeatureSummary(target, "wider");
+  const marks = [...entry.matchAll(/title="([^"]*)"><span aria-hidden="true">\?<\/span> not scored</g)].map((m) => m[1]);
+  assert.equal(marks.length, unanswered.length, "the directory marks each unanswered feature");
+  for (const title of marks) assert.match(title, /^[\d,]+ tests? got no answer/);
+});
+
+// A run that got no answer at all observed no feature, so neither its own card
+// nor its directory entry may say a feature is supported, partly supported or
+// not supported, or count a test for it. Read from the board a run-level
+// refusal really produces.
+test("a run that got no answer lists every feature as not scored, with no counts", async () => {
+  const { SCENARIOS } = await import("../fixtures/not-scored-models.mjs");
+  const scenario = SCENARIOS.find((s) => s.name === "an existing project not scored at run level");
+  const [slug] = scenario.notScored;
+  const target = scenario.build().model.perTarget[slug];
+  assert.equal(target.capabilities.length, CAPABILITIES.length);
+
+  const card = renderTargetCapabilities(target);
+  const lines = [...card.matchAll(/sr-only">([^<]*)</g)].map((m) => m[1]);
+  assert.equal(lines.length, CAPABILITIES.length, `${lines.length} lines for ${CAPABILITIES.length} capabilities`);
+  for (const c of CAPABILITIES) {
+    assert.ok(lines.includes(`${target.display} ${c.label}: not scored, because the run got no answer`), c.label);
+  }
+  assert.equal([...card.matchAll(/aria-hidden="true">\?</g)].length, CAPABILITIES.length);
+  assert.doesNotMatch(card, /\d+ (pass|fail|skip)\b|supported|failing|✓|✗|◑/);
+
+  const entry = renderFeatureSummary(target, "core") + renderFeatureSummary(target, "wider");
+  assert.equal([...entry.matchAll(/<span aria-hidden="true">\?<\/span> not scored</g)].length, CAPABILITIES.length);
+  assert.doesNotMatch(entry, /\d+ (pass|fail|skip)\b|supported|failing|not tested/);
+});

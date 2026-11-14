@@ -152,10 +152,10 @@
    is an improvement, and the old up/down names would have coloured that red. */
 .move-improved { color: var(--color-pass-700); }
 .move-regressed { color: var(--color-fail-700); }
-.move-flat, .move-carried, .move-baseline, .move-new { color: var(--color-zinc-500); }
+.move-flat, .move-carried, .move-baseline, .move-new, .move-unscored, .move-scored { color: var(--color-zinc-500); }
 .dark .move-improved { color: var(--color-pass-400); }
 .dark .move-regressed { color: var(--color-fail-400); }
-.dark .move-flat, .dark .move-carried, .dark .move-baseline, .dark .move-new { color: var(--color-zinc-400); }
+.dark .move-flat, .dark .move-carried, .dark .move-baseline, .dark .move-new, .dark .move-unscored, .dark .move-scored { color: var(--color-zinc-400); }
 
 /* Prose tweaks for the About narrative. */
 .prose :where(code):not(:where([class~="not-prose"], [class~="not-prose"] *))::before,

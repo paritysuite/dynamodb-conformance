@@ -10,6 +10,13 @@
   // literals here (5 and 25), which a criteria change would have left behind.
   function figClass(v) { return "fig-" + gradeOf(v, 100).band; }
   function widthPct(v) { return (v == null ? 0 : v) + "%"; }
+  // A tier holding a test that got no answer has no figures, and its line read
+  // "- diverges" and "- covered". It says it is not scored and how many of its
+  // tests got no answer instead.
+  function unanswered(t) { return t && t.divergenceValue == null && (t.indeterminate ?? 0) > 0; }
+  // A tier the target implements none of has no divergence either, and says
+  // so in place of the same dash. Its coverage, 0.0%, is still a figure.
+  function none(t) { return t && t.divergenceValue == null && !unanswered(t) && (t.passed ?? 0) + (t.failed ?? 0) === 0; }
   // The tier's product name and one-line meaning, so "Tier 2" is not a bare
   // ordinal on the one surface where a reader meets it first. Mirrors the
   // TIERS vocabulary the data endpoints publish.
@@ -27,7 +34,7 @@
     <!-- The figure is named and coloured by its band; a bare right-aligned
          percentage read as anything the reader expected it to be. -->
     <span class="text-xs font-mono tnum whitespace-nowrap" :class="figClass(tier.divergenceValue)">
-      <span @text="tier.divergence"></span><span class="font-sans text-zinc-500 dark:text-zinc-400"> diverges</span>
+      <span @text="unanswered(tier) ? 'not scored' : none(tier) ? 'none implemented' : tier.divergence"></span><span class="font-sans text-zinc-500 dark:text-zinc-400" @text="unanswered(tier) || none(tier) ? '' : ' diverges'"></span>
     </span>
   </div>
   <!-- The tier's coverage as a figure, not only as the bar's length. Divergence
@@ -36,7 +43,7 @@
        stated: Dynalite's Tier 2 diverges on 14.1%, which reads unremarkable
        until you know it attempts a fifth of the tier. -->
   <div class="mb-1 flex items-baseline justify-between gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-    <span class="font-mono tnum"><span @text="tier.coverage"></span> covered</span>
+    <span class="font-mono tnum"><span @text="unanswered(tier) ? formatNumber(tier.indeterminate) + ' of ' + formatNumber(tier.total) : tier.coverage"></span><span webc:nokeep @text="unanswered(tier) ? ' got no answer' : ' covered'"></span></span>
     <span webc:if="tier.skipped" class="tnum" @text="formatNumber(tier.skipped) + ' unsupported'"></span>
   </div>
   <!-- Fails over what the tier actually attempts, on the detail pages only. A
@@ -55,7 +62,7 @@
     aria-valuemin="0"
     aria-valuemax="100"
     :aria-valuenow="tier.coverageValue == null ? 0 : tier.coverageValue"
-    :aria-label="display + ' ' + name + ': diverges on ' + tier.divergence + ', covers ' + tier.coverage">
+    :aria-label="display + ' ' + name + (unanswered(tier) ? ': not scored, ' + formatNumber(tier.indeterminate) + ' of ' + formatNumber(tier.total) + ' tests got no answer' : none(tier) ? ': implements none of its ' + formatNumber(tier.total) + ' tests' : ': diverges on ' + tier.divergence + ', covers ' + tier.coverage)">
     <div class="h-full rounded-full bg-zinc-400 dark:bg-zinc-400/80" :style="'width:' + widthPct(tier.coverageValue)"></div>
   </div>
 </div>

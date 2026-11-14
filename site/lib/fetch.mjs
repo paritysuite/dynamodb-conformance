@@ -12,7 +12,7 @@
 // mislead if scored as an emulator.
 
 import { scoreEmulator, breakdownOf, areaTallies, capabilityTallies } from "./scoring.mjs";
-import { findingsOf } from "./findings.mjs";
+import { findingsOf, unansweredOf } from "./findings.mjs";
 import { GROUND_TRUTH_SLUG, isTargetResultFile } from "dynamodb-conformance/scripts/lib/score.mjs";
 
 const OWNER = "paritysuite";
@@ -160,6 +160,9 @@ export async function fetchSnapshots({ token, timeoutMs = 8000, log = () => {}, 
       // Per-failure records for the per-run target pages: which test, where its
       // source is, and the commit that measured it.
       findings: findingsOf(parsed, { slug, version, sha }),
+      // The tests that got no answer, with the reason each one recorded, so a
+      // not-scored page can say how many and why rather than print dashes.
+      unanswered: unansweredOf(parsed, { slug, version, sha }),
     };
   });
 

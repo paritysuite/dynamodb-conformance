@@ -25,7 +25,7 @@
   <p class="comparison-intro">What each emulator supports, what it needs to run, and where to get it. Feature support comes from the measured suite; installation information comes from project documentation.</p>
   <nav class="project-jumps" aria-label="Find an emulator"><a webc:for="slug of projects($data.conformance)" :href="'#project-' + slug" @text="$data.conformance.perTarget[slug].display"></a></nav>
   <details class="reading-guide"><summary>How to read feature support</summary>
-    <p class="mt-4 text-sm text-zinc-500 dark:text-zinc-400">Supported means all feature tests pass. Partial means some pass while others fail or skip. Failing means the feature is implemented but no tests pass. Not supported means it is not implemented; not tested means there is no measurement. Each build is measured separately.</p>
+    <p class="mt-4 text-sm text-zinc-500 dark:text-zinc-400">Supported means all feature tests pass. Partially supported means some pass while others fail or skip. Failing means the feature is implemented but no tests pass. Not supported means it is not implemented; not tested means there is no measurement. Not scored means the run, or some of the feature's tests, got no answer, so its support is not read from them. Each build is measured separately.</p>
   </details>
   <div class="project-directory" id="capabilities">
     <emulator-entry webc:for="slug of projects($data.conformance)" :target="$data.conformance.perTarget[slug]" :row="$data.conformance.perTarget[slug].current"></emulator-entry>

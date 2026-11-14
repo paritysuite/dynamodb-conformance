@@ -21,6 +21,24 @@ const STATE = {
   unsupported: { glyph: "–", cls: "text-zinc-500 dark:text-zinc-400", label: "not supported" },
 };
 const FALLBACK = { glyph: "·", cls: "text-zinc-300 dark:text-zinc-700", label: "not tested" };
+// A capability holding a test that got no answer, whether the whole run went
+// unanswered or only some of its tests did. Its state is read from the
+// answered tests alone, so a tick or a dash there would say "supported" or
+// "not supported" beside tests nobody observed. The same mark, and the same
+// sentence, the operations list uses.
+const NOT_SCORED = { glyph: "?", cls: "text-zinc-500 dark:text-zinc-400", label: "not scored" };
+// Every reading the directory's feature list can print, so its legend can be
+// held to naming each one.
+export const FEATURE_LABELS = [...Object.values(STATE), FALLBACK, NOT_SCORED].map((s) => s.label);
+
+const stateOf = (c) => {
+  if (c?.runUnanswered) return { ...NOT_SCORED, why: "the run got no answer" };
+  const unanswered = c?.indeterminate ?? 0;
+  if (unanswered > 0) {
+    return { ...NOT_SCORED, why: `${formatNumber(unanswered)} ${unanswered === 1 ? "test" : "tests"} got no answer` };
+  }
+  return STATE[c?.state] || FALLBACK;
+};
 
 function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -60,9 +78,9 @@ export function renderCapabilityCards(model) {
         const items = CAPABILITIES.filter((cap) => cap.group === g.key)
           .map((cap) => {
             const c = byKey[cap.key] || { state: "n/a", passed: 0, failed: 0, skipped: 0 };
-            const s = STATE[c.state] || FALLBACK;
+            const s = stateOf(c);
             const ct = counts(c);
-            const describe = `${r.display} ${cap.label}: ${s.label}${ct ? ` (${ct})` : ""}`;
+            const describe = `${r.display} ${cap.label}: ${s.label}${s.why ? `, because ${s.why}` : ""}${ct ? ` (${ct})` : ""}`;
             return `<div class="flex items-start justify-between gap-2">
               <dt class="text-sm text-zinc-600 dark:text-zinc-300">${esc(cap.label)}</dt>
               <dd class="shrink-0 text-base font-bold leading-none ${s.cls}" title="${esc(describe)}">
@@ -96,8 +114,9 @@ export function renderFeatureSummary(target, group = "core") {
   const capabilities = CAPABILITIES.filter(c => c.group === group);
   return `<dl class="project-feature-list">${capabilities.map(cap => {
     const c = measured.get(cap.key);
-    const state = STATE[c?.state] || FALLBACK;
-    const detail = c ? counts(c) : "";
+    const state = stateOf(c);
+    const ct = c ? counts(c) : "";
+    const detail = state.why ? `${state.why}${ct ? ` (${ct})` : ""}` : ct;
     return `<div><dt>${esc(cap.label)}</dt><dd class="${state.cls}"${detail ? ` title="${esc(detail)}"` : ""}><span aria-hidden="true">${state.glyph}</span> ${esc(state.label)}</dd></div>`;
   }).join("")}</dl>`;
 }
