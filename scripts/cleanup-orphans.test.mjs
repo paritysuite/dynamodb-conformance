@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_MAX_AGE_HOURS,
@@ -235,5 +236,27 @@ describe('exitVerdict', () => {
       warn: false,
     })
     expect(exitVerdict({ stuck: 1, unreachable: 0, regionCount: 34 }).code).toBe(1)
+  })
+})
+
+describe('running under plain node', () => {
+  // The sweep runs this script as `node scripts/cleanup-orphans.mjs`, with no
+  // bundler. It imports src/regions.ts, and Node strips the types but does not
+  // map a `./x.js` specifier to `x.ts`, so a relative import added to that file
+  // stops the script at link time while vitest, which does map it, stays green.
+  it('loads with its imports resolved', { timeout: 30_000 }, () => {
+    // Imported, not executed: the script only sweeps when it is the entry
+    // point, so this touches no network.
+    const script = new URL('./cleanup-orphans.mjs', import.meta.url).href
+    const out = execFileSync(
+      process.execPath,
+      [
+        '--input-type=module',
+        '-e',
+        `const m = await import(${JSON.stringify(script)}); console.log(m.parseArgs([]).regions.length)`,
+      ],
+      { encoding: 'utf8', timeout: 20_000 },
+    )
+    expect(Number(out.trim())).toBe(COMMERCIAL_REGIONS.length)
   })
 })
