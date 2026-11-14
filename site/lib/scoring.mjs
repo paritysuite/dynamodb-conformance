@@ -17,6 +17,7 @@ import {
   display,
   distributionOf,
   isVariant,
+  licenceOf,
   projectOf,
   repoUrl,
   label,
@@ -44,7 +45,7 @@ import {
   REGIONAL_CAUSE,
 } from "dynamodb-conformance/scripts/lib/grade.mjs";
 
-export { DISPLAY, REPO, TARGETS, CHANNELS_SHOWN, GROUND_TRUTH_SLUG, configurationOf, display, distributionOf, isVariant, projectOf, repoUrl, label, rowConfigurationOf, tierOf };
+export { DISPLAY, REPO, TARGETS, CHANNELS_SHOWN, GROUND_TRUTH_SLUG, configurationOf, display, distributionOf, isVariant, licenceOf, projectOf, repoUrl, label, rowConfigurationOf, tierOf };
 
 // The two published figures, from the suite's own definition. Re-exported so
 // every site module derives them from one place: each surface that restated

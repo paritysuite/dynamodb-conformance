@@ -318,6 +318,7 @@ main > section > h1 + p { margin-top: 1.2rem; line-height: 1.75; font-size: .9re
 .project-entry h3 { font: 600 .75rem var(--font-sans); color: var(--page-muted); letter-spacing: .07em; text-transform: uppercase; }
 .project-identity h3 { margin-top: 1.4rem; margin-bottom: .6rem; }
 .project-requires { font-size: .8rem; line-height: 1.6; }
+.project-licence { font-size: .8rem; line-height: 1.6; margin-top: .4rem; overflow-wrap: anywhere; }
 .project-note { font-size: .8125rem; line-height: 1.7; color: var(--page-muted); margin-top: .6rem; }
 .project-channels { display: flex; flex-wrap: wrap; gap: .4rem; }
 .project-channels a { display: inline-flex; align-items: center; gap: .4rem; font-size: .75rem; padding: .45rem .55rem; border: 1px solid var(--page-line); border-radius: 5px; background: var(--page-panel); }

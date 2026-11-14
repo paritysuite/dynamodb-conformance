@@ -69,7 +69,7 @@ _Suite v3.9.0, measured against real DynamoDB on 2026-11-08. Region health as of
 | [Floci](https://github.com/floci-io/floci) | B | 5ee85db604c4 | 9.3% | 99.8% | 156 | 4 | 0.0% | 0.0% | 21.4% | 21 of 32 |
 | [ExtendDB](https://github.com/ExtendDB/extenddb) · PostgreSQL | C | v0.1.14 | 10.1% | 70.0% | 170 | 504 | 0.0% | 2.7% | 21.7% | 11 of 32 |
 | ↳ SQLite | C | v0.1.14 | 10.6% | 73.4% | 178 | 446 | 0.0% | 4.2% | 21.8% | 11 of 32 |
-| [LocalStack](https://github.com/localstack/localstack) | C | 2026.10.6 | 19.5% | 95.6% | 328 | 73 | 0.2% | 13.5% | 36.5% | 11 of 32 |
+| [LocalStack](https://www.localstack.cloud) | C | 2026.10.6 | 19.5% | 95.6% | 328 | 73 | 0.2% | 13.5% | 36.5% | 11 of 32 |
 | [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) | D | 6ada631ec7aa | 24.8% | 95.3% | 416 | 79 | 7.6% | 11.9% | 44.4% | 32 of 32 |
 | [Dynalite](https://github.com/architect/dynalite) | D | 4.0.0 | 12.6% | 57.9% | 211 | 707 | 11.1% | 6.2% | 17.6% | 11 of 32 |
 | [Kumo](https://github.com/sivchari/kumo) | F | 7b15ae8b6e4b | 44.3% | 69.7% | 744 | 508 | 47.1% | 13.1% | 61.9% | 32 of 32 |
@@ -793,7 +793,13 @@ You'd need a raw HTTP test layer using `fetch()` with `aws4` signing for those. 
 1. Start the target on a port
 2. Run: `DYNAMODB_ENDPOINT=http://localhost:<port> npx vitest run --reporter=json --outputFile=results/<target>.json`
 3. Generate the table: `npm run results:table`
-4. Submit a PR with the results JSON
+4. Add the target to `scripts/lib/targets.mjs`, including its `licence`: the
+   name, linked to the licence text, read from the project's own licence file
+   (or from what is actually run, where that is licensed differently from the
+   source), with `spdx` only when the licence has an SPDX identifier. Name it as
+   the project does and leave it at that: no "open source" or "not open source"
+   beside it, in the field or in the target's note.
+5. Submit a PR with the results JSON
 
 If the target speaks HTTPS only or verifies request signatures (ExtendDB is
 the first such target), two extra steps apply: trust its certificate with

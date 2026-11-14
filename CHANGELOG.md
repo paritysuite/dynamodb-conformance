@@ -184,6 +184,22 @@ No published result came near the old limits, so no verdict changes.
 Floci's row no longer lists Scoop. Its link pointed at a repository that doesn't
 exist, and Floci's own install instructions don't mention Scoop.
 
+Every target now names its licence. Each target's page shows it in How to run
+it, next to what the target needs, and each project's entry in the emulator
+directory shows it under What you need. In both places it is the licence's name,
+linked to its text or to the vendor's terms. Where a licence has an SPDX
+identifier, that identifier is the name shown. Builds of one project show the
+project's licence. Where the thing the suite runs is licensed differently from
+its source repository, the licence shown is the one for what is run. Each target
+in `/data/latest.json` carries the same fact as `licence`, with `name`, `url`
+and, where one exists, `spdx`. The one licence remark that sat in a target's
+run note has moved into the field, so no target carries a line about its
+licence that the others do not.
+
+LocalStack's name in the results table, and the project links on its pages,
+now point at localstack.cloud rather than its GitHub repository, which is
+archived.
+
 ## 2026-11-02 (3.9.0)
 
 Query's XOR ConditionalOperator beside an unknown Select is now pinned to the

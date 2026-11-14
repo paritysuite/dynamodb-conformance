@@ -158,7 +158,7 @@
        the suite can observe that a project ships a Docker image - so the source
        link is the point, not decoration: a reader checks the claim rather than
        taking it. -->
-  <div webc:if="channels($data.target.slug).length" class="mb-12">
+  <div webc:if="channels($data.target.slug).length || licence($data.target.slug)" class="mb-12">
     <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">How to run it</h2>
     <p class="text-sm text-zinc-600 dark:text-zinc-300 mb-4 max-w-2xl">
       Every way <span @text="$data.target.display"></span> is distributed, each linking to the project's own
@@ -168,6 +168,14 @@
     <p webc:if="requires($data.target.slug)" class="mb-4 text-sm text-zinc-600 dark:text-zinc-300 max-w-2xl">
       <span class="font-medium text-zinc-700 dark:text-zinc-200">Needs:</span>
       <span @text="requires($data.target.slug)"></span>
+    </p>
+
+    <!-- The licence, named as the project names it and linked to its text,
+         the same line on every target's page. Named rather than classified:
+         nothing here says which licences count as open. -->
+    <p webc:if="licence($data.target.slug)" class="mb-4 text-sm text-zinc-600 dark:text-zinc-300 max-w-2xl">
+      <span class="font-medium text-zinc-700 dark:text-zinc-200">Licence:</span>
+      <licence-link :slug="$data.target.slug" :name="$data.target.display"></licence-link>
     </p>
 
     <ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
