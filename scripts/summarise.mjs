@@ -71,6 +71,7 @@ import {
   isVariant,
   label,
   projectOf,
+  rowName,
 } from './lib/targets.mjs'
 
 /** Version of the results/summary.json contract the site consumes. */
@@ -95,6 +96,8 @@ export {
   label,
   projectOf,
   repoUrl,
+  rowConfigurationOf,
+  rowName,
 } from './lib/targets.mjs'
 
 // ── Reading the target namespace ─────────────────────────────────────────────
@@ -1075,15 +1078,13 @@ export function renderTable(summary) {
   // The site can do better than this and does, behind a disclosure. The two
   // surfaces agree on the data and differ in how much of it they show at once.
   //
-  // The parent still names its own configuration, so a reader can tell which
-  // build the top row's figures belong to the moment a project ships a second.
+  // The parent still names its own configuration (rowName, shared with the
+  // site's standings), so a reader can tell which build the top row's figures
+  // belong to the moment a project ships a second.
   const rendered = rows.flatMap((r) => [
     {
       row: r,
-      // A build promoted to stand for its project already carries its
-      // configuration in the display name the registry gives it, so appending
-      // it again read "ExtendDB (SQLite) · SQLite".
-      name: configurationOf(r.slug) && !isVariant(r.slug) ? `${r.target} · ${configurationOf(r.slug)}` : r.target,
+      name: rowName(r.slug, r.target),
       date: r.runDate,
     },
     ...(r.variants ?? []).map((v) => ({

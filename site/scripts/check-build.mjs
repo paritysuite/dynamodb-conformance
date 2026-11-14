@@ -27,7 +27,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 
-import { GRADE_BANDS, gradeOf, gradingCriteriaEffectiveLabel } from "../lib/scoring.mjs";
+import { GRADE_BANDS, gradeOf, gradingCriteriaEffectiveLabel, rowConfigurationOf } from "../lib/scoring.mjs";
 import { checkAPlusPremise } from "../lib/premise.mjs";
 import { checkRegionalNotes, expectedRegionalNotes } from "../lib/regional-note.mjs";
 import { checkProseLiterals } from "../lib/prose-literals.mjs";
@@ -135,6 +135,25 @@ try {
     scored.length > 0 && missing.length === 0,
     "the board reaches every scored engine, builds included",
     `${linked.size} of ${scored.length} linked${missing.length ? `; missing ${missing.join(", ")}` : ""}`,
+  );
+
+  // A project's row names its configuration, as the README table does, so a
+  // reader can tell which build the figures belong to. Checked on the rendered
+  // board rather than only in lib/, because the unit test cannot see whether
+  // the template calls the filter or what the markup makes of the result. Read
+  // from the row's own name link, so a configuration printed anywhere else on
+  // the page cannot stand in for it.
+  const nameOf = (slug) => {
+    const link = new RegExp(`<a\\b[^>]*\\bdata-standing-name="${slug}"[^>]*>([\\s\\S]*?)</a>`).exec(homeDoc?.html ?? "");
+    return link ? link[1].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim() : null;
+  };
+  const namedRows = JSON.parse(await readFile(join(out, "data", "latest.json"), "utf8"))
+    .targets.filter((t) => t.standsForProject !== false && rowConfigurationOf(t.slug));
+  const unnamed = namedRows.filter((t) => nameOf(t.slug) !== `${t.display} · ${rowConfigurationOf(t.slug)}`);
+  check(
+    namedRows.length > 0 && unnamed.length === 0,
+    "the board names the configuration of every project row that has one",
+    `${namedRows.length - unnamed.length} of ${namedRows.length} named${unnamed.length ? `; missing ${unnamed.map((t) => t.slug).join(", ")}` : ""}`,
   );
 
   // The same completeness question for the directory, which is now the page the

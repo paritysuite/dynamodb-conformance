@@ -20,6 +20,7 @@ import {
   projectOf,
   repoUrl,
   label,
+  rowConfigurationOf,
 } from "dynamodb-conformance/scripts/summarise.mjs";
 import { GROUND_TRUTH_SLUG, axesOf, passRate, scoreResults, tierOf } from "dynamodb-conformance/scripts/lib/score.mjs";
 import { figuresDiffer } from "dynamodb-conformance/scripts/lib/standings.mjs";
@@ -43,7 +44,7 @@ import {
   REGIONAL_CAUSE,
 } from "dynamodb-conformance/scripts/lib/grade.mjs";
 
-export { DISPLAY, REPO, TARGETS, CHANNELS_SHOWN, GROUND_TRUTH_SLUG, configurationOf, display, distributionOf, isVariant, projectOf, repoUrl, label, tierOf };
+export { DISPLAY, REPO, TARGETS, CHANNELS_SHOWN, GROUND_TRUTH_SLUG, configurationOf, display, distributionOf, isVariant, projectOf, repoUrl, label, rowConfigurationOf, tierOf };
 
 // The two published figures, from the suite's own definition. Re-exported so
 // every site module derives them from one place: each surface that restated

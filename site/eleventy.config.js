@@ -10,7 +10,7 @@ import { controlObservation, controlProvenance, controlSplit, regionCount, regio
 import { renderSplitEvidence, splitCoverageNote } from "./lib/splits.mjs";
 import { regionalSpread, renderCappedExamples, renderCheapestWithdrawal } from "./lib/worked-examples.mjs";
 import { carriedEach, countWord } from "./lib/suite-shape.mjs";
-import { GRADING_CRITERIA_EFFECTIVE, GRADING_VERSION, REGIONAL_CAUSE, TARGETS, capClauseOf, configurationOf, coverageShareSentenceOf, display, distributionOf, fallsShort, gradeForRow, gradeLegendOf, gradeLineOf, gradeOf, gradingCriteriaEffectiveLabel, isSelfMaintained, isVariant, notAttempted, projectOf, regionClauseOf, regionalClauseForRow, regionalLetterForRow, scoredOnCorrectness } from "./lib/scoring.mjs";
+import { GRADING_CRITERIA_EFFECTIVE, GRADING_VERSION, REGIONAL_CAUSE, TARGETS, capClauseOf, configurationOf, coverageShareSentenceOf, display, distributionOf, fallsShort, gradeForRow, gradeLegendOf, gradeLineOf, gradeOf, gradingCriteriaEffectiveLabel, isSelfMaintained, isVariant, notAttempted, projectOf, regionClauseOf, regionalClauseForRow, regionalLetterForRow, rowConfigurationOf, scoredOnCorrectness } from "./lib/scoring.mjs";
 import { channelIcon } from "./lib/channel-icons.mjs";
 import { targetLinks, targetRunHref } from "./lib/links.mjs";
 import { areaFailures, sourceUrl } from "./lib/findings.mjs";
@@ -147,6 +147,10 @@ export default function (eleventyConfig) {
   }));
   eleventyConfig.addFilter("configurationOf", (slug) => configurationOf(slug));
   eleventyConfig.addFilter("isVariant", (slug) => isVariant(slug));
+  // The configuration a project's own row names beside it, as the README table
+  // does ("ExtendDB · PostgreSQL"). One definition with the table's, so the two
+  // surfaces cannot disagree about which rows name one.
+  eleventyConfig.addFilter("rowConfiguration", (slug) => rowConfigurationOf(slug));
   // A build's own page names the project it is a build of and links back to it.
   // These two give it the way there.
   eleventyConfig.addFilter("projectOf", (slug) => projectOf(slug));

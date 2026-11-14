@@ -123,6 +123,12 @@ target is re-run. A board is now refused if real DynamoDB's own run, in its own
 region, fails a test or passes one on a split row with an answer recorded for a
 different region.
 
+A project's own row on the board now names its configuration beside the
+project, as the README table already did, so ExtendDB's row reads "ExtendDB ·
+PostgreSQL" before its other builds are opened. The ways to run a target gain
+one more, `package`, for an operating system package: a .deb or .rpm, or an apt
+or dnf repository.
+
 ## 2026-11-02 (3.9.0)
 
 Query's XOR ConditionalOperator beside an unknown Select is now pinned to the

@@ -38,7 +38,14 @@
 // the suite can defend; a typed one is a claim about someone else's product
 // that nothing checks.
 
-/** Channel labels, so the board renders a controlled vocabulary. */
+/**
+ * Channel labels, so the board renders a controlled vocabulary.
+ *
+ * `package` is software the operating system's package manager installs: apt
+ * or dnf, from a repository or from a .deb or .rpm. A package manager with a
+ * channel of its own here (npm, pip, cargo, Maven, Homebrew, Scoop) uses that
+ * channel instead.
+ */
 export const CHANNELS = {
   service: 'AWS service',
   docker: 'Docker',
@@ -50,6 +57,7 @@ export const CHANNELS = {
   maven: 'Maven',
   homebrew: 'Homebrew',
   scoop: 'Scoop',
+  package: 'package',
   'install-script': 'install script',
   binary: 'binary',
   embedded: 'embedded',
@@ -275,6 +283,25 @@ export const isVariant = (slug) => Boolean(TARGETS[slug] && !TARGETS[slug].refer
 
 /** What distinguishes this configuration, for a nested row's label. */
 export const configurationOf = (slug) => TARGETS[slug]?.configuration ?? null
+
+/**
+ * The configuration a project's own row names beside the project, or null.
+ *
+ * The parent row names its configuration, so a reader can tell which build the
+ * top row's figures belong to the moment a project ships a second. A build
+ * promoted to stand for its project already carries its configuration in the
+ * display name the registry gives it, so naming it again would read
+ * "ExtendDB (SQLite) · SQLite". The README table and the site's standings both
+ * name a row through this, so the two cannot disagree about which rows do.
+ */
+export const rowConfigurationOf = (slug) =>
+  isVariant(slug) ? null : configurationOf(slug)
+
+/** A project row's name: `name`, then its configuration when it names one. */
+export const rowName = (slug, name = display(slug)) => {
+  const configuration = rowConfigurationOf(slug)
+  return configuration ? `${name} · ${configuration}` : name
+}
 
 /**
  * How a target is distributed: `[{ channel, label, url, command? }]`, in
