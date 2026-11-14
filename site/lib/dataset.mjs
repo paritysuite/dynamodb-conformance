@@ -74,6 +74,11 @@ const coverageOf = (a) => axesFor(a).coverage;
 // real-AWS passes have reported - the pages disclose that, and without it
 // here an agent could not tell a fully measured baseline from a pinned one.
 // Additive - a schema 3 consumer keeps working.
+//
+// Also additive, so within 4: `indeterminate` on every row's `counts`, tier,
+// area and capability, so the counts sum to `total` on a row that is not
+// scored as on any other, the `unscored` and `scored` movement states, and
+// the `unanswered` area and capability state.
 export const DATA_SCHEMA_VERSION = 4;
 
 // Tier metadata, surfaced so a consumer doesn't have to hard-code the names.
@@ -84,6 +89,13 @@ export const TIERS = [
 ];
 
 const groupByCapability = Object.fromEntries(CAPABILITIES.map((c) => [c.key, c.group]));
+
+// Correctness as published: withheld where the tally holds an unanswered test,
+// in the shape every other withheld figure takes. It is the one figure axesOf
+// does not guard, so a not-scored row published a pass rate over the tests
+// that did get an answer beside a divergence and coverage of null.
+const WITHHELD = { pct: "-", value: null };
+const correctnessFor = (pct, value, unanswered) => (unanswered > 0 ? WITHHELD : { pct, value });
 
 // Tier scores as a {tier1, tier2, tier3} map, one shape whether the source row
 // carries a tier or not (a missing tier is null, never absent). Each tier
@@ -97,10 +109,12 @@ function tierScores(tiers) {
       ? {
           divergence: { pct: t.divergence, value: t.divergenceValue },
           coverage: { pct: t.coverage, value: t.coverageValue },
-          correctness: { pct: t.correctness, value: t.correctnessValue },
+          correctness: correctnessFor(t.correctness, t.correctnessValue, t.indeterminate ?? 0),
           passed: t.passed,
           failed: t.failed,
           skipped: t.skipped,
+          // So the four counts sum to the total, as they do on a region tier.
+          indeterminate: t.indeterminate ?? 0,
           total: t.total,
         }
       : null;
@@ -177,7 +191,8 @@ function targetRow(row) {
     // correctness over implemented operations in another.
     divergence: { pct: row.divergence, value: row.divergenceValue },
     coverage: { pct: row.coverage, value: row.coverageValue },
-    correctness: { pct: row.total, value: row.totalValue },
+    // Withheld on a row that is not scored, like the two figures above it.
+    correctness: isNotScored(row) && !baseline ? WITHHELD : { pct: row.total, value: row.totalValue },
     // The letter grade, derived here from the two values above so it cannot
     // disagree with them. The criteria are in the envelope's metrics.grade.
     // The baseline carries no letter: it is what a grade measures distance
@@ -206,7 +221,10 @@ function targetRow(row) {
     // side would otherwise find a build here that the board did not appear to
     // show, with nothing to explain it.
     collapsedIntoProject: row.collapsed === true,
-    counts: { passed: row.passed, failed: row.failed, skipped: row.skipped, implemented: row.implemented, total: row.count },
+    // `indeterminate` counts the tests that got no answer, so passed, failed,
+    // skipped and indeterminate sum to total on every row. Without it a row
+    // that is not scored published counts that fell short of its total.
+    counts: { passed: row.passed, failed: row.failed, skipped: row.skipped, indeterminate: row.indeterminate ?? 0, implemented: row.implemented, total: row.count },
     tiers: tierScores(row.tiers),
     region: regionSummary(row),
     movement: row.movement
@@ -231,7 +249,7 @@ function regionTier(t) {
     ? {
         divergence: { pct: t.divergence, value: t.divergenceValue },
         coverage: { pct: t.coverage, value: t.coverageValue },
-        correctness: { pct: t.correctness, value: t.correctnessValue },
+        correctness: correctnessFor(t.correctness, t.correctnessValue, t.indeterminate ?? 0),
         passed: t.passed,
         failed: t.failed,
         skipped: t.skipped,
@@ -245,7 +263,9 @@ function regionDetail(pt, row) {
   const cohortless = isNotScored(row);
   return (pt.regions || []).map((r) => ({
     region: r.region,
-    rate: r.rate,
+    // The suite's pass rate in that region, withheld where the region holds a
+    // test that got no answer, as the divergence and coverage beside it are.
+    rate: (r.indeterminate ?? 0) > 0 ? null : r.rate,
     divergence: { pct: r.divergence, value: r.divergenceValue },
     // Coverage is invariant across a target's regions (only pass/fail flip), but
     // it is published per region anyway so a region row carries the same pair as
@@ -285,7 +305,7 @@ const METRICS = {
     direction: "higher_is_better",
     legacy: true,
     description:
-      "The pass rate over implemented operations, which the board led with before schema 3. Retained for consumers that already read it; its denominator shrinks as a target attempts less.",
+      "The pass rate over implemented operations, which the board led with before schema 3. Retained for consumers that already read it; its denominator shrinks as a target attempts less. Null, like divergence and coverage, on a row that is not scored and on a tier holding a test that got no answer.",
   },
   grade: {
     direction: "A+ is best, F is worst",
@@ -380,7 +400,7 @@ export function buildIndex(conformance, site, summary = null) {
     schema: {
       version: DATA_SCHEMA_VERSION,
       description:
-        "A field you already read will not change type or meaning while `schemaVersion` stays put, so a consumer on this version can keep reading what it reads. New fields may appear at any version: treat one you do not recognise as new rather than as an error. It is removals, renames and changes of meaning that bump the version.",
+        "A field you already read will not change type or meaning while `schemaVersion` stays put, so a consumer on this version can keep reading what it reads. New fields may appear at any version: treat one you do not recognise as new rather than as an error. A field holding one of a set of values, such as `movement.state`, can gain values the same way, so treat an unrecognised value as new too. It is removals, renames and changes of meaning that bump the version.",
       suite:
         "A third axis, and the one that says what these figures were measured from. The `suite` block names the ref, its commit, the suite version at that ref, the region measured against, and when. `kind` is the field to branch on: `tag` means a released suite with a dated changelog entry behind it, anything else means a board measured from an unreleased commit. The denominator every figure divides by moves when a release moves it, not when the default branch does, so two boards carrying the same `suite.version` are comparable and two carrying different ones are not. Region health is the exception: it is read live rather than at the measured ref, so a board's regional cohorts can be recomputed after its measurement without the measurement changing.",
       gradingVersion:
@@ -453,7 +473,7 @@ export function buildLatest(conformance, site, summary = null) {
         licence: licenceOf(row.slug),
         capabilities: (pt.capabilities || []).map((c) => ({
           key: c.key, label: c.label, group: groupByCapability[c.key] ?? null, state: c.state,
-          passed: c.passed, failed: c.failed, skipped: c.skipped, total: c.total,
+          passed: c.passed, failed: c.failed, skipped: c.skipped, indeterminate: c.indeterminate ?? 0, total: c.total,
         })),
         // Per-operation areas carry the computed pair too. Every other level of
         // the schema pre-computes it, so leaving areas as raw counts alone made
@@ -462,7 +482,7 @@ export function buildLatest(conformance, site, summary = null) {
           key: a.key, tier: a.tier, group: a.group, state: a.state,
           divergence: { pct: asPct(divergenceOf(a)), value: divergenceOf(a) },
           coverage: { pct: asPct(coverageOf(a)), value: coverageOf(a) },
-          passed: a.passed, failed: a.failed, skipped: a.skipped, total: a.total,
+          passed: a.passed, failed: a.failed, skipped: a.skipped, indeterminate: a.indeterminate ?? 0, total: a.total,
         })),
         regions: regionDetail(pt, row),
       };

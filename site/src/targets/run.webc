@@ -34,13 +34,13 @@
          run's figures, so a dated view and the current one read alike. -->
     <div class="shrink-0 text-left sm:text-right">
       <grade-chip :row="$data.point" :slug="$data.pair.slug" :size="'text-3xl'"></grade-chip>
-      <div class="mt-2 text-sm font-medium text-zinc-700 dark:text-zinc-200">
+      <p webc:if="notScoredStatement($data.point, $data.point.runUnanswered, $data.point.unanswered)" class="mt-2 max-w-sm sm:ml-auto text-sm text-zinc-600 dark:text-zinc-300" :data-not-scored="$data.pair.slug" @html="notScoredStatement($data.point, $data.point.runUnanswered, $data.point.unanswered)"></p><div webc:if="!notScoredStatement($data.point, $data.point.runUnanswered, $data.point.unanswered)" class="mt-2 text-sm font-medium text-zinc-700 dark:text-zinc-200">
         <span @text="gradeForRow($data.point, $data.pair.slug).qualifier"></span><span webc:if="capClause($data.point, $data.pair.slug)" class="font-normal text-zinc-500 dark:text-zinc-400" @text="' · ' + capClause($data.point, $data.pair.slug)"></span>
       </div>
-      <div class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+      <div webc:if="!notScoredStatement($data.point, $data.point.runUnanswered, $data.point.unanswered)" class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
         answers <span class="font-mono tnum" @text="$data.point.divergence"></span> of the suite differently from real DynamoDB
       </div>
-      <div class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+      <div webc:if="!notScoredStatement($data.point, $data.point.runUnanswered, $data.point.unanswered)" class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
         <span class="font-mono tnum" @text="$data.point.coverage"></span> covered<span webc:if="$data.point.skipped"> · <span class="tnum" @text="$data.point.skipped"></span> unsupported</span>
       </div>
     </div>
@@ -91,7 +91,7 @@
     </p>
 
     <p webc:if="!($data.point.findings || []).length" class="text-sm text-zinc-500 dark:text-zinc-400">
-      <span webc:if="!$data.point.failed">Nothing failed in this run.</span>
+      <span webc:if="$data.point.runUnanswered">None to list, because this run got no answer.</span><span webc:elseif="!$data.point.failed">Nothing failed in this run.</span>
       <span webc:elseif="true">The <span class="tnum" @text="formatNumber($data.point.failed)"></span> failures this run recorded aren't itemised here, because per-test detail isn't retained for this snapshot.</span>
     </p>
 
@@ -112,6 +112,43 @@
         </div>
       </li>
     </ul>
+  </div><div webc:if="$data.point.unanswered && $data.point.unanswered.length" class="mb-12">
+    <h2 id="unanswered" class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Tests that got no answer</h2>
+    <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-4 max-w-2xl">
+      The tests this run got no answer to, by operation, each with the reason the suite recorded. None of
+      them is a divergence, and any one of them is enough for a run to be
+      <a :href="$data.noAnswerHref" class="text-brand-700 dark:text-brand-300 underline">not scored</a>.
+    </p>
+    <ul class="space-y-2">
+      <li webc:for="a of unansweredByArea($data.point.unanswered)">
+        <details class="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50/70 dark:bg-white/[0.03]">
+          <summary class="list-none [&::-webkit-details-marker]:hidden cursor-pointer flex items-center justify-between gap-3 p-4">
+            <span class="flex items-center gap-2 min-w-0">
+              <span class="font-mono text-sm text-zinc-900 dark:text-zinc-100 truncate" @text="a.group"></span>
+              <span class="text-[0.65rem] uppercase tracking-wide rounded px-1.5 py-0.5 bg-zinc-200/70 dark:bg-white/10 text-zinc-600 dark:text-zinc-300" @text="a.tier.replace('tier', 'Tier ')"></span>
+            </span>
+            <span class="shrink-0 text-xs tnum text-zinc-500 dark:text-zinc-400" @text="formatNumber(a.tests.length) + ' got no answer'"></span>
+          </summary>
+          <div class="px-4 pb-4">
+            <ul class="space-y-1.5 text-sm">
+              <li webc:for="f of a.tests" class="flex items-start gap-2 text-zinc-600 dark:text-zinc-300">
+                <span class="mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 bg-zinc-300 dark:bg-zinc-600" aria-hidden="true"></span>
+                <span class="min-w-0">
+                  <span @text="tidyDashes(f.fullName)"></span>
+                  <span class="ml-2 text-xs text-zinc-500 dark:text-zinc-400" @text="'(' + f.reasonWords + ')'"></span>
+                  <a webc:if="f.file" :href="findingSource(f, $data.site.sourceRepo)" target="_blank" rel="noopener noreferrer" class="ml-2 whitespace-nowrap text-xs text-brand-700 dark:text-brand-300 hover:underline" :aria-label="'Test source for ' + tidyDashes(f.fullName)">
+                    <span @text="f.line ? 'source:' + f.line : 'source'"></span>
+                  </a>
+                </span>
+              </li>
+            </ul>
+          </div>
+        </details>
+      </li>
+    </ul>
+  </div><div webc:if="!($data.point.unanswered || []).length && notScoredKind($data.point, $data.point.runUnanswered) === 'tests'" class="mb-12">
+    <h2 id="unanswered" class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Tests that got no answer</h2>
+    <p class="text-sm text-zinc-500 dark:text-zinc-400 max-w-2xl" @text="unansweredCount($data.point) === 1 ? `The 1 test this run got no answer to isn't listed here, and nor is its reason, because per-test detail isn't retained for this snapshot.` : `The ${formatNumber(unansweredCount($data.point))} tests this run got no answer to aren't listed here, and nor are their reasons, because per-test detail isn't retained for this snapshot.`"></p>
   </div>
 
   <run-nav :@slug="$data.pair.slug" :@neighbours="$data.neighbours" @label="Run navigation (foot)"></run-nav>

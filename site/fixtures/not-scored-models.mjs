@@ -18,7 +18,7 @@ import { buildSummary, readTargets } from "dynamodb-conformance/scripts/summaris
 import { GROUND_TRUTH_SLUG, isTargetResultFile, loadScoringContext, tierOf } from "dynamodb-conformance/scripts/lib/score.mjs";
 import { testIdentities } from "dynamodb-conformance/scripts/lib/identity.mjs";
 import { areaTallies, breakdownOf, capabilityTallies, isVariant, scoreEmulator } from "../lib/scoring.mjs";
-import { findingsOf } from "../lib/findings.mjs";
+import { findingsOf, unansweredOf } from "../lib/findings.mjs";
 import { assemble } from "../lib/summary-source.mjs";
 import { buildModel } from "../lib/history.mjs";
 
@@ -86,6 +86,7 @@ export function pipelineModel(edit = () => {}) {
       areas: areaTallies(raw),
       capabilities: capabilityTallies(raw, manifest),
       findings: findingsOf(raw, { slug, version, sha: "scenario" }),
+      unanswered: unansweredOf(raw, { slug, version, sha: "scenario" }),
     }));
   return { summary, model: buildModel(snapshots, overlay) };
 }
@@ -93,8 +94,28 @@ export function pipelineModel(edit = () => {}) {
 const SKIPPED = new Set(["skipped", "pending", "todo"]);
 const indeterminate = (ar) => {
   ar.status = "failed";
-  ar.meta = { ...(ar.meta ?? {}), indeterminate: { reason: "http-5xx", at: "test" } };
+  ar.meta = { ...(ar.meta ?? {}), indeterminate: { reason: "throttle-exhausted", at: "test" } };
 };
+
+/**
+ * One operation that got no answer at all, at test level: every test in the
+ * first area the target answers is marked, so that area has nothing answered
+ * and only unanswered tests, while the rest of the run is answered as before.
+ */
+export function markWholeArea(raw) {
+  const byArea = new Map();
+  for (const tr of raw.testResults) {
+    const area = /(?:^|\/)tests\/(tier\d\/[^/]+)\//.exec(tr.name)?.[1];
+    if (area) byArea.set(area, [...(byArea.get(area) ?? []), ...(tr.assertionResults ?? [])]);
+  }
+  const [area, tests] = [...byArea].find(([, ts]) => ts.some((a) => a.status === "passed") && ts.every((a) => !SKIPPED.has(a.status))) ?? [];
+  if (!area) throw new Error("no wholly answered area to mark");
+  for (const a of tests) {
+    a.status = "failed";
+    a.meta = { ...(a.meta ?? {}), indeterminate: { reason: "gsi-consistency-timeout", at: "test" } };
+  }
+  return area;
+}
 
 /**
  * A realistic mixed run, set tier by tier rather than left to where a counter
@@ -159,6 +180,7 @@ export const SCENARIOS = [
   scenario("a new target not scored at test level", [NEW_SLUG], (ts) => addNewTarget(ts, (t) => markTestLevel(t.raw))),
   scenario("an existing project not scored at test level", projects.slice(0, 1), (ts) => markTestLevel(target(ts, projects[0], "a project").raw)),
   scenario("an existing project not scored at run level", projects.slice(0, 1), (ts) => { target(ts, projects[0], "a project").sidecar = RUN_LEVEL; }),
+  scenario("an existing project with one operation wholly unanswered at test level", projects.slice(0, 1), (ts) => markWholeArea(target(ts, projects[0], "a project").raw), { wholeArea: true }),
   scenario("an existing project with indeterminates in every tier", projects.length ? [mixed] : [], (ts) => markMixed(target(ts, mixed, "a project").raw), { mixed: true }),
   scenario("every build not scored at run level", builds, (ts) => {
     if (!builds.length) throw new Error("the scenario needs a build in results/, and there is none");

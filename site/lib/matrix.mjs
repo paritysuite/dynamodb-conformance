@@ -67,24 +67,33 @@ export function renderTargetOperations(areas) {
           // An area holding an indeterminate is not scored, like a run holding
           // one, so it prints "-" rather than reading as one implemented nowhere.
           const unanswered = a.indeterminate ?? 0;
-          const s = unanswered > 0 ? NOT_SCORED : STATE[a.state] || STATE_FALLBACK;
+          const notScored = unanswered > 0 || Boolean(a.runUnanswered);
+          const s = notScored ? NOT_SCORED : STATE[a.state] || STATE_FALLBACK;
           // `divergence`, not `rate`. It held a divergence figure under a name
           // the board used for the retired pass rate, so the one variable read
           // as the opposite direction to the number in it.
           const axes = axesOf({ passed: a.passed, failed: a.failed, count: a.total, indeterminate: a.indeterminate ?? 0 });
-          const blank = unanswered > 0 ? "-" : "n/a";
+          const blank = notScored ? "-" : "n/a";
           const divergence = axes.divergence == null ? blank : `${axes.divergence.toFixed(1)}%`;
           const cover = axes.coverage == null ? blank : `${axes.coverage.toFixed(1)}%`;
           const counts = cellCounts(a);
           // An area a target implements none of has no divergence to read out,
-          // so the description says that rather than "diverges on n/a".
-          const figures =
-            unanswered > 0
+          // so the description says that rather than "diverges on n/a". A run
+          // that got no answer at all has no test of its own to count here,
+          // so the sentence names the run instead and the counts are left out.
+          const figures = a.runUnanswered
+            ? `not scored, because the run got no answer`
+            : unanswered > 0
               ? `not scored, because ${formatNumber(unanswered)} ${unanswered === 1 ? "test" : "tests"} got no answer`
               : divergence === "n/a"
                 ? `implements none of it`
                 : `diverges on ${divergence} of it, covers ${cover}`;
           const describe = `${a.group}: ${s.label ? `${s.label}, ` : ""}${figures}${counts ? ` (${counts})` : ""}`;
+          // Fails over the area's size, which for a run with no answers would
+          // read as a clean 0 of N.
+          const tally = a.runUnanswered
+            ? "-"
+            : `${formatNumber(a.failed)}/${formatNumber(a.total)}${a.skipped ? ` · ${formatNumber(a.skipped)} skip` : ""}`;
           return `
           <li class="flex items-center justify-between gap-3 py-1.5">
             <span class="flex items-center gap-2 min-w-0">
@@ -92,7 +101,7 @@ export function renderTargetOperations(areas) {
               <span class="font-mono text-sm text-zinc-700 dark:text-zinc-200 truncate">${esc(a.group)}</span>
             </span>
             <span class="flex items-center gap-3 shrink-0 text-xs tnum" title="${esc(describe)}">
-              <span class="text-zinc-500 dark:text-zinc-400">${formatNumber(a.failed)}/${formatNumber(a.total)}${a.skipped ? ` · ${formatNumber(a.skipped)} skip` : ""}</span>
+              <span class="text-zinc-500 dark:text-zinc-400">${tally}</span>
               <span class="w-14 text-right font-mono font-medium text-zinc-700 dark:text-zinc-200">${divergence}</span>
               <span class="w-14 text-right font-mono text-zinc-500 dark:text-zinc-400">${cover}</span>
               <span class="sr-only">${esc(describe)}</span>

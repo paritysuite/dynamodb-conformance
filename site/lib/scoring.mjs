@@ -288,7 +288,14 @@ const verdictsOf = (raw) => {
 // a pass would be the wrong direction if it ever did).
 const verdictFor = (verdicts, ar) => verdicts.get(ar) ?? "skip";
 
-export function areaState({ passed, failed, skipped }) {
+// The state of an operation area or a capability, read from its answered tests.
+// `unanswered` is an area where nothing was observed: no test passed or failed
+// and at least one got no answer, or the whole run got none. Reading that as
+// "unsupported" would say the target lacks a feature nobody saw it answer for.
+// Where some tests were answered and some were not, the state is read from the
+// answered ones alone, and the indeterminate count beside it says so.
+export function areaState({ passed, failed, skipped, indeterminate = 0 }, { runUnanswered = false } = {}) {
+  if (passed === 0 && failed === 0 && (indeterminate > 0 || runUnanswered)) return "unanswered";
   if (passed === 0 && failed === 0) return "unsupported"; // nothing implemented (all skipped)
   if (failed === 0 && skipped === 0) return "supported"; // every test passes
   if (passed === 0) return "failing"; // implemented, but every run fails
@@ -414,6 +421,43 @@ export function capabilityTallies(raw, manifest) {
     const e = tally[c.key];
     return { key: c.key, label: c.label, ...e, total: e.passed + e.failed + e.skipped + e.indeterminate, state: areaState(e) };
   });
+}
+
+// Whether a row's whole run got no answer: every test it counts is unanswered.
+// That is what a run-level fault leaves behind. The suite reads the run's
+// sidecar and marks every test indeterminate, and the row's counts come to the
+// site from the suite's summary in that shape. The tallies below cannot see
+// it: they are read from the results file alone, which records each test's own
+// status and nothing about the run, so they would otherwise publish figures
+// for a run the row says got no answer.
+//
+// A run that recorded no test at all is the same case: nothing in it was
+// answered, and its tallies would otherwise read "not supported" for every
+// feature on the strength of no test. A sidecar beside such a file leaves its
+// counts at zero, so the zero is what says so.
+export const isRunUnanswered = (row) => {
+  if (row?.count === 0) return true;
+  return (row?.count ?? 0) > 0 && (row?.indeterminate ?? 0) === row.count;
+};
+
+// Area or capability tallies restated for a run that got no answer: every test
+// in each counted as unanswered, which is how the suite's classifier counts
+// them under a run-level fault. Each keeps its size, so its counts still sum
+// to its total and never exceed the row's, and carries `runUnanswered` so a
+// renderer can say why it has no figures rather than counting its tests. The
+// state is what areaState reads from no answered tests, `unanswered`, the same
+// rule an area whose every test went unanswered at test level follows. It holds
+// for an area with no test at all in a run that recorded none, which is a run
+// that got no answer too.
+export function unansweredTallies(tallies) {
+  const none = { passed: 0, failed: 0, skipped: 0 };
+  return (tallies ?? []).map((e) => ({
+    ...e,
+    ...none,
+    indeterminate: e.total ?? 0,
+    state: areaState({ ...none, indeterminate: e.total ?? 0 }, { runUnanswered: true }),
+    runUnanswered: true,
+  }));
 }
 
 // Numeric correctness for charts / sorting / movement: correctness over

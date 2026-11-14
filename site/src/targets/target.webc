@@ -36,13 +36,15 @@
          render time (gradeOf) so the letter can never disagree with them.
          The bare percentage used to stand here alone, and its best value
          read worst: a reader who takes "0.0%" as "scores nothing" has it
-         exactly backwards. -->
+         exactly backwards. A row not scored because tests got no answer has
+         no figure for those sentences to carry, and printed them with a dash
+         in each, so it says how many tests got no answer, and why, instead. -->
     <div class="shrink-0 text-left sm:text-right">
       <grade-chip :row="$data.target.current" :slug="$data.target.slug" :size="'text-3xl'"></grade-chip>
-      <div class="mt-2 text-sm font-medium text-zinc-700 dark:text-zinc-200">
+      <p webc:if="notScoredStatement($data.target.current, $data.target.runUnanswered, $data.target.unanswered)" class="mt-2 max-w-sm sm:ml-auto text-sm text-zinc-600 dark:text-zinc-300" :data-not-scored="$data.target.slug" @html="notScoredStatement($data.target.current, $data.target.runUnanswered, $data.target.unanswered)"></p><div webc:if="!notScoredStatement($data.target.current, $data.target.runUnanswered, $data.target.unanswered)" class="mt-2 text-sm font-medium text-zinc-700 dark:text-zinc-200">
         <span @text="gradeForRow($data.target.current, $data.target.slug).qualifier"></span><span webc:if="capClause($data.target.current, $data.target.slug)" class="font-normal text-zinc-500 dark:text-zinc-400" @text="' · ' + capClause($data.target.current, $data.target.slug)"></span>
       </div>
-      <div class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+      <div webc:if="!notScoredStatement($data.target.current, $data.target.runUnanswered, $data.target.unanswered)" class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
         answers <span class="font-mono tnum" @text="$data.target.current.divergence"></span> of the suite differently from real DynamoDB
       </div>
       <!-- Stated rather than left to be inferred from the letter. Qualified by
@@ -71,7 +73,7 @@
            still the one the row publishes; this names the regions that would
            grade it lower, and the cause links to their figures below. -->
       <p webc:if="regionalLetter($data.target.current, $data.target.slug)" class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400 max-w-xs sm:ml-auto" :data-regional-note="$data.target.slug"><span @text="regionalLetter($data.target.current, $data.target.slug) + ', '"></span><a href="#regions" class="underline decoration-dotted underline-offset-2 hover:text-brand-700 dark:hover:text-brand-300" @text="$data.regionalCause"></a></p>
-      <div class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+      <div webc:if="!notScoredStatement($data.target.current, $data.target.runUnanswered, $data.target.unanswered)" class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
         <span class="font-mono tnum" @text="$data.target.current.coverage"></span> of the suite implemented<span webc:if="$data.target.current.unsupported"> · <span class="tnum" @text="formatNumber($data.target.current.unsupported)"></span> tests it doesn't attempt</span>
       </div>
     </div>
@@ -83,7 +85,7 @@
     <a webc:if="!$data.target.baseline" href="#capabilities">Features</a>
     <a href="#trends">Trends</a>
     <a webc:if="$data.target.areas.length" href="#operations">Operations</a>
-    <a webc:if="fallsShort($data.target.breakdown).length" href="#findings">Findings</a>
+    <a webc:if="fallsShort($data.target.breakdown).length || $data.target.runUnanswered" href="#findings">Findings</a><a webc:if="$data.target.unanswered && $data.target.unanswered.length" href="#unanswered">No answer</a>
     <a href="#run-history">Run history</a>
   </nav>
 
@@ -141,7 +143,7 @@
             <span class="block text-sm font-medium text-zinc-700 dark:text-zinc-200 group-hover:text-brand-700 dark:group-hover:text-brand-300"
               @text="configurationOf(v.slug) || v.display"></span>
             <span class="block text-xs leading-snug text-zinc-500 dark:text-zinc-400">
-              <span class="font-medium text-zinc-600 dark:text-zinc-300" @text="gradeLine(v)"></span><span webc:if="regionClause(v)" @text="' ' + regionClause(v)"></span> · covers <span class="tnum" @text="v.coverage"></span><span webc:if="capClause(v)" @text="' · ' + capClause(v)"></span>
+              <span class="font-medium text-zinc-600 dark:text-zinc-300" @text="gradeLine(v)"></span><span webc:if="regionClause(v)" @text="' ' + regionClause(v)"></span><span webc:if="notScoredShort(v)" :data-not-scored="v.slug" @text="' · ' + notScoredShort(v).text"></span><span webc:if="!notScoredShort(v)" webc:nokeep> · covers <span class="tnum" @text="v.coverage"></span></span><span webc:if="capClause(v)" @text="' · ' + capClause(v)"></span>
             </span>
             <!-- Unlinked: the whole card is already a link to the build's page,
                  where the note links to its regional figures. -->
@@ -245,9 +247,9 @@
   <div webc:if="$data.target.areas.length" class="mb-12 defer-render">
     <h2 id="operations" class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">By operation</h2>
     <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-4 max-w-2xl">
-      Every operation this target implements, with how much of it diverges and how much of it it
+      <span webc:if="$data.target.runUnanswered" webc:nokeep>Every operation the suite tests, none of them scored, because <span @text="$data.target.display"></span>'s latest run got no answer, so there is no divergence, coverage or count to show.</span><span webc:elseif="true" webc:nokeep>Every operation this target implements, with how much of it diverges and how much of it it
       covers, on the same two axes as the figures above. The counts are fails over the operation's
-      whole size.
+      whole size.</span>
       <span class="whitespace-nowrap"><span class="text-pass-700 dark:text-pass-400 font-bold" aria-hidden="true">✓</span> full</span>,
       <span class="whitespace-nowrap"><span class="text-partial-700 dark:text-partial-400 font-bold" aria-hidden="true">◑</span> partial</span>,
       <span class="whitespace-nowrap"><span class="text-fail-700 dark:text-fail-400 font-bold" aria-hidden="true">✗</span> failing</span>,
@@ -262,12 +264,20 @@
        questions a reader actually has - what does it get wrong, and what does it
        not do - distinguished only by a badge on the right-hand side. They are
        different kinds of problem: a divergence is something you find in
-       production, an unsupported operation is something you plan around. -->
-  <div webc:if="fallsShort($data.target.breakdown).length" class="mb-12 defer-render">
+       production, an unsupported operation is something you plan around.
+       A run that got no answer has no failure to list, and an absent section
+       would read as a target with none, so it says so in one line where the
+       list goes. -->
+  <div webc:if="$data.target.runUnanswered" class="mb-12">
+    <h2 id="findings" class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Where it falls short</h2>
+    <p class="text-sm text-zinc-500 dark:text-zinc-400 max-w-2xl">
+      None to list, because <span @text="$data.target.display"></span>'s latest run got no answer.
+    </p>
+  </div><div webc:if="fallsShort($data.target.breakdown).length" class="mb-12 defer-render">
     <h2 id="findings" class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Where it falls short</h2>
     <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-4 max-w-2xl">
       Operations <span @text="$data.target.display"></span> implements and answers differently from real
-      DynamoDB, biggest gap first. This is what its divergence figure counts. Open one for the exact
+      DynamoDB, biggest gap first. <span webc:if="!notScoredKind($data.target.current, $data.target.runUnanswered)" webc:nokeep>This is what its divergence figure counts.</span><span webc:if="notScoredKind($data.target.current, $data.target.runUnanswered)" webc:nokeep>They would count towards its divergence figure, but this run is not scored.</span> Open one for the exact
       tests, or see the
       <a :href="$data.site.sourceRepo" class="text-brand-700 dark:text-brand-300 underline">conformance suite</a>.
     </p>
@@ -303,6 +313,41 @@
               <li webc:for="s of a.skips" class="flex items-start gap-2 text-zinc-500 dark:text-zinc-400">
                 <span class="mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 bg-zinc-300 dark:bg-zinc-600" aria-hidden="true"></span>
                 <span @text="tidyDashes(s)"></span>
+              </li>
+            </ul>
+          </div>
+        </details>
+      </li>
+    </ul>
+  </div><div webc:if="$data.target.unanswered && $data.target.unanswered.length" class="mb-12 defer-render">
+    <h2 id="unanswered" class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Tests that got no answer</h2>
+    <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-4 max-w-2xl">
+      The tests <span @text="$data.target.display"></span>'s latest run got no answer to, by operation, each
+      with the reason the suite recorded. None of them is a divergence: an absent answer is not a different
+      one, and any one of them is enough for a run to be
+      <a :href="$data.noAnswerHref" class="text-brand-700 dark:text-brand-300 underline">not scored</a>.
+    </p>
+    <ul class="space-y-2">
+      <li webc:for="a of unansweredByArea($data.target.unanswered)">
+        <details class="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50/70 dark:bg-white/[0.03]">
+          <summary class="list-none [&::-webkit-details-marker]:hidden cursor-pointer flex items-center justify-between gap-3 p-4">
+            <span class="flex items-center gap-2 min-w-0">
+              <span class="font-mono text-sm text-zinc-900 dark:text-zinc-100 truncate" @text="a.group"></span>
+              <span class="text-[0.65rem] uppercase tracking-wide rounded px-1.5 py-0.5 bg-zinc-200/70 dark:bg-white/10 text-zinc-600 dark:text-zinc-300" @text="a.tier.replace('tier', 'Tier ')"></span>
+            </span>
+            <span class="shrink-0 text-xs tnum text-zinc-500 dark:text-zinc-400" @text="formatNumber(a.tests.length) + ' got no answer'"></span>
+          </summary>
+          <div class="px-4 pb-4">
+            <ul class="space-y-1.5 text-sm">
+              <li webc:for="f of a.tests" class="flex items-start gap-2 text-zinc-600 dark:text-zinc-300">
+                <span class="mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 bg-zinc-300 dark:bg-zinc-600" aria-hidden="true"></span>
+                <span class="min-w-0">
+                  <span @text="tidyDashes(f.fullName)"></span>
+                  <span class="ml-2 text-xs text-zinc-500 dark:text-zinc-400" @text="'(' + f.reasonWords + ')'"></span>
+                  <a webc:if="f.file" :href="findingSource(f, $data.site.sourceRepo)" target="_blank" rel="noopener noreferrer" class="ml-2 whitespace-nowrap text-xs text-brand-700 dark:text-brand-300 hover:underline" :aria-label="'Test source for ' + tidyDashes(f.fullName)">
+                    <span @text="f.line ? 'source:' + f.line : 'source'"></span>
+                  </a>
+                </span>
               </li>
             </ul>
           </div>

@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { capClauseOf, display, gradeForRow, isVariant, projectOf, regionalClauseForRow } from "../lib/scoring.mjs";
+import { notScoredStatement } from "../lib/unanswered.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -62,6 +63,11 @@ function latestResults(conformance) {
     // thing a reader of this file cannot see for themselves - named to the three
     // figures the board compared, because it compares no others.
     const closed = r.collapsed ? " (shown closed on the board: same grade, divergence and coverage as the build above)" : "";
+    // A row not scored because tests got no answer has no figure for the
+    // clauses below, so it says what its page says instead.
+    const pt = conformance.perTarget?.[r.slug];
+    const statement = notScoredStatement(r, { runUnanswered: pt?.runUnanswered, records: pt?.unanswered });
+    if (statement) return `- ${r.display}${build}${closed} - ${statement.text} Version ${r.version}.`;
     return `- ${r.display}${baseline}${build}${closed} - grade ${grade.letter ?? grade.qualifier}${cap}${regionalNote}; diverges ${r.divergence} of the suite; covers ${r.coverage}; diverges per tier ${tiers}; version ${r.version}`;
   });
   return [

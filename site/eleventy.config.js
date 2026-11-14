@@ -14,6 +14,7 @@ import { GRADING_CRITERIA_EFFECTIVE, GRADING_VERSION, REGIONAL_CAUSE, TARGETS, c
 import { channelIcon } from "./lib/channel-icons.mjs";
 import { targetLinks, targetRunHref } from "./lib/links.mjs";
 import { areaFailures, sourceUrl } from "./lib/findings.mjs";
+import { NO_ANSWER_HREF, notScoredKind, notScoredScope, notScoredShort, notScoredStatement, unansweredByArea, unansweredCount } from "./lib/unanswered.mjs";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -253,6 +254,18 @@ export default function (eleventyConfig) {
   // commit that measured it.
   eleventyConfig.addFilter("targetRunHref", (row, runId) => targetRunHref(row, runId));
   eleventyConfig.addFilter("areaFailures", (area, findings) => areaFailures(area, findings));
+
+  // What a not-scored row says in place of its figures: how many tests got no
+  // answer and why, a short form for the board and the directory, the scope
+  // note on its "unsupported" link, and the unanswered tests themselves
+  // grouped by operation.
+  eleventyConfig.addFilter("notScoredStatement", (row, runUnanswered, records, thisRun) => notScoredStatement(row, { runUnanswered, records, thisRun })?.html ?? "");
+  eleventyConfig.addFilter("notScoredShort", (row, runUnanswered) => notScoredShort(row, { runUnanswered }));
+  eleventyConfig.addFilter("unansweredByArea", (records) => unansweredByArea(records));
+  eleventyConfig.addFilter("notScoredScope", (row) => notScoredScope(row));
+  eleventyConfig.addFilter("notScoredKind", (row, runUnanswered) => notScoredKind(row, { runUnanswered }));
+  eleventyConfig.addFilter("unansweredCount", (row) => unansweredCount(row));
+  eleventyConfig.addGlobalData("noAnswerHref", NO_ANSWER_HREF);
 
   // A target's gaps, split by kind: what it gets wrong, and what it never tries.
   eleventyConfig.addFilter("fallsShort", (breakdown) => fallsShort(breakdown));

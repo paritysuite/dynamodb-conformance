@@ -471,9 +471,108 @@ test("movement to or from an unscored run carries no grade shift", () => {
     allSkipped("dynoxide", "2026-01-02T10:00:00Z", "b"),
   ]);
   const move = rowFor(model.runs.find((r) => r.date === "2026-01-02"), "dynoxide").movement;
-  assert.equal(move.state, "flat", "no divergence on one side means no delta");
+  assert.equal(move.state, "unscored", "no divergence on one side means no delta");
+  assert.equal(move.delta, null);
   assert.equal(move.grade, undefined, "and no letter shift either");
 });
+
+// A run that got no answer to one test is not scored. The movement into and
+// out of it says the target lost or regained its score, rather than reading
+// "unchanged" either side of a run that published no figure at all.
+const unanswered = (slug, iso, sha) => {
+  const scored = scoreEmulator(slug, {
+    startTime: Date.parse(iso),
+    testResults: [{
+      name: "/x/tier1/a.test.ts",
+      assertionResults: [
+        ...P(90).map((status) => ({ status })),
+        ...F(9).map((status) => ({ status })),
+        { status: "failed", meta: { indeterminate: { reason: "transport", at: "test" } } },
+      ],
+    }],
+  }, "-");
+  return { ...scored, startTime: Date.parse(iso), sha };
+};
+// Each history's movement, run by run, oldest first, on the board's rows and
+// on the target's own series, which are computed separately and must agree.
+const movesOf = (snaps, overlay = null) => {
+  const model = buildModel(snaps, overlay);
+  const board = [...model.runs].reverse().map((r) => rowFor(r, "dynoxide")?.movement).filter(Boolean);
+  const series = model.perTarget.dynoxide.series.map((p) => p.movement);
+  return { board, series };
+};
+const D = (n) => `2026-08-0${n}T10:00:00Z`;
+
+// The same histories refused at run level: each results file reads as a
+// scored run, and only the suite's summary says the run got no answer, as a
+// sidecar does. One entry per run, true where the run was refused.
+const runLevelHistory = (days) => {
+  const entry = (refused, date) =>
+    refused
+      ? {
+          rate: null,
+          label: { kind: "none", regions: [], rate: null, others: 0, observed: 0 },
+          suiteHeadlineRegion: "us-east-1",
+          regions: [{ region: "us-east-1", rate: null, passed: 0, failed: 0, skipped: 0, indeterminate: 100, count: 100, tiers: {} }],
+          divergenceBest: null,
+          divergenceWorst: null,
+          runDate: date,
+        }
+      : {
+          rate: 92,
+          label: { kind: "all", regions: ["us-east-1"], rate: 92, others: 0, observed: 1 },
+          suiteHeadlineRegion: "us-east-1",
+          regions: [{ region: "us-east-1", rate: 92, passed: 92, failed: 8, skipped: 0, indeterminate: 0, count: 100, tiers: {} }],
+          divergenceBest: 8,
+          divergenceWorst: 8,
+          runDate: date,
+        };
+  const dates = days.map((_, i) => D(i + 1).slice(0, 10));
+  const byRunDate = Object.fromEntries(
+    days.map((refused, i) => [dates[i], { regions: { observed: ["us-east-1"] }, targets: { dynoxide: entry(refused, dates[i]) } }]),
+  );
+  const snaps = days.map((_, i) => at("dynoxide", D(i + 1), `s${i}`, 92));
+  return { snaps, overlay: { available: true, latest: byRunDate[dates.at(-1)], byRunDate } };
+};
+const plain = (snaps) => ({ snaps, overlay: null });
+
+for (const [name, { snaps, overlay }, states] of [
+  ["lettered to not scored", plain([at("dynoxide", D(1), "a", 92), unanswered("dynoxide", D(2), "b")]), ["new", "unscored"]],
+  ["not scored to lettered", plain([unanswered("dynoxide", D(1), "a"), at("dynoxide", D(2), "b", 92)]), ["new", "scored"]],
+  ["lettered, not scored, lettered", plain([at("dynoxide", D(1), "a", 92), unanswered("dynoxide", D(2), "b"), at("dynoxide", D(3), "c", 80)]), ["new", "unscored", "scored"]],
+  ["not scored twice", plain([unanswered("dynoxide", D(1), "a"), unanswered("dynoxide", D(2), "b")]), ["new", "flat"]],
+  ["lettered twice, unchanged", plain([at("dynoxide", D(1), "a", 92), at("dynoxide", D(2), "b", 92)]), ["new", "flat"]],
+  ["lettered twice, moved", plain([at("dynoxide", D(1), "a", 92), at("dynoxide", D(2), "b", 80)]), ["new", "regressed"]],
+  ["a first run that is not scored", plain([unanswered("dynoxide", D(1), "a")]), ["new"]],
+  ["run level: lettered, refused", runLevelHistory([false, true]), ["new", "unscored"]],
+  ["run level: lettered, refused, lettered", runLevelHistory([false, true, false]), ["new", "unscored", "scored"]],
+  ["run level: refused twice", runLevelHistory([true, true]), ["new", "flat"]],
+  ["run level: a first run refused twice, then scored", runLevelHistory([true, true, false]), ["new", "flat", "scored"]],
+]) {
+  test(`movement reads what happened to the score: ${name}`, () => {
+    const { board, series } = movesOf(snaps, overlay);
+    assert.deepEqual(board.map((m) => m.state), states, "the board's rows");
+    assert.deepEqual(series.map((m) => m.state), states, "the target's own series");
+    for (const m of [...board, ...series]) {
+      assert.ok(m.deltaReading && m.label && m.deltaLabel, `${m.state} carries a reading, a label and a published label`);
+      if (m.state === "unscored" || m.state === "scored" || (m.state === "flat" && m.delta == null)) {
+        assert.equal(m.delta, null, `${m.state} has no figure on one side, so no delta`);
+        assert.equal(m.grade, undefined, `${m.state} is not a move between two letters`);
+      }
+    }
+    const unscored = board.find((m) => m.state === "unscored");
+    if (unscored) assert.equal(unscored.label, "not scored this run");
+    // True of a target that had a letter before the gap and of one that never
+    // had one, so it claims neither.
+    const scored = board.find((m) => m.state === "scored");
+    if (scored) {
+      assert.equal(scored.deltaReading, "scored");
+      assert.equal(scored.label, "scored this run; the run before was not scored, so there is no figure to compare with");
+    }
+    const flat = board.find((m) => m.state === "flat");
+    if (flat) assert.equal(flat.label, "unchanged");
+  });
+}
 
 // The converse of the stale-entry guard above: an entry that DOES describe
 // this exact run must be applied even when it is filed under a different

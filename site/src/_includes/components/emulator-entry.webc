@@ -14,7 +14,7 @@
   </div>
   <div class="project-support">
     <div class="project-support-heading"><h3>Feature support</h3><a :href="'/targets/' + row.slug">Full results <span aria-hidden="true">→</span><span class="sr-only" @text="' for ' + row.display"></span></a></div>
-    <p class="project-measured">Measured <time :datetime="row.runDate" @text="dateLabel(row.runDate)"></time><span webc:if="row.carried"> · carried from an earlier run</span></p>
+    <p class="project-measured">Measured <time :datetime="row.runDate" @text="dateLabel(row.runDate)"></time><span webc:if="row.carried"> · carried from an earlier run</span><span webc:if="notScoredShort(row)" :data-not-scored="row.slug" @text="' · not scored: ' + notScoredShort(row).text"></span></p>
     <div @html="featureSummary(target, 'core')"></div>
     <details class="project-extra"><summary>Other AWS services</summary><div @html="featureSummary(target, 'wider')"></div></details>
     <details webc:if="target.areas.length" class="project-extra project-operations"><summary>Operation-by-operation support</summary><p class="project-note">Measured divergence and coverage for each operation. <a :href="'/targets/' + row.slug + '#operations'" class="underline">Inspect the full evidence</a>.</p><div @html="targetOperations(target.areas)"></div></details>

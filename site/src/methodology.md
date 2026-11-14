@@ -50,6 +50,12 @@ A row says where coverage is holding its letter down, so a capped row is not mis
 
 Real DynamoDB carries no letter at all. A grade reads how far a target sits from real DynamoDB, so grading the yardstick against itself seats it in a band an engine had to earn its way into. It reads `baseline` on the results table, on its badge and in the data endpoints, and it sits above the board rather than in it. Its two figures still publish, because they are the definition every other row is read against.
 
+### When a test gets no answer
+
+A test only counts when the target answers it. A request that fails in transport or comes back as a 5xx, a throttle that outlasts the SDK's retries, a table, index or import that never becomes ready within its time limit, or a read that never sees every item just written within its time limit is not a different answer from real DynamoDB's, it is no answer at all. The suite records such a test as indeterminate rather than as a fail. A 501 Not Implemented is the exception among the 5xx codes: it is the target saying it does not support the operation, which is an answer.
+
+A run holding even one such test is not scored. It carries no letter, no divergence and no coverage, because figures read from part of the suite would not mean what the same figures mean on any other row. Its page says how many tests got no answer and what the answered ones did, and lists the tests with the reason the suite recorded for each, for every run whose per-test detail is kept. For an older run whose per-test detail is not kept, the page gives the count alone. When the target could not be tested at all, the whole run got no answer and the page says that instead. Either way the next run is scored afresh.
+
 ### The letter is weaker than the figures
 
 Withdrawing a failing test lowers divergence and coverage by the same amount, which is what makes the pair hard to game. The letter inherits only two thirds of that, so a target that declines what it fails still gains a little. Closing the gap entirely would mean counting a declined test as heavily as a failed one, and the difference between those two is what the board is for.
@@ -104,7 +110,7 @@ The suite publishes each run's results as JSON in its repository, and it has don
 
 A "run" is defined by the timestamp stamped into each result file, grouped by date - not by commit. That distinction matters more than it sounds. A single commit often refreshes only some targets, and one commit can carry results that were actually produced in different runs, so grouping by commit would invent runs that never happened and stitch unrelated results together. Grouping by date is robust to both, even when one run's targets finish over an hour apart.
 
-When a target isn't re-tested in a run, its last measured result is carried forward and labelled as such, rather than dropped or silently restated as fresh. **Movement** compares a target against the previous run it was actually tested in, so the arrow always means "since last measured", never "since some run where nothing changed".
+When a target isn't re-tested in a run, its last measured result is carried forward and labelled as such, rather than dropped or silently restated as fresh. **Movement** compares a target against the previous run it was actually tested in, so the arrow always means "since last measured", never "since some run where nothing changed". A run that is not scored has no figure to move, so it reads "not scored" where the arrow would be, and the next scored run reads "scored" rather than a change measured across the gap.
 
 This site and the suite are one repository, and the scoring is shared code rather than a copy of it. The target list, the display names, the project links and the pass-rate arithmetic are imported from the suite's own modules, so adding a target or correcting a name happens once and lands in both places. What the site still renders on its own - assembling a scored run into the rows you see - is held to the suite's published per-region summary by a test.
 

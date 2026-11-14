@@ -72,6 +72,26 @@ test("renderTargetOperations gives an area with an unanswered test no state to c
   }
 });
 
+// A run that got no answer at all has no test of its own to count, so each
+// operation says the run got no answer, with no counts and no figures. Read
+// from the board a run-level refusal really produces, not hand-made areas.
+test("renderTargetOperations says each operation of a run that got no answer is not scored", async () => {
+  const { renderTargetOperations } = await import("./matrix.mjs");
+  const { SCENARIOS } = await import("../fixtures/not-scored-models.mjs");
+  const scenario = SCENARIOS.find((s) => s.name === "an existing project not scored at run level");
+  const [slug] = scenario.notScored;
+  const { areas } = scenario.build().model.perTarget[slug];
+  assert.ok(areas.length > 0);
+  const html = renderTargetOperations(areas);
+  const lines = [...html.matchAll(/sr-only">([^<]*)</g)].map((m) => m[1]);
+  assert.equal(lines.length, areas.length, `${lines.length} lines for ${areas.length} areas`);
+  for (const a of areas) assert.ok(lines.includes(`${a.group}: not scored, because the run got no answer`), a.group);
+  const figures = [...html.matchAll(/w-14 text-right font-mono[^"]*">([^<]*)</g)].map((m) => m[1]);
+  assert.deepEqual([...new Set(figures)], ["-"], "every divergence and coverage reads -");
+  assert.equal([...html.matchAll(/aria-hidden="true">\?</g)].length, areas.length, "every operation shows the neutral mark");
+  assert.doesNotMatch(html, /\d+ (pass|fail|skip)\b|✓|✗|◑|supported|failing|\d+\/\d+/, "no count or state survives");
+});
+
 test("renderTargetOperations is empty when a target has no areas", async () => {
   const { renderTargetOperations } = await import("./matrix.mjs");
   assert.equal(renderTargetOperations([]), "");

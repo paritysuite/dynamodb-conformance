@@ -1,5 +1,7 @@
 import { createHash } from "node:crypto";
 
+import { classifyResults } from "dynamodb-conformance/scripts/lib/classify.mjs";
+
 import { areaOf } from "./scoring.mjs";
 
 // A finding is one target failing one test: what a per-run target page lists,
@@ -86,18 +88,39 @@ export function areaFailures(area, findings) {
 //
 // meta carries what the results file itself doesn't: the version measured, and
 // the commit the results were published at, so a source link can pin to it.
+//
+// A failing status is not enough. A test that got no answer records
+// `status: "failed"` too, and listing it here put it under "where it falls
+// short" as a divergence the target never made. The suite's classifier says
+// which is which, as it does for every tally on the site.
 export function findingsOf(raw, meta = {}) {
+  return recordsOf(raw, meta, "fail");
+}
+
+// Every test in one target's results that got no answer, as records shaped
+// like findings, each with the reason the suite recorded for it. Only a
+// test-level reason is in a results file. A run that got no answer at all
+// says so in a sidecar the site does not read, and its tests carry no marker,
+// so for such a run this is empty rather than a list of the whole suite.
+export function unansweredOf(raw, meta = {}) {
+  return recordsOf(raw, meta, "indeterminate");
+}
+
+function recordsOf(raw, meta, verdictKept) {
   const rows = [];
+  const verdicts = Array.isArray(raw?.testResults) ? classifyResults(raw, null) : [];
+  let i = 0;
 
   for (const tr of raw?.testResults ?? []) {
     const area = areaOf(tr.name);
-    if (!area) continue;
     const file = testsKey(tr.name);
     for (const ar of tr.assertionResults ?? []) {
-      if (ar.status !== "failed") continue;
+      const verdict = verdicts[i++];
+      if (!area || verdict?.verdict !== verdictKept) continue;
       const fullName = ar.fullName || ar.title || "(unnamed test)";
       const key = normaliseName(fullName);
-      rows.push({ fullName, key, file, area, tags: ar.tags ?? [], messages: (ar.failureMessages ?? []).join("\n") });
+      const reason = verdictKept === "indeterminate" ? (verdict.reason?.reason ?? null) : undefined;
+      rows.push({ fullName, key, file, area, tags: ar.tags ?? [], messages: (ar.failureMessages ?? []).join("\n"), reason });
     }
   }
 
@@ -120,6 +143,7 @@ export function findingsOf(raw, meta = {}) {
       line: lineOf(r.messages, r.file),
       version: meta.version ?? null,
       sha: meta.sha ?? null,
+      ...(r.reason !== undefined ? { reason: r.reason } : {}),
     };
   });
 

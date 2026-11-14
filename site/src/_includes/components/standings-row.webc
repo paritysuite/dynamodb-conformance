@@ -36,9 +36,9 @@
         <a webc:if="row.unsupported > 0"
           href="/targets"
           class="shrink-0 text-xs text-zinc-500 dark:text-zinc-400 underline decoration-dotted underline-offset-2 hover:text-brand-700 dark:hover:text-brand-300 transition-colors"
-          :title="row.display + ' scores the ' + formatNumber(row.implemented) + ' of ' + formatNumber(row.count) + ' tests it implements; ' + formatNumber(row.unsupported) + ' cover operations it does not support. ' + row.coverage + ' of the suite.'">
+          :title="notScoredScope(row) || (row.display + ' scores the ' + formatNumber(row.implemented) + ' of ' + formatNumber(row.count) + ' tests it implements; ' + formatNumber(row.unsupported) + ' cover operations it does not support. ' + row.coverage + ' of the suite.')">
           <span @text="formatNumber(row.unsupported) + ' unsupported'"></span>
-          <span class="sr-only">; covers <span @text="row.coverage"></span> of the suite</span>
+          <span webc:if="!notScoredShort(row)" class="sr-only">; covers <span @text="row.coverage"></span> of the suite</span>
         </a>
         <!-- No "full coverage" counterpart: the coverage figure beside the
              grade already says 100%, and repeating it crowded the name column. -->
@@ -79,16 +79,19 @@
         <!-- Keep the headline figures scannable, with the regional distribution
              and any coverage cap directly below them. -->
         <div class="standing-metrics mb-1.5">
-          <div><span class="tnum font-medium" @text="row.divergence"></span><span class="standing-metric-label">Divergence</span></div>
-          <div><span class="tnum font-medium" @text="row.coverage"></span><span class="standing-metric-label">Coverage</span></div>
+          <div webc:if="notScoredShort(row)" :data-not-scored="row.slug"><span class="tnum font-medium" @text="notScoredShort(row).figure"></span><span class="standing-metric-label" @text="notScoredShort(row).label"></span></div><div webc:if="!notScoredShort(row)"><span class="tnum font-medium" @text="row.divergence"></span><span class="standing-metric-label">Divergence</span></div>
+          <div webc:if="!notScoredShort(row)"><span class="tnum font-medium" @text="row.coverage"></span><span class="standing-metric-label">Coverage</span></div>
         </div>
         <!-- gradeLine, not the bare figure: it drops the percentage when
              divergence is zero, because "0.0% in 6 regions" reads as a zero
              while "no divergence in 6 regions" reads as the measurement. The
              labelled pair above carries the number for anyone who wants it.
              Same phrase as the nested build rows below and the target page,
-             so a build cannot read differently from the board. -->
-        <p webc:if="regionLine(row)" class="standing-regions text-xs text-zinc-500 dark:text-zinc-400 mb-1.5" @text="regionLine(row)"></p>
+             so a build cannot read differently from the board. A row with the
+             not-scored cell above still says "not scored" here for a sighted
+             reader, whose chip shows only a dash, but not again to a screen
+             reader, which has just heard the chip say it. -->
+        <p webc:if="regionLine(row) && !notScoredShort(row)" class="standing-regions text-xs text-zinc-500 dark:text-zinc-400 mb-1.5" @text="regionLine(row)"></p><p webc:if="regionLine(row) && notScoredShort(row)" class="standing-regions text-xs text-zinc-500 dark:text-zinc-400 mb-1.5" aria-hidden="true" @text="regionLine(row)"></p>
         <!-- Where the letter does not hold in every region (#271), with the
              cause on the regions' answers rather than on the target. The
              attribute is what the build check finds the note by. A run page's
@@ -106,7 +109,7 @@
           aria-valuemin="0"
           aria-valuemax="100"
           :aria-valuenow="row.coverageValue == null ? 0 : row.coverageValue"
-          :aria-label="row.display + ' implements ' + row.coverage + ' of the suite and diverges on ' + row.divergence">
+          :aria-label="notScoredShort(row) ? row.display + ' is not scored: ' + notScoredShort(row).text : row.display + ' implements ' + row.coverage + ' of the suite and diverges on ' + row.divergence">
           <div class="h-full rounded-full bg-zinc-400 dark:bg-zinc-400/80" :style="'width:' + widthPct(row.coverageValue)"></div>
         </div>
       </div>
@@ -184,7 +187,7 @@
         <grade-chip :row="v" :size="'text-xs'"></grade-chip>
         <div class="flex-1 min-w-0">
           <p class="text-xs leading-snug text-zinc-600 dark:text-zinc-300 mb-1">
-            <span class="font-medium" @text="gradeLine(v)"></span><span webc:if="regionClause(v)" class="text-zinc-500 dark:text-zinc-400" @text="' ' + regionClause(v)"></span><span class="text-zinc-500 dark:text-zinc-400"> · covers <span class="tnum" @text="v.coverage"></span></span>
+            <span class="font-medium" @text="gradeLine(v)"></span><span webc:if="regionClause(v)" class="text-zinc-500 dark:text-zinc-400" @text="' ' + regionClause(v)"></span><span webc:if="notScoredShort(v)" class="text-zinc-500 dark:text-zinc-400" :data-not-scored="v.slug" @text="' · ' + notScoredShort(v).text"></span><span webc:if="!notScoredShort(v)" class="text-zinc-500 dark:text-zinc-400"> · covers <span class="tnum" @text="v.coverage"></span></span>
             <span webc:if="capClause(v)" class="text-[0.7rem] text-zinc-500 dark:text-zinc-400" @text="'· ' + capClause(v)"></span>
             <!-- A build not re-tested this run says so where its figures are,
                  like the parent's movement column does: a dated figure
@@ -198,7 +201,7 @@
             aria-valuemin="0"
             aria-valuemax="100"
             :aria-valuenow="v.coverageValue == null ? 0 : v.coverageValue"
-            :aria-label="row.display + ', ' + (configurationOf(v.slug) || v.display) + ': implements ' + v.coverage + ' of the suite and diverges on ' + v.divergence">
+            :aria-label="row.display + ', ' + (configurationOf(v.slug) || v.display) + (notScoredShort(v) ? ': not scored, ' + notScoredShort(v).text : ': implements ' + v.coverage + ' of the suite and diverges on ' + v.divergence)">
             <div class="h-full rounded-full bg-zinc-400 dark:bg-zinc-400/80" :style="'width:' + widthPct(v.coverageValue)"></div>
           </div>
         </div>

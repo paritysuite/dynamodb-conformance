@@ -81,11 +81,23 @@ test("committed fallback: movement direction agrees with the change in divergenc
   const byTarget = new Map();
   for (const run of [...(model.runs ?? [])].reverse()) {
     for (const row of run.standings ?? []) {
+      // A move into or out of a run with no figure has no direction either,
+      // but it does have to agree with the figure the row publishes: none on
+      // the run that lost its score, one on the run that is scored. The run
+      // with no figure also resets the comparison, as it does in the model.
+      const state = row.movement?.state;
+      if (state === "unscored" || state === "scored") {
+        const published = row.divergenceValue ?? null;
+        if ((state === "unscored") !== (published === null)) {
+          wrong.push(`${run.date}/${row.slug}: ${state} beside a divergence of ${published}`);
+        }
+        byTarget.set(row.slug, published);
+        continue;
+      }
       if (!scored(row)) continue;
       const prev = byTarget.get(row.slug);
       byTarget.set(row.slug, row.divergenceValue ?? divergenceOf(row));
       const cur = row.divergenceValue ?? divergenceOf(row);
-      const state = row.movement?.state;
       if (prev == null || cur == null || !state) continue;
       // `carried` (not re-tested this run), `new` and `baseline` describe the
       // run rather than a change, so there is no direction to check.
