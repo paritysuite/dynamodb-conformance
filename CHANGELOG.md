@@ -123,6 +123,32 @@ target is re-run. A board is now refused if real DynamoDB's own run, in its own
 region, fails a test or passes one on a split row with an answer recorded for a
 different region.
 
+A project's own row on the board now names its configuration beside the
+project, as the README table already did, so ExtendDB's row reads "ExtendDB ·
+PostgreSQL" before its other builds are opened. The ways to run a target gain
+one more, `package`, for an operating system package: a .deb or .rpm, or an apt
+or dnf repository.
+
+AWS Emulator joins the board, suggested by [@exoego](https://github.com/exoego)
+in [#304](https://github.com/paritysuite/dynamodb-conformance/issues/304). It is
+AWS's own multi-service emulator, written in Rust, with DynamoDB and DynamoDB
+Streams among the services it serves. It installs from a Linux package, or on
+other systems runs in Docker from an image built with the Dockerfile in its user
+guide. It serves HTTPS and checks SigV4 signatures by default, with a
+certificate and key it generates on each start, and it is measured that way.
+
+Alternator joins the board. It is ScyllaDB's DynamoDB-compatible API, built
+into the database node itself rather than run as a separate emulator, with
+global secondary indexes on materialised views and Streams on change data
+capture. It runs from the official ScyllaDB container image, and its version
+column shows the ScyllaDB release the node reports.
+
+ExtendDB's MongoDB backend joins the run as a third build of the same release,
+beside PostgreSQL and SQLite. It runs against a single-node MongoDB 7.0 replica
+set and is held to the same TLS, SigV4 and IAM posture as the other two, so the
+storage engine is again the only thing that differs between them. ExtendDB's
+PostgreSQL row now lists its official Docker image beside the source.
+
 A target whose run is not scored now publishes as one everywhere. Its badge
 reads `not scored` in grey rather than going missing, and its row in the results
 table reads `not scored` where the letter would be. Neither the table nor the

@@ -4,7 +4,7 @@
 [![Licence: Apache 2.0](https://img.shields.io/badge/licence-Apache%202.0-blue.svg)](LICENSE)
 [![Live results](https://img.shields.io/badge/live%20results-paritysuite.org-brightgreen)](https://paritysuite.org)
 
-An independent test suite that validates any DynamoDB-compatible endpoint against real DynamoDB behaviour. It works against DynamoDB, DynamoDB Local, Dynoxide, Dynoxide (wasm), Dynalite, LocalStack, ExtendDB, Floci, Ministack, Kumo, or anything else that implements the DynamoDB HTTP API.
+An independent test suite that validates any DynamoDB-compatible endpoint against real DynamoDB behaviour. It works against DynamoDB, DynamoDB Local, Dynoxide, Dynoxide (wasm), Dynalite, LocalStack, ExtendDB, Floci, Ministack, Kumo, AWS Emulator, Alternator, or anything else that implements the DynamoDB HTTP API.
 
 ## Why this exists
 
@@ -318,6 +318,67 @@ The shared indexed table carries both kinds together, so any test using it is ta
 
 ## Running against targets
 
+### Alternator
+
+ScyllaDB serves the DynamoDB API only when given a port, and refuses to start
+without a write-isolation mode, which has no default. Wait for the node to
+answer before starting the run.
+
+```bash
+docker run -d --name alternator -p 8000:8000 scylladb/scylla:latest \
+  --alternator-port=8000 --alternator-write-isolation=only_rmw_uses_lwt \
+  --smp 1 --memory 1G --overprovisioned 1 --developer-mode 1
+until curl -sf http://localhost:8000/ >/dev/null; do sleep 2; done
+DYNAMODB_ENDPOINT=http://localhost:8000 CONFORMANCE_TARGET=alternator npm test
+docker stop alternator && docker rm alternator
+```
+
+### AWS Emulator
+
+AWS Emulator serves DynamoDB, DynamoDB Streams and many other AWS services on
+one HTTPS port, 9297. Each time it starts it generates a certificate and an
+access key, writes them to `~/.aws/emulator/<port>/`, and checks every request
+is signed with that key. The suite runs it with those defaults left on, and
+with telemetry (on by default) turned off.
+
+On Linux, install the package from its
+[user guide](https://docs.aws.amazon.com/emulator/latest/userguide/getting-started-linux.html)
+and start it:
+
+```bash
+aws-emulator --telemetry off &
+DIR=~/.aws/emulator/9297
+until curl -sf --cacert $DIR/ca.pem https://127.0.0.1:9297/__admin/health; do sleep 1; done
+
+# The JS SDK ignores AWS_CA_BUNDLE, and the suite takes its credentials from
+# the environment rather than the shared credentials file, so both go in here.
+export NODE_EXTRA_CA_CERTS=$DIR/ca.pem
+cred() { sed -n "/^$1 *=/{s/^[^=]*= *//p;q;}" $DIR/emulator_credentials; }
+export AWS_ACCESS_KEY_ID=$(cred aws_access_key_id)
+export AWS_SECRET_ACCESS_KEY=$(cred aws_secret_access_key)
+[ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ] || echo "no credentials in $DIR" >&2
+export AWS_REGION=us-east-1
+DYNAMODB_ENDPOINT=https://127.0.0.1:9297 CONFORMANCE_TARGET=aws-emulator npm test
+```
+
+On macOS and Windows it runs in Docker. No image is published, so build one
+from the Dockerfile in the
+[Docker guide](https://docs.aws.amazon.com/emulator/latest/userguide/getting-started-docker.html)
+(use the `aarch64` package on Apple silicon), then run it with the port the
+same on both sides and the key directory shared at the same path:
+
+```bash
+mkdir -p ~/.aws/emulator
+docker run -d --rm --name aws-emulator --memory=2g --memory-swap=2g \
+  -p 127.0.0.1:9297:9297 -e HOME="$HOME" -e EMULATOR_TELEMETRY=off \
+  -v "$HOME/.aws/emulator:$HOME/.aws/emulator" \
+  aws-emulator -p 9297 --telemetry off
+```
+
+The same exports then apply. Stop it with `docker stop aws-emulator`, which
+lets it delete its key and certificate on the way out. Its state lives in
+memory, so every start is a clean one.
+
 ### Dynalite
 
 ```bash
@@ -406,7 +467,8 @@ export AWS_ACCESS_KEY_ID=<access-key-id>        # a real key - ExtendDB verifies
 export AWS_SECRET_ACCESS_KEY=<secret-access-key>
 export AWS_REGION=us-east-1                      # SigV4 signing region for the local endpoint; ground truth is recorded per region, so no single region needs matching
 export DYNAMODB_ENDPOINT=https://127.0.0.1:8000
-CONFORMANCE_TARGET=extenddb npm test            # writes results/extenddb.json
+# Writes results/extenddb.json.
+CONFORMANCE_TARGET=extenddb npm test
 ```
 
 Use `127.0.0.1` or `localhost` (both are in the cert's SANs). ExtendDB does
@@ -420,7 +482,8 @@ database service. `scripts/run-extenddb.sh` handles the bring-up either way:
 
 ```bash
 eval "$(EXTENDDB_DIR=/path/to/extenddb EXTENDDB_BACKEND=sqlite ./scripts/run-extenddb.sh)"
-CONFORMANCE_TARGET=extenddb-sqlite npm test   # writes results/extenddb-sqlite.json
+# Writes results/extenddb-sqlite.json.
+CONFORMANCE_TARGET=extenddb-sqlite npm test
 ```
 
 By hand it is the PostgreSQL flow with one line changed, the feature at build
@@ -439,9 +502,44 @@ Checked against v0.1.3 rather than assumed.
 `init` refuses to overwrite an existing database, so a repeat local run wants
 `extenddb destroy` first.
 
+#### The MongoDB build
+
+MongoDB is the third backend, in every release from v0.1.5. It needs MongoDB
+7.0 or later running as a replica set, because the backend writes through
+multi-document transactions, which MongoDB only allows on one. A single node is
+enough:
+
+```bash
+docker run -d --name extenddb-mongo -p 127.0.0.1:27017:27017 mongo:7.0 --replSet rs0
+until docker exec extenddb-mongo mongosh --quiet --eval 'db.runCommand({ping: 1}).ok' 2>/dev/null | grep -qx 1; do sleep 2; done
+docker exec extenddb-mongo mongosh --quiet --eval \
+  'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
+until docker exec extenddb-mongo mongosh --quiet --eval 'rs.status().myState' 2>/dev/null | grep -qx 1; do sleep 2; done
+
+eval "$(EXTENDDB_DIR=/path/to/extenddb EXTENDDB_BACKEND=mongodb ./scripts/run-extenddb.sh)"
+# Writes results/extenddb-mongodb.json.
+CONFORMANCE_TARGET=extenddb-mongodb npm test
+```
+
+`MONGODB_URI` overrides the connection string, which defaults to
+`mongodb://127.0.0.1:27017/?replicaSet=rs0`. `init` has no connection flag for
+MongoDB: it reads the string from the config file it is given and falls back to
+`localhost:27017` without one, so by hand the config comes first:
+
+```bash
+cargo build --release -p extenddb --no-default-features --features mongodb
+printf '[storage]\nbackend = "mongodb"\n\n[storage.mongodb]\nconnection_string = "mongodb://127.0.0.1:27017/?replicaSet=rs0"\n' > extenddb.toml
+./target/release/extenddb init --backend mongodb --config extenddb.toml --overwrite
+```
+
+`init` regenerates the full config over that file and keeps the connection
+string. As with the other backends, a repeat local run wants a fresh database,
+or `extenddb destroy` first.
+
 ExtendDB also ships a `dev-mode` build feature that serves plain HTTP with open
 authorisation. The suite deliberately does not use it. It would change the
-security posture, and these two rows are meant to differ only in storage engine.
+security posture, and the ExtendDB rows are meant to differ only in storage
+engine.
 
 ### Floci
 

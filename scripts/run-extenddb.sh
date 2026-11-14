@@ -4,7 +4,7 @@
 #
 # ExtendDB ships no binaries, so this builds it from source, initialises its
 # storage, mints a dynamodb:* IAM access key, and starts the server. It is used
-# by both ExtendDB CI jobs and is runnable locally.
+# by every ExtendDB CI job and is runnable locally.
 #
 # The storage backend is compiled in rather than chosen at runtime, and exactly
 # one is installed per binary, so EXTENDDB_BACKEND drives the cargo features as
@@ -16,9 +16,12 @@
 #   EXTENDDB_DIR              path to an ExtendDB checkout (built or buildable)
 #
 # Optional (defaults shown):
-#   EXTENDDB_BACKEND=postgres storage backend: postgres or sqlite
+#   EXTENDDB_BACKEND=postgres storage backend: postgres, sqlite or mongodb
 #   PGHOST=127.0.0.1 PGPORT=5432 PGUSER=postgres PGPASSWORD=postgres
 #                             postgres backend only
+#   MONGODB_URI=mongodb://127.0.0.1:27017/?replicaSet=rs0
+#                             mongodb backend only; a replica set, since the
+#                             backend uses multi-document transactions
 #   EXTENDDB_PORT=8000
 #   EXTENDDB_ADMIN_PASSWORD   admin password (generated if unset; init reads it)
 #   ACCOUNT_ID=123456789012   12-digit account the conformance user lives in
@@ -36,9 +39,9 @@ set -euo pipefail
 : "${EXTENDDB_DIR:?set EXTENDDB_DIR to an ExtendDB checkout}"
 BACKEND=${EXTENDDB_BACKEND:-postgres}
 case "$BACKEND" in
-  postgres | sqlite) ;;
+  postgres | sqlite | mongodb) ;;
   *)
-    echo "ERROR: EXTENDDB_BACKEND must be postgres or sqlite (got '$BACKEND')" >&2
+    echo "ERROR: EXTENDDB_BACKEND must be postgres, sqlite or mongodb (got '$BACKEND')" >&2
     exit 1
     ;;
 esac
@@ -46,6 +49,7 @@ PGHOST=${PGHOST:-127.0.0.1}
 PGPORT=${PGPORT:-5432}
 PGUSER=${PGUSER:-postgres}
 PGPASSWORD=${PGPASSWORD:-postgres}
+MONGODB_URI=${MONGODB_URI:-mongodb://127.0.0.1:27017/?replicaSet=rs0}
 EXTENDDB_PORT=${EXTENDDB_PORT:-8000}
 ACCOUNT_ID=${ACCOUNT_ID:-123456789012}
 IAM_USER=${IAM_USER:-conformance}
@@ -90,6 +94,7 @@ if [ "${BUILD:-1}" = "1" ] && { [ ! -x "$BIN" ] || [ "$built" != "$BACKEND" ]; }
     # No default features, so postgres is not compiled in alongside it. One
     # backend per binary is ExtendDB's own rule, enforced in its init.
     sqlite) cargo build --release -p extenddb --no-default-features --features sqlite ;;
+    mongodb) cargo build --release -p extenddb --no-default-features --features mongodb ;;
   esac
   printf '%s\n' "$BACKEND" >"$STAMP"
 elif [ "$built" != "$BACKEND" ]; then
@@ -127,6 +132,17 @@ case "$BACKEND" in
     ;;
   sqlite)
     "$BIN" init --backend sqlite >&2
+    ;;
+  # MongoDB takes no connection flag either: init reads the connection string
+  # from the config file it is given, and falls back to localhost without a
+  # replica set when there is none. So a minimal config naming the server is
+  # written first and init regenerates the full one over it (--overwrite),
+  # carrying the connection string across. This is the shape ExtendDB's own
+  # MongoDB compose stack uses.
+  mongodb)
+    printf '[storage]\nbackend = "mongodb"\n\n[storage.mongodb]\nconnection_string = "%s"\n' \
+      "$MONGODB_URI" >extenddb.toml
+    "$BIN" init --backend mongodb --config extenddb.toml --overwrite >&2
     ;;
 esac
 

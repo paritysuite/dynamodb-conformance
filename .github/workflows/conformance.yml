@@ -41,6 +41,10 @@ on:
         description: "Dynoxide git ref to build the wasm engine from (blank = latest release)"
         required: false
         default: ""
+      aws_emulator_version:
+        description: "AWS Emulator package version to install, in the four-part form its versions.json lists, such as 1.0.343.1 (blank = latest published)"
+        required: false
+        default: ""
       weekly:
         description: "The week's run, started by release.yml: a deterministic red files the scheduled-red issue"
         type: boolean
@@ -1064,6 +1068,76 @@ jobs:
           name: results-kumo
           path: results/
 
+  test-alternator:
+    name: Alternator
+    needs: changes
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    # Started by hand rather than under `services:`, which cannot pass the
+    # command-line flags the image needs: Alternator is off until given a port,
+    # and a write-isolation mode is mandatory with no default.
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.changes.outputs.ref }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # A single shard with a fixed memory budget is the image's documented
+      # single-node shape, and needs no aio-max-nr tuning on the runner. The
+      # node takes a few seconds to bootstrap after the container starts, so
+      # wait for a real DynamoDB answer rather than a TCP connect.
+      - name: Start Alternator
+        run: |
+          docker run -d --name alternator -p 8000:8000 \
+            scylladb/scylla:latest \
+            --alternator-port=8000 \
+            --alternator-write-isolation=only_rmw_uses_lwt \
+            --smp 1 --memory 1G --overprovisioned 1 --developer-mode 1
+          for i in $(seq 1 60); do
+            if curl -sf --max-time 5 -X POST http://localhost:8000/ \
+                -H 'Content-Type: application/x-amz-json-1.0' \
+                -H 'X-Amz-Target: DynamoDB_20120810.ListTables' \
+                -d '{}' >/dev/null; then
+              echo "Alternator ready after ~$((i * 5))s"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::Alternator did not answer ListTables within 5 minutes"
+          docker logs --tail 100 alternator
+          exit 1
+
+      - name: Run conformance suite
+        continue-on-error: true
+        env:
+          CONFORMANCE_TARGET: alternator
+          DYNAMODB_ENDPOINT: http://localhost:8000
+          AWS_ACCESS_KEY_ID: fakeAccessKeyId
+          AWS_SECRET_ACCESS_KEY: fakeSecretAccessKey
+          AWS_REGION: us-east-1
+        run: npm test
+
+      # The ScyllaDB release is asked of the container started above, by name;
+      # the image digest is the fallback if that answers nothing.
+      - name: Record target version
+        continue-on-error: true
+        env:
+          TARGET_IMAGE: scylladb/scylla:latest
+        run: scripts/record-version.sh alternator
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: results-alternator
+          path: results/
+
   test-dynalite:
     name: Dynalite
     needs: changes
@@ -1105,6 +1179,142 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: results-dynalite
+          path: results/
+
+  test-aws-emulator:
+    name: AWS Emulator
+    needs: changes
+    # No image is published, but the runner is Linux, where the emulator's own
+    # package is the documented way to run it, so this installs that package on
+    # the runner rather than building an image from it. Like ExtendDB, the run
+    # follows the latest release unless a version is given: the package index
+    # (versions.json), not the GitHub release list, because a release is tagged
+    # hours before its package is published and the tag alone installs nothing.
+    continue-on-error: true
+    runs-on: ubuntu-latest
+
+    steps:
+      # No git credential left in the workspace: a third-party binary runs
+      # beside it. Nothing below needs one.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.changes.outputs.ref }}
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Resolve, verify and install AWS Emulator
+        env:
+          # Through the environment, not spliced into the script, for the same
+          # reason as the wasm engine's ref above.
+          REQUESTED_VERSION: ${{ github.event.inputs.aws_emulator_version }}
+        run: |
+          set -euo pipefail
+          BASE=https://downloads.aws.com/aws-emulator/packages/aws-emulator/LTS
+          VERSION="$REQUESTED_VERSION"
+          if [ -z "$VERSION" ]; then
+            VERSION=$(curl -fsSL "$BASE/versions.json" \
+              | jq -r '.versions | map(.version) | sort_by(split(".") | map(tonumber)) | last')
+          fi
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Not a package version: '$VERSION'"
+            exit 1
+          fi
+          # The index lists 1.0.343.1, and the package is named 1.0.343-1.
+          PKG="aws-emulator_${VERSION%.*}-${VERSION##*.}_amd64.deb"
+          echo "Installing AWS Emulator $VERSION ($PKG)"
+          curl -fsSLO "$BASE/$PKG"
+          curl -fsSLO "$BASE/$PKG.sig"
+          curl -fsSLo aws-publishing.asc https://downloads.aws.com/keys/gpg/current.asc
+          # The user guide's check before installing: the key's fingerprint,
+          # then the signature. The signature has to be good, made by the key
+          # with that fingerprint, and from a key and signature that have not
+          # expired or been revoked. gpg reports an expired or revoked one in
+          # place of GOODSIG, so that is checked first, and gpg's own exit
+          # status is left to the checks so each failure says which it was.
+          GNUPGHOME=$(mktemp -d)
+          export GNUPGHOME
+          FPR=98BCF336A3BE53B734E967C52E5BF49BD940F624
+          gpg --quiet --import aws-publishing.asc
+          if ! gpg --with-colons --fingerprint ssm-publishing@amazon.com | grep "^fpr:::::::::$FPR:\$" >/dev/null; then
+            echo "::error::The downloaded publishing key does not have the fingerprint $FPR"
+            exit 1
+          fi
+          STATUS=$(gpg --status-fd 1 --verify "$PKG.sig" "$PKG" 2>/dev/null) || true
+          if grep -E '^\[GNUPG:\] (EXPKEYSIG|REVKEYSIG|EXPSIG) ' <<<"$STATUS"; then
+            echo "::error::The package signature is from an expired or revoked key, or has expired"
+            exit 1
+          fi
+          if ! grep '^\[GNUPG:\] GOODSIG ' <<<"$STATUS" >/dev/null; then
+            echo "::error::The package signature is not good"
+            exit 1
+          fi
+          if ! grep "^\[GNUPG:\] VALIDSIG .* $FPR\$" <<<"$STATUS" >/dev/null; then
+            echo "::error::The package is not signed by the key with fingerprint $FPR"
+            exit 1
+          fi
+          sudo apt-get install -y "./$PKG"
+          aws-emulator -v
+
+      - name: Start AWS Emulator, read its credentials
+        env:
+          EMULATOR_TELEMETRY: "off"
+        run: |
+          set -euo pipefail
+          # Its defaults are kept: HTTPS with a certificate it generates per
+          # run, and SigV4 checked against a key it generates per run. Both are
+          # written under ~/.aws/emulator/<port>/. Telemetry, on by default, is
+          # off by flag as well as by the environment above.
+          nohup aws-emulator -p 9297 --telemetry off >aws-emulator.log 2>&1 &
+          DIR="$HOME/.aws/emulator/9297"
+          for _ in $(seq 30); do
+            curl -sf --cacert "$DIR/ca.pem" https://127.0.0.1:9297/__admin/health && break
+            sleep 1
+          done
+          if ! curl -sf --cacert "$DIR/ca.pem" https://127.0.0.1:9297/__admin/health >/dev/null; then
+            tail -n 100 aws-emulator.log || true
+            echo "::error::AWS Emulator did not pass its health check within 30 seconds"
+            exit 1
+          fi
+          # For the log only: the startup notice says whether telemetry is on.
+          grep -i telemetry aws-emulator.log || true
+          # Everything after the first `=`, since a generated secret may hold one.
+          cred() { sed -n "/^$1 *=/{s/^[^=]*= *//p;q;}" "$DIR/emulator_credentials"; }
+          akid=$(cred aws_access_key_id)
+          secret=$(cred aws_secret_access_key)
+          if [ -z "$akid" ] || [ -z "$secret" ]; then
+            echo "::error::Could not read the emulator's credentials from $DIR/emulator_credentials"
+            exit 1
+          fi
+          echo "::add-mask::$secret"
+          {
+            echo "DYNAMODB_ENDPOINT=https://127.0.0.1:9297"
+            # The JS SDK ignores AWS_CA_BUNDLE, as with ExtendDB.
+            echo "NODE_EXTRA_CA_CERTS=$DIR/ca.pem"
+            echo "AWS_ACCESS_KEY_ID=$akid"
+            echo "AWS_SECRET_ACCESS_KEY=$secret"
+            echo "AWS_REGION=us-east-1"
+          } >>"$GITHUB_ENV"
+
+      - name: Run conformance suite
+        continue-on-error: true
+        env:
+          CONFORMANCE_TARGET: aws-emulator
+        run: npm test
+
+      - name: Record target version
+        continue-on-error: true
+        run: scripts/record-version.sh aws-emulator
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: results-aws-emulator
           path: results/
 
   test-extenddb:
@@ -1207,7 +1417,7 @@ jobs:
     # The same ExtendDB release as the job above, built with the SQLite storage
     # feature instead of the default PostgreSQL one. The backend is compiled in,
     # so this is a second build rather than a second configuration of one - but
-    # it needs no database service, which makes it the cheaper of the two.
+    # it needs no database service, which makes it the cheapest of the three.
     #
     # Held to the same security posture as the PostgreSQL row: TLS, SigV4 and
     # the IAM store all stay on. ExtendDB's `dev-mode` feature would serve plain
@@ -1290,4 +1500,120 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: results-extenddb-sqlite
+          path: results/
+
+  test-extenddb-mongodb:
+    name: ExtendDB (MongoDB)
+    needs: changes
+    # The same ExtendDB release again, built with the MongoDB storage feature.
+    # The backend runs its writes in multi-document transactions, which MongoDB
+    # allows only on a replica set, so MongoDB is started as a single-node one
+    # and initiated before the bring-up script runs. That needs a `--replSet`
+    # argument, which a `services:` container cannot be given, so it is started
+    # in a step instead, from the image digest ExtendDB's own MongoDB compose
+    # stack pins.
+    #
+    # Held to the same security posture as the other two ExtendDB rows: TLS,
+    # SigV4 and the IAM store stay on, and `dev-mode` stays off.
+    if: github.event_name != 'pull_request'
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    # A cold Rust build plus the suite, with room to spare, so a MongoDB or
+    # ExtendDB that never comes up is cut off within the hour.
+    timeout-minutes: 60
+
+    steps:
+      # No git credential left in the workspace, for the same reason as the
+      # SQLite job: a third-party build runs as arbitrary code beside it.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.changes.outputs.ref }}
+          persist-credentials: false
+
+      - name: Resolve ExtendDB ref (latest release unless overridden)
+        id: ref
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_REF: ${{ github.event.inputs.extenddb_ref }}
+        run: |
+          REF="$REQUESTED_REF"
+          if [ -z "$REF" ]; then
+            REF=$(gh release view -R ExtendDB/extenddb --json tagName --jq .tagName)
+          fi
+          SHA=$(gh api "repos/ExtendDB/extenddb/commits/$REF" --jq .sha)
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "Building ExtendDB at $REF ($SHA)"
+
+      - name: Checkout ExtendDB
+        uses: actions/checkout@v7
+        with:
+          repository: ExtendDB/extenddb
+          ref: ${{ steps.ref.outputs.sha }}
+          path: extenddb
+          persist-credentials: false
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: extenddb
+          # Its own key, as with SQLite: a third feature set from the same
+          # checkout.
+          key: mongodb
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Start MongoDB as a single-node replica set
+        run: |
+          docker run -d --name mongodb -p 127.0.0.1:27017:27017 \
+            mongo:7.0@sha256:b096b4cb9269f3ebcf363be63f1c50920f786879d03a1890347a3bf33f1f0df0 \
+            mongod --replSet rs0 --bind_ip_all
+          # Up to two minutes for each of the two waits below.
+          wait_for() { # what, mongosh expression that prints 1 when ready
+            for _ in $(seq 1 60); do
+              if docker exec mongodb mongosh --quiet --eval "$2" 2>/dev/null | grep -x 1 >/dev/null; then
+                return 0
+              fi
+              sleep 2
+            done
+            docker logs --tail 100 mongodb
+            echo "::error::MongoDB did not $1 within 2 minutes"
+            exit 1
+          }
+          wait_for "answer a ping" 'db.runCommand({ping: 1}).ok'
+          # The member is named by the address ExtendDB reaches it on, since a
+          # replica-set client connects to the hosts the set advertises.
+          docker exec mongodb mongosh --quiet --eval \
+            'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
+          wait_for "become the replica set's primary" 'rs.status().myState'
+
+      - name: Build and start ExtendDB (MongoDB), mint conformance credentials
+        env:
+          EXTENDDB_DIR: ${{ github.workspace }}/extenddb
+          EXTENDDB_BACKEND: mongodb
+          MONGODB_URI: mongodb://127.0.0.1:27017/?replicaSet=rs0
+        run: ./scripts/run-extenddb.sh
+
+      - name: Run conformance suite
+        continue-on-error: true # ExtendDB has known gaps (e.g. PartiQL)
+        env:
+          CONFORMANCE_TARGET: extenddb-mongodb
+        run: npm test
+
+      - name: Record target version
+        continue-on-error: true
+        env:
+          EXTENDDB_REF: ${{ steps.ref.outputs.ref }}
+        run: scripts/record-version.sh extenddb-mongodb
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: results-extenddb-mongodb
           path: results/

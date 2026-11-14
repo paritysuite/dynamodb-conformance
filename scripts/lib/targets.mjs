@@ -38,7 +38,14 @@
 // the suite can defend; a typed one is a claim about someone else's product
 // that nothing checks.
 
-/** Channel labels, so the board renders a controlled vocabulary. */
+/**
+ * Channel labels, so the board renders a controlled vocabulary.
+ *
+ * `package` is software the operating system's package manager installs: apt
+ * or dnf, from a repository or from a .deb or .rpm. A package manager with a
+ * channel of its own here (npm, pip, cargo, Maven, Homebrew, Scoop) uses that
+ * channel instead.
+ */
 export const CHANNELS = {
   service: 'AWS service',
   docker: 'Docker',
@@ -50,6 +57,7 @@ export const CHANNELS = {
   maven: 'Maven',
   homebrew: 'Homebrew',
   scoop: 'Scoop',
+  package: 'package',
   'install-script': 'install script',
   binary: 'binary',
   embedded: 'embedded',
@@ -97,8 +105,8 @@ export const TARGETS = {
     // that is the axis separating it from the row nested under it: this one is
     // a binary you run, that one is WebAssembly in a browser. A storage name
     // ("native SQLite") paired a storage fact against a runtime fact and the
-    // two rows read as answers to different questions. ExtendDB's pair still
-    // names storage, because storage is what distinguishes those two.
+    // two rows read as answers to different questions. ExtendDB's builds still
+    // name storage, because storage is what distinguishes them.
     configuration: 'self-contained binary',
     url: 'https://github.com/nubo-db/dynoxide',
     requires: 'none - a single binary, with no runtime to install',
@@ -139,6 +147,40 @@ export const TARGETS = {
       { channel: 'npm', url: 'https://github.com/architect/dynalite/blob/main/readme.md' },
       { channel: 'npx', url: 'https://www.npmjs.com/package/dynalite' },
       { channel: 'embedded', url: 'https://github.com/architect/dynalite/blob/main/readme.md' },
+    ],
+  },
+  // ScyllaDB's own DynamoDB-compatible API, served by the database node rather
+  // than a separate emulator, so the channels are ScyllaDB's. A write-isolation
+  // mode must be chosen at start-up and has no default. The modes differ only
+  // under concurrent writers to one item, or by refusing conditional writes
+  // outright, and the suite drives one client serially, so the mode is a
+  // start-up flag rather than a configuration with rows of its own.
+  alternator: {
+    display: 'Alternator',
+    project: 'alternator',
+    reference: true,
+    url: 'https://github.com/scylladb/scylladb',
+    requires: 'Docker or a Linux install; a write-isolation mode must be chosen, there is no default',
+    note:
+      'ScyllaDB\'s DynamoDB-compatible API, served by the database node rather ' +
+      'than a standalone emulator. Run with --alternator-write-isolation=' +
+      'only_rmw_uses_lwt. ScyllaDB is source-available under its own licence, ' +
+      'not open source.',
+    distribution: [
+      { channel: 'docker', url: 'https://hub.docker.com/r/scylladb/scylla' },
+      {
+        channel: 'package',
+        url: 'https://docs.scylladb.com/manual/stable/getting-started/install-scylla/install-on-linux.html',
+      },
+      {
+        channel: 'install-script',
+        url: 'https://docs.scylladb.com/manual/stable/getting-started/installation-common/scylla-web-installer.html',
+      },
+      {
+        channel: 'binary',
+        url: 'https://docs.scylladb.com/manual/stable/getting-started/installation-common/unified-installer.html',
+      },
+      { channel: 'source', url: 'https://github.com/scylladb/scylladb' },
     ],
   },
   localstack: {
@@ -203,30 +245,51 @@ export const TARGETS = {
       { channel: 'source', url: 'https://github.com/sivchari/kumo' },
     ],
   },
+  // A multi-service emulator, of which DynamoDB and DynamoDB Streams are two
+  // services. It runs natively only on Linux, from an RPM or Debian package.
+  // No image is published: the Docker route builds one from the Dockerfile in
+  // its user guide, which installs the same package, so the channel is sourced
+  // to that page rather than to a registry. Its own security defaults stay on
+  // when measured (HTTPS with a per-run certificate, SigV4 with a per-run key),
+  // as ExtendDB's do.
+  'aws-emulator': {
+    display: 'AWS Emulator',
+    project: 'aws-emulator',
+    reference: true,
+    url: 'https://github.com/aws/aws-emulator',
+    requires: 'Linux for the native package; elsewhere Docker, with an image you build',
+    note:
+      'DynamoDB is one of the many AWS services it serves. No image is ' +
+      'published; the Docker route builds one from a Dockerfile in its user ' +
+      'guide. HTTPS and SigV4 are on by default, and it listens on 9297.',
+    distribution: [
+      { channel: 'package', url: 'https://docs.aws.amazon.com/emulator/latest/userguide/getting-started-linux.html' },
+      { channel: 'docker', url: 'https://docs.aws.amazon.com/emulator/latest/userguide/getting-started-docker.html' },
+      { channel: 'embedded', url: 'https://docs.aws.amazon.com/emulator/latest/userguide/getting-started-embedded.html' },
+      { channel: 'source', url: 'https://github.com/aws/aws-emulator' },
+    ],
+  },
   // ExtendDB's storage backend is pluggable, chosen at build time by Cargo
   // feature, and exactly one is compiled into a given binary. A backend is
   // therefore a different engine under one wire protocol, which is a variant of
   // this project rather than a row of its own. PostgreSQL is the reference
-  // backend and carries the parent row; SQLite shipped in v0.1.3 and nests
-  // below it. MongoDB is merged to main but is in no release, so it is not here.
+  // backend and carries the parent row; SQLite (from v0.1.3) and MongoDB (from
+  // v0.1.5) nest below it.
   extenddb: {
     display: 'ExtendDB',
     project: 'extenddb',
     reference: true,
     configuration: 'PostgreSQL',
     url: 'https://github.com/ExtendDB/extenddb',
-    requires: 'PostgreSQL 14+, and a Rust toolchain to build it',
-    // Source only, checked rather than assumed: every release has zero assets,
-    // the crate is not on crates.io, and while a Dockerfile and a Docker Hub
-    // repository now exist, the only tags published there are commit-addressed
-    // build candidates - no version tag and no `latest`. The install scripts
-    // build from source; they do not fetch a binary. Revisit when the promotion
-    // job lands: `curl -s https://hub.docker.com/v2/repositories/extenddb/
-    // extenddb-postgres/tags/latest` returning 200 is the check.
+    requires: 'PostgreSQL 14+, and Docker for the image or a Rust toolchain to build it',
+    // Docker is the official extenddb-postgres image. No binary is published,
+    // so the other route is a source build, which is how the suite runs it, at
+    // the release tag.
     note:
       'An adapter over an external PostgreSQL rather than a self-contained ' +
       'store. TLS and SigV4 are mandatory, and it listens on 18443.',
     distribution: [
+      { channel: 'docker', url: 'https://hub.docker.com/r/extenddb/extenddb-postgres' },
       { channel: 'source', url: 'https://github.com/ExtendDB/extenddb' },
     ],
   },
@@ -240,7 +303,7 @@ export const TARGETS = {
     // single SQLite file. Built WITHOUT the `dev-mode` feature: dev-mode serves
     // plain HTTP with open authorisation, which is a different security posture
     // and so not the same thing to measure. Holding that fixed leaves the
-    // storage engine as the only variable between these two rows.
+    // storage engine as the only variable between these rows.
     note:
       'The PostgreSQL build\'s server over a single SQLite file rather than ' +
       'an external database. TLS and SigV4 stay mandatory.',
@@ -248,6 +311,31 @@ export const TARGETS = {
       {
         channel: 'source',
         url: 'https://github.com/ExtendDB/extenddb/blob/main/crates/storage-sqlite/README.md',
+      },
+    ],
+  },
+  'extenddb-mongodb': {
+    display: 'ExtendDB (MongoDB)',
+    project: 'extenddb',
+    configuration: 'MongoDB',
+    url: 'https://github.com/ExtendDB/extenddb',
+    requires: 'a MongoDB 7.0+ replica set, and Docker for the image or a Rust toolchain to build it',
+    // The same server, wire protocol and auth stack as the parent row, over an
+    // external MongoDB, which has to run as a replica set (one node is enough)
+    // because the backend writes through multi-document transactions. Built
+    // without `dev-mode`, as the SQLite row is.
+    //
+    // Docker is the official extenddb-mongodb image. No binary is published,
+    // so the other route is a source build, which is how the suite runs it, at
+    // the release tag.
+    note:
+      'The PostgreSQL build\'s server over an external MongoDB replica set ' +
+      'rather than PostgreSQL. TLS and SigV4 stay mandatory.',
+    distribution: [
+      { channel: 'docker', url: 'https://hub.docker.com/r/extenddb/extenddb-mongodb' },
+      {
+        channel: 'source',
+        url: 'https://github.com/ExtendDB/extenddb/blob/main/docs/local-mongodb-setup.md',
       },
     ],
   },
@@ -275,6 +363,25 @@ export const isVariant = (slug) => Boolean(TARGETS[slug] && !TARGETS[slug].refer
 
 /** What distinguishes this configuration, for a nested row's label. */
 export const configurationOf = (slug) => TARGETS[slug]?.configuration ?? null
+
+/**
+ * The configuration a project's own row names beside the project, or null.
+ *
+ * The parent row names its configuration, so a reader can tell which build the
+ * top row's figures belong to the moment a project ships a second. A build
+ * promoted to stand for its project already carries its configuration in the
+ * display name the registry gives it, so naming it again would read
+ * "ExtendDB (SQLite) · SQLite". The README table and the site's standings both
+ * name a row through this, so the two cannot disagree about which rows do.
+ */
+export const rowConfigurationOf = (slug) =>
+  isVariant(slug) ? null : configurationOf(slug)
+
+/** A project row's name: `name`, then its configuration when it names one. */
+export const rowName = (slug, name = display(slug)) => {
+  const configuration = rowConfigurationOf(slug)
+  return configuration ? `${name} · ${configuration}` : name
+}
 
 /**
  * How a target is distributed: `[{ channel, label, url, command? }]`, in

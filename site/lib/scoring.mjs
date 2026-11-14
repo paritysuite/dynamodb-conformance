@@ -20,6 +20,7 @@ import {
   projectOf,
   repoUrl,
   label,
+  rowConfigurationOf,
 } from "dynamodb-conformance/scripts/summarise.mjs";
 import { GROUND_TRUTH_SLUG, axesOf, passRate, scoreResults, tierOf } from "dynamodb-conformance/scripts/lib/score.mjs";
 import { figuresDiffer } from "dynamodb-conformance/scripts/lib/standings.mjs";
@@ -43,7 +44,7 @@ import {
   REGIONAL_CAUSE,
 } from "dynamodb-conformance/scripts/lib/grade.mjs";
 
-export { DISPLAY, REPO, TARGETS, CHANNELS_SHOWN, GROUND_TRUTH_SLUG, configurationOf, display, distributionOf, isVariant, projectOf, repoUrl, label, tierOf };
+export { DISPLAY, REPO, TARGETS, CHANNELS_SHOWN, GROUND_TRUTH_SLUG, configurationOf, display, distributionOf, isVariant, projectOf, repoUrl, label, rowConfigurationOf, tierOf };
 
 // The two published figures, from the suite's own definition. Re-exported so
 // every site module derives them from one place: each surface that restated
@@ -633,11 +634,9 @@ const byGrade = (a, b) => compareGrades(a, b) || sortName(a).localeCompare(sortN
  * that answer is published.
  *
  * Named rather than inlined so the rule can be read and tested in one place.
- * The mixed case it exists for - one build agreeing, another not - cannot be
- * reached through `sortRows` today, because no project in the registry ships
- * two builds and an unregistered slug forms a project of its own. So this
- * function is where that case is exercised, and `sortRows` assigns its single
- * answer to every build rather than deciding per build.
+ * `sortRows` assigns its single answer to every build of a project rather
+ * than deciding per build, so a project with one build agreeing and another
+ * not opens with both visible.
  */
 export function buildsAgree(parent) {
   const builds = parent?.variants ?? [];

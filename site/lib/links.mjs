@@ -15,6 +15,8 @@ const WEBSITE = {
   ministack: "https://ministack.org",
   floci: "https://floci.io/floci/",
   extenddb: "https://extenddb.org/",
+  "aws-emulator": "https://docs.aws.amazon.com/emulator/latest/userguide/what-is-service.html",
+  alternator: "https://www.scylladb.com/",
 };
 
 const CODE_HOSTS = new Set([
