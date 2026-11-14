@@ -18,8 +18,9 @@ declareTables(hashTableDef)
 // Real DynamoDB caps document nesting at 32 levels, counting the attribute itself as
 // level 1, so a value built from 31 wraps (leaf at level 32) is the deepest it accepts
 // and 32 wraps (leaf at level 33) is rejected with a ValidationException. The same
-// boundary and message apply to stored items (PutItem) and to ExpressionAttributeValues
-// in a ConditionExpression. Captured against eu-west-2 real DynamoDB, 2026-06.
+// boundary and message apply to every item a write stores. Captured against eu-west-2
+// real DynamoDB, 2026-06. An ExpressionAttributeValue that is only compared, never
+// stored, is checked differently by region: see the UpdateItem tests below.
 function deepMap(depth: number): AttributeValue {
   let v: AttributeValue = { S: 'leaf' }
   for (let i = 0; i < depth; i++) v = { M: { n: v } }
@@ -110,10 +111,15 @@ describe('Nesting depth — 32-level document limit', { tags: ['put-item', 'upda
   })
 
   // --- ExpressionAttributeValue (UpdateItem ConditionExpression) ---
-  // Depth is validated up front, before the condition is evaluated. A 31-level value
-  // is accepted, so the condition runs: against an item with no `data`, `#d = :deep`
-  // is false and surfaces as ConditionalCheckFailedException, which proves the value
-  // was accepted rather than rejected on depth. A 32-level value is rejected outright.
+  // Depth is validated up front, before the condition is evaluated. A value that
+  // passes reaches the condition: against an item with no `data`, `#d = :deep` is
+  // false and surfaces as ConditionalCheckFailedException, which proves the value
+  // was accepted rather than rejected on depth. A 31-level value is accepted
+  // everywhere. A 32-level value, one level past what an item may store, has been
+  // accepted by eu-west-2 and most regions since 2026-11-14; the rest still refuse
+  // it in validation with NEST_SINGLE (registry row
+  // update-item-nesting-depth-expression-value). A 63-level value is still refused
+  // everywhere, naming its key (below).
 
   it('accepts a 31-level ExpressionAttributeValue (condition is evaluated)', async () => {
     await ddb.send(
@@ -138,11 +144,17 @@ describe('Nesting depth — 32-level document limit', { tags: ['put-item', 'upda
     )
   })
 
-  it('rejects a 32-level ExpressionAttributeValue with ValidationException', async (ctx) => {
+  it('accepts a 32-level ExpressionAttributeValue (condition is evaluated)', async (ctx) => {
     // Split behaviour (registry row update-item-nesting-depth-expression-value):
-    // regions without the stricter validation accept the value and fail the
-    // condition instead, so what the target actually returned is recorded for
-    // per-region scoring.
+    // regions that still check this depth refuse the value with
+    // ValidationException instead, so what the target actually returned is
+    // recorded for per-region scoring.
+    await ddb.send(
+      new PutItemCommand({
+        TableName: hashTableDef.name,
+        Item: { pk: { S: 'nest-cond-eav' }, marker: { S: 'x' } },
+      }),
+    )
     await expectDynamoError(
       () =>
         observeSplit(ctx.task, () =>
@@ -157,8 +169,7 @@ describe('Nesting depth — 32-level document limit', { tags: ['put-item', 'upda
             }),
           ),
         ),
-      'ValidationException',
-      new RegExp(`^${escapeRegExp(NEST_SINGLE)}$`),
+      'ConditionalCheckFailedException',
     )
   })
 
@@ -212,7 +223,7 @@ describe('Nesting depth — 32-level document limit', { tags: ['put-item', 'upda
 // Captured against eu-west-2 and us-east-1 real DynamoDB, 2026-09-12: a too
 // deep Put item is a top-level ValidationException on both surfaces.
 // TransactWriteItems does not check a 32-level ExpressionAttributeValue in most
-// regions, where UpdateItem checks it (registry row
+// regions, and since 2026-11-14 neither does UpdateItem in most (registry row
 // update-item-nesting-depth-expression-value); a value one level deeper is a
 // different matter (the last tests in the TransactWriteItems block). An Update
 // that writes a too deep value into the item still cancels on the stored-item
@@ -355,8 +366,8 @@ describe('Nesting depth — TransactWriteItems', { tags: ['transactions', 'put-i
   it('does not check the depth of an Update ExpressionAttributeValue (the condition is evaluated)', async () => {
     // The value stays out of the item, so only the condition sees it. Against an
     // item with no `data`, `#d = :deep` is false, so a transaction that accepts
-    // the value cancels on the condition. UpdateItem rejects the same request
-    // with ValidationException in most regions.
+    // the value cancels on the condition. Since 2026-11-14 UpdateItem accepts
+    // the same value in most regions too.
     await ddb.send(
       new PutItemCommand({
         TableName: hashTableDef.name,

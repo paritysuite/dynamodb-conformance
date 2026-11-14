@@ -10,12 +10,10 @@ section its date and version, so several branches can write ahead of one.
 
 ca-central-1 joins eu-west-2 on the five Scan rows. It gave the new wording on
 the 2026-11-07 and 2026-11-14 sweeps and on the three runs on 2026-11-13, which
-leaves me-central-1 the only region recorded on the old wording. Nothing else in
-the 2026-11-14 sweep moves a row. Nineteen regions, eu-west-2 among them,
-accepted a 32-level ExpressionAttributeValue they had refused on the three
-sweeps before, and eu-north-1 stored UpdateItem writes that the statement-sized
-rule refuses, which it had not done before. Each was seen on one sweep, so
-those rows stay as they are until a second sweep and separate runs agree.
+leaves me-central-1 the only region recorded on the old wording. On the
+2026-11-14 sweep eu-north-1 stored UpdateItem writes that the statement-sized
+rule refuses, which it had not done before. Three runs later that day had it
+answering both ways, so the item-size rows stay as they are.
 
 Ten regions join eu-west-2 on the five Scan rows: ap-northeast-1, ap-south-2,
 ap-southeast-6, ap-southeast-7, eu-central-2, eu-south-1, eu-south-2, eu-west-1,
@@ -28,6 +26,20 @@ agrees. eu-north-1 gave the old wording on one of the three runs, so it answers
 Scan both ways for now and keeps its recorded answer, the new wording. The
 BatchGetItem row doesn't change: me-central-1 gave both answers to an empty
 RequestItems across the same runs.
+
+eu-west-2 now accepts a 32-level ExpressionAttributeValue in an UpdateItem
+condition, so the test that pinned its refusal now pins acceptance, and is
+renamed to say so. It asserts the ConditionalCheckFailedException a false
+condition gives, the same proof the 31-level test uses. The 2026-11-14 sweep
+found 19 regions accepting a value they had refused the week before, and by the
+last of three runs that day 23 did. ap-east-1, ap-southeast-2, ca-west-1,
+eu-south-2, eu-west-3, mx-central-1, us-east-1, us-west-1 and us-west-2 still
+refuse it, and me-central-1, which had accepted it until then, now refuses it
+too. The registry records those ten on that side. The same regions moved
+together on UpdateItem's ReturnValues error, which now lists
+`UPDATED_NEW` where it listed `UPDATE_NEW`. That test accepts both, and its row
+now pins the new wording. A stored item is still capped at 32 levels
+everywhere, and a 63-level value is still refused.
 
 The wait for an index added by UpdateTable to become ACTIVE is now 2 minutes on
 any emulator, down from 40. Real DynamoDB keeps 40 minutes. The slowest passing

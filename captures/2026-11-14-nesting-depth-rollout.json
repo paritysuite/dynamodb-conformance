@@ -1,0 +1,285 @@
+{
+  "capturedAt": "2026-11-14T12:15:07Z",
+  "note": "Follow-up to the 2026-11-14 sweep, which found 19 regions, eu-west-2 among them, accepting the 32-level ExpressionAttributeValue they had refused on the 2026-11-07 sweep, and the same 19 giving a new ReturnValues enum message. Both rows checked region by region across the 2026-11-07 and 2026-11-14 sweeps and three local runs against every region registry/regions.json lists, from separate processes started at 11:44, 11:59 and 12:15 UTC. Each local run sends the requests the tests send, at a table that does not exist, because both checks fire before the table is looked up. A 32-level value that passes validation then reaches the table lookup, so locally ResourceNotFoundException is the accepting answer and ValidationException the refusing one; a 31-level value, sent beside it as a control, gave ResourceNotFoundException in every answering region on every run. The sweeps ran the tests against real tables, where the accepting answer is the ConditionalCheckFailedException the row records. A verdict is P when a source gave the answer eu-west-2 now gives and X when it gave the other one; answer is the exact local observation when every local run agreed. me-south-1 did not answer any local run, and no sweep has resolved it. ap-northeast-1, ap-southeast-6, ap-southeast-7 and ap-south-2 changed answer between the local runs and are recorded by their last one.",
+  "sources": {
+    "sweep1107": "https://github.com/paritysuite/dynamodb-conformance/actions/runs/42359294432",
+    "sweep1114": "https://github.com/paritysuite/dynamodb-conformance/actions/runs/43581126924",
+    "local-A": "2026-11-14, started 11:44 UTC",
+    "local-B": "2026-11-14, started 11:59 UTC",
+    "local-C": "2026-11-14, started 12:15 UTC"
+  },
+  "subjects": {
+    "update-item-nesting-depth-expression-value": {
+      "pinned": "rejected ConditionalCheckFailedException: The conditional request failed",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ResourceNotFoundException: Requested resource not found"
+        },
+        "ap-east-1": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+        },
+        "ap-east-2": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ResourceNotFoundException: Requested resource not found"
+        },
+        "ap-northeast-1": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:P local-C:P"
+        },
+        "ap-northeast-2": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ResourceNotFoundException: Requested resource not found"
+        },
+        "ap-northeast-3": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ResourceNotFoundException: Requested resource not found"
+        },
+        "ap-south-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ResourceNotFoundException: Requested resource not found"
+        },
+        "ap-south-2": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:P local-B:X local-C:P"
+        },
+        "ap-southeast-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ResourceNotFoundException: Requested resource not found"
+        },
+        "ap-southeast-2": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+        },
+        "ap-southeast-3": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ResourceNotFoundException: Requested resource not found"
+        },
+        "ap-southeast-4": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ResourceNotFoundException: Requested resource not found"
+        },
+        "ap-southeast-5": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ResourceNotFoundException: Requested resource not found"
+        },
+        "ap-southeast-6": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:P local-C:P"
+        },
+        "ap-southeast-7": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:P"
+        },
+        "ca-central-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ResourceNotFoundException: Requested resource not found"
+        },
+        "ca-west-1": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+        },
+        "eu-central-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ResourceNotFoundException: Requested resource not found"
+        },
+        "eu-central-2": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ResourceNotFoundException: Requested resource not found"
+        },
+        "eu-north-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ResourceNotFoundException: Requested resource not found"
+        },
+        "eu-south-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ResourceNotFoundException: Requested resource not found"
+        },
+        "eu-south-2": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+        },
+        "eu-west-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ResourceNotFoundException: Requested resource not found"
+        },
+        "eu-west-2": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ResourceNotFoundException: Requested resource not found"
+        },
+        "eu-west-3": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+        },
+        "il-central-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ResourceNotFoundException: Requested resource not found"
+        },
+        "me-central-1": {
+          "verdicts": "sweep1107:P sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+        },
+        "me-south-1": {
+          "verdicts": "sweep1107:- sweep1114:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+        },
+        "sa-east-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ResourceNotFoundException: Requested resource not found"
+        },
+        "us-east-1": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+        },
+        "us-east-2": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ResourceNotFoundException: Requested resource not found"
+        },
+        "us-west-1": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+        },
+        "us-west-2": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+        }
+      }
+    },
+    "update-item-validation-error-aggregation": {
+      "pinned": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+        },
+        "ap-east-1": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]"
+        },
+        "ap-east-2": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+        },
+        "ap-northeast-1": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:P local-C:P"
+        },
+        "ap-northeast-2": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+        },
+        "ap-northeast-3": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+        },
+        "ap-south-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+        },
+        "ap-south-2": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:P local-B:X local-C:P"
+        },
+        "ap-southeast-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+        },
+        "ap-southeast-2": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]"
+        },
+        "ap-southeast-3": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+        },
+        "ap-southeast-4": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+        },
+        "ap-southeast-5": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+        },
+        "ap-southeast-6": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:P local-C:P"
+        },
+        "ap-southeast-7": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:P"
+        },
+        "ca-central-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+        },
+        "ca-west-1": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]"
+        },
+        "eu-central-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+        },
+        "eu-central-2": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+        },
+        "eu-north-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+        },
+        "eu-south-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+        },
+        "eu-south-2": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]"
+        },
+        "eu-west-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+        },
+        "eu-west-2": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+        },
+        "eu-west-3": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]"
+        },
+        "il-central-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+        },
+        "me-central-1": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]"
+        },
+        "me-south-1": {
+          "verdicts": "sweep1107:- sweep1114:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]"
+        },
+        "sa-east-1": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+        },
+        "us-east-1": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]"
+        },
+        "us-east-2": {
+          "verdicts": "sweep1107:X sweep1114:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+        },
+        "us-west-1": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]"
+        },
+        "us-west-2": {
+          "verdicts": "sweep1107:X sweep1114:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]"
+        }
+      }
+    }
+  }
+}

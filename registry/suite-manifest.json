@@ -1,6 +1,6 @@
 {
   "generated": "2026-11-14",
-  "commit": "17007c8834db6cfaecfbaaca69657156d8e8f1fe",
+  "commit": "da4c0dc99b9c99da96cf10d6f11954c3910140ef",
   "count": 1920,
   "tests": [
     "tests/tier1/batchGetItem/basic.test.ts::BatchGetItem — ProjectionExpression returns only projected attributes",
@@ -1650,8 +1650,8 @@
     "tests/tier3/limits/leadingUnderscore.test.ts::Leading underscore in expressions rejects one in a ProjectionExpression",
     "tests/tier3/limits/leadingUnderscore.test.ts::Leading underscore in expressions rejects one in an UpdateExpression",
     "tests/tier3/limits/nestingDepth.test.ts::Nesting depth — 32-level document limit accepts a 31-level ExpressionAttributeValue (condition is evaluated)",
+    "tests/tier3/limits/nestingDepth.test.ts::Nesting depth — 32-level document limit accepts a 32-level ExpressionAttributeValue (condition is evaluated)",
     "tests/tier3/limits/nestingDepth.test.ts::Nesting depth — 32-level document limit accepts a stored attribute nested 31 levels (leaf at level 32)",
-    "tests/tier3/limits/nestingDepth.test.ts::Nesting depth — 32-level document limit rejects a 32-level ExpressionAttributeValue with ValidationException",
     "tests/tier3/limits/nestingDepth.test.ts::Nesting depth — 32-level document limit rejects a 63-level ExpressionAttributeValue naming its key",
     "tests/tier3/limits/nestingDepth.test.ts::Nesting depth — 32-level document limit rejects a stored attribute nested 32 levels (leaf at level 33)",
     "tests/tier3/limits/nestingDepth.test.ts::Nesting depth — 32-level document limit rejects a stored attribute nested 61 levels with the same message",
