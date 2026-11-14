@@ -82,6 +82,17 @@ Scan (once cut short, on UpdateItem) and eu-north-1 gave it on Scan, so the rows
 keep the 2026-11-05 answers until a sweep has run the tests. Those runs are in
 `captures/2026-11-13-shallow-validation-follow-up.json`.
 
+Four more PartiQL index-qualifier answers are pinned. An unknown index read with
+`ConsistentRead` is reported as an unknown index, not as a consistent read on a
+GSI. Selecting an attribute a GSI doesn't project is refused on an unkeyed scan
+as well as on a keyed read. With two such attributes the refusal lists them in
+the same order whichever way round the statement names them, and that order
+isn't alphabetical, so the test pins the list for one pair. A
+BatchExecuteStatement SELECT on a composite table that gives the partition key
+but not the sort key is refused like any other member without the full primary
+key. All four gave the same answers on three runs each in eu-west-2 and
+us-east-1 on 2026-11-14.
+
 ## 2026-11-02 (3.9.0)
 
 Query's XOR ConditionalOperator beside an unknown Select is now pinned to the
