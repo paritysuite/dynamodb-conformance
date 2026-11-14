@@ -413,6 +413,14 @@ describe('BatchExecuteStatement — PartiQL', { tags: ['partiql', 'data-plane', 
       expect(r?.Error?.Message).toContain('must specify the primary key in the where clause')
     })
 
+    // Captured in eu-west-2 and us-east-1, 2026-11-14. The primary key means all
+    // of it: on a composite table the partition key alone is rejected.
+    it('rejects a member naming the partition key but not the sort key', async () => {
+      const r = await memberError(`SELECT * FROM "${partiqlIndexTableDef.name}" WHERE pk = 'p'`)
+      expect(r?.Error?.Code).toBe('ValidationError')
+      expect(r?.Error?.Message).toContain('must specify the primary key in the where clause')
+    })
+
     it('leaves the rest of the batch running', async () => {
       const key = { pk: { S: 'batch-pk-ok' } }
       keysToCleanup.push(key)

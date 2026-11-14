@@ -104,6 +104,33 @@ describe('PartiQL index qualifier — exact error messages', { tags: ['partiql',
     )
   })
 
+  // Captured in eu-west-2 and us-east-1, 2026-11-14. With no WHERE clause the
+  // read is a full index scan, and the projection is still checked against the
+  // index rather than served from the base table.
+  it('unprojected projection attribute on an unkeyed GSI scan - exact message', async () => {
+    const err = await rejection(`SELECT ${PARTIQL_UNPROJECTED_ATTR} FROM "${TABLE}"."gsi-inc"`)
+    expect(err.name).toBe('ValidationException')
+    expect(err.message).toBe(
+      `One or more parameter values were invalid: Global secondary index gsi-inc does not project [${PARTIQL_UNPROJECTED_ATTR}]`,
+    )
+  })
+
+  // Captured in eu-west-2 and us-east-1, 2026-11-14. The list carries every
+  // unprojected name, in an order that follows neither the statement nor the
+  // alphabet. Nothing documents what decides it, so the case pins the list AWS
+  // gives for these two names, and both statement orders have to get the same
+  // one. The pair is chosen so an alphabetical sort gives the wrong answer too.
+  it.each([
+    ['as listed', `${PARTIQL_UNPROJECTED_ATTR}, lsiSk`],
+    ['reversed', `lsiSk, ${PARTIQL_UNPROJECTED_ATTR}`],
+  ])('two unprojected projection attributes on a GSI, named %s - the same list', async (_order, columns) => {
+    const err = await rejection(`SELECT ${columns} FROM "${TABLE}"."gsi-keys" WHERE gsiPk2 = 'k'`)
+    expect(err.name).toBe('ValidationException')
+    expect(err.message).toBe(
+      `One or more parameter values were invalid: Global secondary index gsi-keys does not project [${PARTIQL_UNPROJECTED_ATTR}, lsiSk]`,
+    )
+  })
+
   // The trap is the absent suffix. Query builds the same sentence and appends
   // the index name; this surface does not.
   it('a qualifier naming no index — exact message, with no name appended', async () => {
@@ -141,6 +168,18 @@ describe('PartiQL index qualifier — exact error messages', { tags: ['partiql',
     )
     expect(err.name).toBe('ValidationException')
     expect(err.message).toBe('Strongly consistent read is not supported on Global Secondary Indexes')
+  })
+
+  // Captured in eu-west-2 and us-east-1, 2026-11-14. An unknown index and a
+  // consistent read are each refused on their own, and together it is the
+  // unknown index that gets reported.
+  it('an unknown index with ConsistentRead - the unknown index is reported', async () => {
+    const err = await rejection(
+      `SELECT * FROM "${TABLE}"."no-such-index" WHERE pk = 'p'`,
+      { ConsistentRead: true },
+    )
+    expect(err.name).toBe('ValidationException')
+    expect(err.message).toBe('The table does not have the specified index')
   })
 
   it('an index-qualified read inside a transaction — exact message', async () => {
