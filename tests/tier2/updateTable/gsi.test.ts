@@ -30,6 +30,9 @@ import { ceilingsFor, indexTestTimeoutMs } from '../../../src/regions.js'
 const CEILINGS = ceilingsFor(region)
 const INDEX_WAIT_MS = CEILINGS.indexBackfillMs
 const INDEX_TEST_TIMEOUT_MS = indexTestTimeoutMs(CEILINGS)
+// For a test that creates a table and adds no index: the table-creation wait
+// plus a minute, which the 30-second default does not cover.
+const TABLE_TEST_TIMEOUT_MS = indexTestTimeoutMs(CEILINGS, { indexWaits: 0 })
 
 /** Create a base table with pk (S) + sk (S) for GSI lifecycle tests */
 async function createBaseTable(name: string): Promise<void> {
@@ -714,7 +717,7 @@ describe('UpdateTable — GSI validation', { tags: ['update-table', 'control-pla
     )
   })
 
-  it('rejects adding a GSI with an attribute not in AttributeDefinitions', async () => {
+  it('rejects adding a GSI with an attribute not in AttributeDefinitions', { timeout: TABLE_TEST_TIMEOUT_MS }, async () => {
     const name = uniqueTableName('ut_gsi_no_attr')
     tablesToCleanup.push(name)
     await createBaseTable(name)
@@ -740,7 +743,7 @@ describe('UpdateTable — GSI validation', { tags: ['update-table', 'control-pla
     )
   })
 
-  it('rejects a GSI keyed on a table attribute omitted from the request AttributeDefinitions', async () => {
+  it('rejects a GSI keyed on a table attribute omitted from the request AttributeDefinitions', { timeout: TABLE_TEST_TIMEOUT_MS }, async () => {
     const name = uniqueTableName('ut_gsi_stored_attr')
     tablesToCleanup.push(name)
     await createBaseTable(name)
@@ -775,7 +778,7 @@ describe('UpdateTable — GSI validation', { tags: ['update-table', 'control-pla
     )
   })
 
-  it('rejects removing a non-existent GSI', async () => {
+  it('rejects removing a non-existent GSI', { timeout: TABLE_TEST_TIMEOUT_MS }, async () => {
     const name = uniqueTableName('ut_gsi_rm_none')
     tablesToCleanup.push(name)
     await createBaseTable(name)

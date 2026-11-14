@@ -173,6 +173,14 @@ directory and ignores the caller's target, results directory, endpoint and AWS
 settings
 ([#342](https://github.com/paritysuite/dynamodb-conformance/issues/342)).
 
+Five index tests now have a timeout longer than the waits inside them, which
+corrects an earlier note in this section: in these five an expired wait could
+still end as a failure. Two vector index tests could wait up to 20 seconds
+longer than their timeouts allowed, and three GSI validation tests waited up to
+2 minutes for a new table inside the 30-second default. The test runner ended
+them first, so a slow target got a failure where it should have got no answer.
+No published result came near the old limits, so no verdict changes.
+
 ## 2026-11-02 (3.9.0)
 
 Query's XOR ConditionalOperator beside an unknown Select is now pinned to the
