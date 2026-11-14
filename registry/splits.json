@@ -8712,6 +8712,1524 @@
         "date": "2026-11-05",
         "issue": "https://github.com/paritysuite/dynamodb-conformance/issues/298"
       }
+    },
+    {
+      "id": "transact-write-items-put-number-layer",
+      "test": {
+        "file": "tests/tier3/error-messages/valueLayers.test.ts",
+        "fullName": "Number values — transactions by region TransactWriteItems refuses a malformed number in a Put item up front"
+      },
+      "behaviour": "TransactWriteItems with a malformed number in a Put item, sent as four values: abc, an empty string, 1e126 and 1e2147483647. DynamoDB checks attribute values in one of two layers, and a region answers all four in the same one. The current layer reports 1e2147483647 as a number overflow and keeps the colon and space after the not-numeric message for an empty string. The older layer reads 1e2147483647 as an underflow and drops the colon. On 2026-10-09 eu-west-2 and eu-north-1 ran the current layer here and us-east-1, eu-west-1 and us-west-2 the older one, so the test accepted either, as a whole. On 2026-11-13 the same request bodies, naming a table that does not exist (the check fires before the table is looked up) and, for TransactWriteItems, carrying no ClientRequestToken, went to every region registry/regions.json lists: every answering region but ap-south-1 and me-central-1 answered every one in the current layer, and those two answered every one in the older layer. me-south-1 did not answer. On 2026-11-14 the test ran in eu-west-2, us-east-1, ap-south-1 and me-central-1: ap-south-1 now answered every request in the current layer, and me-central-1 every request in the older layer again. The test now asserts the current layer. ap-south-1 is recorded by its last answer, on the current layer, and me-central-1 is the only region recorded on the older one. The test sends more than one request, so what a region records here is its answer to the last of them, 1e2147483647, which differs between the two layers. A target is recorded as giving the older answer only when every answer it gave was the older layer's.",
+      "pinned": "eu-west-2",
+      "firstObserved": "2026-10-09",
+      "lastRefreshed": "2026-11-14",
+      "regions": {
+        "af-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-northeast-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-northeast-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-northeast-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-south-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-4": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-5": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-6": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-7": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ca-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ca-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-central-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-north-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-south-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-west-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-west-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "il-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "me-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number underflow. Attempting to store a number with magnitude smaller than supported range"
+          }
+        },
+        "mx-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "sa-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "us-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "us-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "us-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "us-west-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        }
+      },
+      "evidence": [
+        "captures/2026-11-14-transaction-value-layers.json",
+        "https://github.com/paritysuite/dynamodb-conformance/issues/243"
+      ],
+      "admitted": {
+        "by": "Martin Hicks",
+        "date": "2026-11-14",
+        "issue": "https://github.com/paritysuite/dynamodb-conformance/issues/243"
+      }
+    },
+    {
+      "id": "transact-write-items-update-number-layer",
+      "test": {
+        "file": "tests/tier3/error-messages/valueLayers.test.ts",
+        "fullName": "Number values — transactions by region TransactWriteItems refuses a malformed number in an Update value up front"
+      },
+      "behaviour": "TransactWriteItems with a malformed number in an Update ExpressionAttributeValue, sent as four values: abc, an empty string, 1e126 and 1e2147483647. DynamoDB checks attribute values in one of two layers, and a region answers all four in the same one. The current layer gives the bare value message, reporting 1e2147483647 as a number overflow. The older layer wraps each message in `ExpressionAttributeValues contains invalid value: ... for key :v` and reads 1e2147483647 as an underflow. On 2026-10-09 eu-west-2 and eu-north-1 ran the current layer here and us-east-1, eu-west-1 and us-west-2 the older one, so the test accepted either, as a whole. On 2026-11-13 the same request bodies, naming a table that does not exist (the check fires before the table is looked up) and, for TransactWriteItems, carrying no ClientRequestToken, went to every region registry/regions.json lists: every answering region but ap-south-1 and me-central-1 answered every one in the current layer, and those two answered every one in the older layer. me-south-1 did not answer. On 2026-11-14 the test ran in eu-west-2, us-east-1, ap-south-1 and me-central-1: ap-south-1 now answered every request in the current layer, and me-central-1 every request in the older layer again. The test now asserts the current layer. ap-south-1 is recorded by its last answer, on the current layer, and me-central-1 is the only region recorded on the older one. The test sends more than one request, so what a region records here is its answer to the last of them, 1e2147483647, which differs between the two layers. A target is recorded as giving the older answer only when every answer it gave was the older layer's.",
+      "pinned": "eu-west-2",
+      "firstObserved": "2026-10-09",
+      "lastRefreshed": "2026-11-14",
+      "regions": {
+        "af-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-northeast-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-northeast-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-northeast-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-south-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-4": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-5": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-6": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-7": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ca-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ca-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-central-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-north-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-south-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-west-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-west-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "il-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "me-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "ExpressionAttributeValues contains invalid value: Number underflow. Attempting to store a number with magnitude smaller than supported range for key :v"
+          }
+        },
+        "mx-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "sa-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "us-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "us-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "us-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "us-west-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        }
+      },
+      "evidence": [
+        "captures/2026-11-14-transaction-value-layers.json",
+        "https://github.com/paritysuite/dynamodb-conformance/issues/243"
+      ],
+      "admitted": {
+        "by": "Martin Hicks",
+        "date": "2026-11-14",
+        "issue": "https://github.com/paritysuite/dynamodb-conformance/issues/243"
+      }
+    },
+    {
+      "id": "transact-get-items-key-number-layer",
+      "test": {
+        "file": "tests/tier3/error-messages/valueLayers.test.ts",
+        "fullName": "Number values — transactions by region TransactGetItems refuses a malformed number in a key up front"
+      },
+      "behaviour": "TransactGetItems with a malformed number as the key, sent as four values: abc, an empty string, 1e126 and 1e2147483647. DynamoDB checks attribute values in one of two layers, and a region answers all four in the same one. The current layer reports 1e2147483647 as a number overflow and keeps the colon and space after the not-numeric message for an empty string. The older layer reads 1e2147483647 as an underflow and drops the colon. On 2026-10-09 eu-west-2 and eu-north-1 ran the current layer here and us-east-1, eu-west-1 and us-west-2 the older one, so the test accepted either, as a whole. On 2026-11-13 the same request bodies, naming a table that does not exist (the check fires before the table is looked up) and, for TransactWriteItems, carrying no ClientRequestToken, went to every region registry/regions.json lists: every answering region but ap-south-1 and me-central-1 answered every one in the current layer, and those two answered every one in the older layer. me-south-1 did not answer. On 2026-11-14 the test ran in eu-west-2, us-east-1, ap-south-1 and me-central-1: ap-south-1 now answered every request in the current layer, and me-central-1 every request in the older layer again. The test now asserts the current layer. ap-south-1 is recorded by its last answer, on the current layer, and me-central-1 is the only region recorded on the older one. The test sends more than one request, so what a region records here is its answer to the last of them, 1e2147483647, which differs between the two layers. A target is recorded as giving the older answer only when every answer it gave was the older layer's.",
+      "pinned": "eu-west-2",
+      "firstObserved": "2026-10-09",
+      "lastRefreshed": "2026-11-14",
+      "regions": {
+        "af-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-northeast-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-northeast-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-northeast-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-south-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-4": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-5": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-6": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ap-southeast-7": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ca-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "ca-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-central-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-north-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-south-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-west-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "eu-west-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "il-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "me-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number underflow. Attempting to store a number with magnitude smaller than supported range"
+          }
+        },
+        "mx-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "sa-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "us-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "us-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "us-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        },
+        "us-west-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+          }
+        }
+      },
+      "evidence": [
+        "captures/2026-11-14-transaction-value-layers.json",
+        "https://github.com/paritysuite/dynamodb-conformance/issues/243"
+      ],
+      "admitted": {
+        "by": "Martin Hicks",
+        "date": "2026-11-14",
+        "issue": "https://github.com/paritysuite/dynamodb-conformance/issues/243"
+      }
+    },
+    {
+      "id": "transact-write-items-put-delete-duplicate-layer",
+      "test": {
+        "file": "tests/tier3/error-messages/valueLayers.test.ts",
+        "fullName": "Duplicate set members — transactions by region TransactWriteItems refuses a duplicate in a Put item and a Delete key up front"
+      },
+      "behaviour": "TransactWriteItems with a duplicate set member, an SS, a BS and an NS, first in a Put item and then as a Delete key. DynamoDB checks attribute values in one of two layers, and a region answers all six requests in the same one. The current layer quotes the members in byte order and ends the number-set message with a full stop after the `One or more parameter values were invalid: ` prefix. The older layer prints the members as sent and gives the number-set message with neither the prefix nor the full stop. On 2026-10-09 eu-west-2 and eu-north-1 ran the current layer here and us-east-1, eu-west-1 and us-west-2 the older one, so the test accepted either, as a whole. On 2026-11-13 the same request bodies, naming a table that does not exist (the check fires before the table is looked up) and, for TransactWriteItems, carrying no ClientRequestToken, went to every region registry/regions.json lists: every answering region but ap-south-1 and me-central-1 answered every one in the current layer, and those two answered every one in the older layer. me-south-1 did not answer. On 2026-11-14 the test ran in eu-west-2, us-east-1, ap-south-1 and me-central-1: ap-south-1 now answered every request in the current layer, and me-central-1 every request in the older layer again. The test now asserts the current layer. ap-south-1 is recorded by its last answer, on the current layer, and me-central-1 is the only region recorded on the older one. The test sends more than one request, so what a region records here is its answer to the last of them, the NS as a Delete key, which differs between the two layers. A target is recorded as giving the older answer only when every answer it gave was the older layer's.",
+      "pinned": "eu-west-2",
+      "firstObserved": "2026-10-09",
+      "lastRefreshed": "2026-11-14",
+      "regions": {
+        "af-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-northeast-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-northeast-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-northeast-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-south-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-4": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-5": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-6": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-7": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ca-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ca-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-central-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-north-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-south-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-west-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-west-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "il-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "me-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Input collection contains duplicates"
+          }
+        },
+        "mx-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "sa-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "us-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "us-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "us-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "us-west-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        }
+      },
+      "evidence": [
+        "captures/2026-11-14-transaction-value-layers.json",
+        "https://github.com/paritysuite/dynamodb-conformance/issues/243"
+      ],
+      "admitted": {
+        "by": "Martin Hicks",
+        "date": "2026-11-14",
+        "issue": "https://github.com/paritysuite/dynamodb-conformance/issues/243"
+      }
+    },
+    {
+      "id": "transact-write-items-expression-duplicate-layer",
+      "test": {
+        "file": "tests/tier3/error-messages/valueLayers.test.ts",
+        "fullName": "Duplicate set members — transactions by region TransactWriteItems refuses a duplicate in a condition or update value of every action type up front"
+      },
+      "behaviour": "TransactWriteItems with a duplicate set member, an SS, a BS and an NS, in an ExpressionAttributeValue of a Put, Update, Delete and ConditionCheck action in turn. DynamoDB checks attribute values in one of two layers, and a region answers all twelve requests in the same one. The current layer gives the bare value message, quoting the members in byte order. The older layer wraps each message in `ExpressionAttributeValues contains invalid value: ... for key :t`, prints the members as sent, and gives the number-set message with neither the prefix nor the full stop. On 2026-10-09 eu-west-2 and eu-north-1 ran the current layer here and us-east-1, eu-west-1 and us-west-2 the older one, so the test accepted either, as a whole. On 2026-11-13 the same request bodies, naming a table that does not exist (the check fires before the table is looked up) and, for TransactWriteItems, carrying no ClientRequestToken, went to every region registry/regions.json lists: every answering region but ap-south-1 and me-central-1 answered every one in the current layer, and those two answered every one in the older layer. me-south-1 did not answer. On 2026-11-14 the test ran in eu-west-2, us-east-1, ap-south-1 and me-central-1: ap-south-1 now answered every request in the current layer, and me-central-1 every request in the older layer again. The test now asserts the current layer. ap-south-1 is recorded by its last answer, on the current layer, and me-central-1 is the only region recorded on the older one. The test sends more than one request, so what a region records here is its answer to the last of them, the NS in a ConditionCheck, which differs between the two layers. A target is recorded as giving the older answer only when every answer it gave was the older layer's.",
+      "pinned": "eu-west-2",
+      "firstObserved": "2026-10-09",
+      "lastRefreshed": "2026-11-14",
+      "regions": {
+        "af-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-northeast-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-northeast-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-northeast-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-south-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-4": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-5": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-6": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-7": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ca-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ca-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-central-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-north-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-south-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-west-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-west-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "il-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "me-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "ExpressionAttributeValues contains invalid value: Input collection contains duplicates for key :t"
+          }
+        },
+        "mx-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "sa-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "us-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "us-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "us-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "us-west-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        }
+      },
+      "evidence": [
+        "captures/2026-11-14-transaction-value-layers.json",
+        "https://github.com/paritysuite/dynamodb-conformance/issues/243"
+      ],
+      "admitted": {
+        "by": "Martin Hicks",
+        "date": "2026-11-14",
+        "issue": "https://github.com/paritysuite/dynamodb-conformance/issues/243"
+      }
+    },
+    {
+      "id": "transact-get-items-key-duplicate-layer",
+      "test": {
+        "file": "tests/tier3/error-messages/valueLayers.test.ts",
+        "fullName": "Duplicate set members — transactions by region TransactGetItems refuses a duplicate in a key up front"
+      },
+      "behaviour": "TransactGetItems with a duplicate set member, an SS, a BS and an NS, as the key. DynamoDB checks attribute values in one of two layers, and a region answers all three requests in the same one. The current layer quotes the members in byte order and ends the number-set message with a full stop after the `One or more parameter values were invalid: ` prefix. The older layer prints the members as sent and gives the number-set message with neither the prefix nor the full stop. On 2026-10-09 eu-west-2 and eu-north-1 ran the current layer here and us-east-1, eu-west-1 and us-west-2 the older one, so the test accepted either, as a whole. On 2026-11-13 the same request bodies, naming a table that does not exist (the check fires before the table is looked up) and, for TransactWriteItems, carrying no ClientRequestToken, went to every region registry/regions.json lists: every answering region but ap-south-1 and me-central-1 answered every one in the current layer, and those two answered every one in the older layer. me-south-1 did not answer. On 2026-11-14 the test ran in eu-west-2, us-east-1, ap-south-1 and me-central-1: ap-south-1 now answered every request in the current layer, and me-central-1 every request in the older layer again. The test now asserts the current layer. ap-south-1 is recorded by its last answer, on the current layer, and me-central-1 is the only region recorded on the older one. The test sends more than one request, so what a region records here is its answer to the last of them, the NS, which differs between the two layers. A target is recorded as giving the older answer only when every answer it gave was the older layer's.",
+      "pinned": "eu-west-2",
+      "firstObserved": "2026-10-09",
+      "lastRefreshed": "2026-11-14",
+      "regions": {
+        "af-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-northeast-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-northeast-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-northeast-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-south-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-4": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-5": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-6": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ap-southeast-7": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ca-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "ca-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-central-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-north-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-south-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-south-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-west-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "eu-west-3": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "il-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "me-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "Input collection contains duplicates"
+          }
+        },
+        "mx-central-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "sa-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "us-east-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "us-east-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "us-west-1": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        },
+        "us-west-2": {
+          "outcome": "rejected",
+          "error": {
+            "name": "ValidationException",
+            "message": "One or more parameter values were invalid: Input collection contains duplicates."
+          }
+        }
+      },
+      "evidence": [
+        "captures/2026-11-14-transaction-value-layers.json",
+        "https://github.com/paritysuite/dynamodb-conformance/issues/243"
+      ],
+      "admitted": {
+        "by": "Martin Hicks",
+        "date": "2026-11-14",
+        "issue": "https://github.com/paritysuite/dynamodb-conformance/issues/243"
+      }
     }
   ]
 }

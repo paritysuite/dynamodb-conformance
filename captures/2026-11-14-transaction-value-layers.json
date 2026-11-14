@@ -1,0 +1,1690 @@
+{
+  "capturedAt": "2026-11-14T21:09:19Z",
+  "note": "The six TransactWriteItems and TransactGetItems value-layer tests in tests/tier3/error-messages/valueLayers.test.ts: malformed numbers and duplicate set members. DynamoDB checks attribute values in one of two layers, and in each test a region answered every request in the same one. capture1113 sent each test's requests once to every region registry/regions.json lists, at a table that does not exist, because the check fires before the table is looked up; eu-west-2 was also sent them once more a few seconds earlier, and the Delete with a duplicate SS as its key was also sent to every region in two other rounds that evening, at about 19:08 and 19:49 UTC. Every answer was a 400 ValidationException. confirm1114 ran the six tests themselves, against a real table, in four regions. A verdict is P when every request in the test got the current layer's answer (the answer eu-west-2 gives), X when every one got the older layer's, and - when the region did not answer. No region gave a mix of the two in any test, and no region answered any request outside the two lists. me-south-1 answered nothing. ap-south-1 gave the older layer on 2026-11-13 and the current one on 2026-11-14.",
+  "sources": {
+    "capture1113": "2026-11-13, 19:48:04 to 19:48:43 UTC (one duplicate request also at about 19:08 and 19:49)",
+    "confirm1114": "2026-11-14, 21:09:19 to 21:10:41 UTC, the six tests in eu-west-2, us-east-1, ap-south-1 and me-central-1"
+  },
+  "subjects": {
+    "transact-write-items-put-number-layer": {
+      "test": "Number values — transactions by region TransactWriteItems refuses a malformed number in a Put item up front",
+      "requests": [
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Put": {
+                  "TableName": "TABLE",
+                  "Item": {
+                    "pk": {
+                      "S": "layer-n"
+                    },
+                    "n": {
+                      "N": "abc"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "The parameter cannot be converted to a numeric value: abc",
+          "older": "The parameter cannot be converted to a numeric value: abc"
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Put": {
+                  "TableName": "TABLE",
+                  "Item": {
+                    "pk": {
+                      "S": "layer-n"
+                    },
+                    "n": {
+                      "N": ""
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "The parameter cannot be converted to a numeric value: ",
+          "older": "The parameter cannot be converted to a numeric value"
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Put": {
+                  "TableName": "TABLE",
+                  "Item": {
+                    "pk": {
+                      "S": "layer-n"
+                    },
+                    "n": {
+                      "N": "1e126"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "Number overflow. Attempting to store a number with magnitude larger than supported range",
+          "older": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Put": {
+                  "TableName": "TABLE",
+                  "Item": {
+                    "pk": {
+                      "S": "layer-n"
+                    },
+                    "n": {
+                      "N": "1e2147483647"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "Number overflow. Attempting to store a number with magnitude larger than supported range",
+          "older": "Number underflow. Attempting to store a number with magnitude smaller than supported range"
+        }
+      ],
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:21.825Z to 2026-11-13T19:48:24.278Z"
+        },
+        "ap-east-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.055Z to 2026-11-13T19:48:25.207Z"
+        },
+        "ap-east-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.145Z to 2026-11-13T19:48:25.705Z"
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.053Z to 2026-11-13T19:48:25.181Z"
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.317Z to 2026-11-13T19:48:25.780Z"
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.071Z to 2026-11-13T19:48:25.198Z"
+        },
+        "ap-south-1": {
+          "verdicts": "capture1113:X confirm1114:P",
+          "capture1113At": "2026-11-13T19:48:22.256Z to 2026-11-13T19:48:24.659Z"
+        },
+        "ap-south-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.251Z to 2026-11-13T19:48:24.680Z"
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.295Z to 2026-11-13T19:48:25.417Z"
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.144Z to 2026-11-13T19:48:25.705Z"
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.343Z to 2026-11-13T19:48:25.967Z"
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.562Z to 2026-11-13T19:48:27.278Z"
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.327Z to 2026-11-13T19:48:25.523Z"
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.661Z to 2026-11-13T19:48:27.277Z"
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.558Z to 2026-11-13T19:48:26.047Z"
+        },
+        "ca-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:21.876Z to 2026-11-13T19:48:23.766Z"
+        },
+        "ca-west-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.048Z to 2026-11-13T19:48:24.332Z"
+        },
+        "eu-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:21.512Z to 2026-11-13T19:48:22.559Z"
+        },
+        "eu-central-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:21.713Z to 2026-11-13T19:48:22.840Z"
+        },
+        "eu-north-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:21.744Z to 2026-11-13T19:48:22.908Z"
+        },
+        "eu-south-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:21.742Z to 2026-11-13T19:48:22.886Z"
+        },
+        "eu-south-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:21.744Z to 2026-11-13T19:48:22.891Z"
+        },
+        "eu-west-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:21.724Z to 2026-11-13T19:48:22.752Z"
+        },
+        "eu-west-2": {
+          "verdicts": "capture1113:P confirm1114:P",
+          "capture1113At": "2026-11-13T19:48:04.854Z to 2026-11-13T19:48:22.291Z"
+        },
+        "eu-west-3": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:21.720Z to 2026-11-13T19:48:22.746Z"
+        },
+        "il-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.034Z to 2026-11-13T19:48:23.607Z"
+        },
+        "me-central-1": {
+          "verdicts": "capture1113:X confirm1114:X",
+          "capture1113At": "2026-11-13T19:48:22.227Z to 2026-11-13T19:48:24.657Z"
+        },
+        "me-south-1": {
+          "verdicts": "capture1113:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.198Z to 2026-11-13T19:48:24.478Z"
+        },
+        "sa-east-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.273Z to 2026-11-13T19:48:24.659Z"
+        },
+        "us-east-1": {
+          "verdicts": "capture1113:P confirm1114:P",
+          "capture1113At": "2026-11-13T19:48:21.617Z to 2026-11-13T19:48:23.393Z"
+        },
+        "us-east-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.144Z to 2026-11-13T19:48:23.936Z"
+        },
+        "us-west-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.210Z to 2026-11-13T19:48:24.659Z"
+        },
+        "us-west-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.196Z to 2026-11-13T19:48:24.478Z"
+        }
+      }
+    },
+    "transact-write-items-update-number-layer": {
+      "test": "Number values — transactions by region TransactWriteItems refuses a malformed number in an Update value up front",
+      "requests": [
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Update": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "S": "layer-n"
+                    }
+                  },
+                  "UpdateExpression": "SET n = :v",
+                  "ExpressionAttributeValues": {
+                    ":v": {
+                      "N": "abc"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "The parameter cannot be converted to a numeric value: abc",
+          "older": "ExpressionAttributeValues contains invalid value: The parameter cannot be converted to a numeric value: abc for key :v"
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Update": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "S": "layer-n"
+                    }
+                  },
+                  "UpdateExpression": "SET n = :v",
+                  "ExpressionAttributeValues": {
+                    ":v": {
+                      "N": ""
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "The parameter cannot be converted to a numeric value: ",
+          "older": "ExpressionAttributeValues contains invalid value: The parameter cannot be converted to a numeric value for key :v"
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Update": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "S": "layer-n"
+                    }
+                  },
+                  "UpdateExpression": "SET n = :v",
+                  "ExpressionAttributeValues": {
+                    ":v": {
+                      "N": "1e126"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "Number overflow. Attempting to store a number with magnitude larger than supported range",
+          "older": "ExpressionAttributeValues contains invalid value: Number overflow. Attempting to store a number with magnitude larger than supported range for key :v"
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Update": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "S": "layer-n"
+                    }
+                  },
+                  "UpdateExpression": "SET n = :v",
+                  "ExpressionAttributeValues": {
+                    ":v": {
+                      "N": "1e2147483647"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "Number overflow. Attempting to store a number with magnitude larger than supported range",
+          "older": "ExpressionAttributeValues contains invalid value: Number underflow. Attempting to store a number with magnitude smaller than supported range for key :v"
+        }
+      ],
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.181Z to 2026-11-13T19:48:24.493Z"
+        },
+        "ap-east-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.366Z to 2026-11-13T19:48:25.518Z"
+        },
+        "ap-east-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.561Z to 2026-11-13T19:48:26.040Z"
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.353Z to 2026-11-13T19:48:25.481Z"
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.651Z to 2026-11-13T19:48:26.230Z"
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.377Z to 2026-11-13T19:48:25.502Z"
+        },
+        "ap-south-1": {
+          "verdicts": "capture1113:X confirm1114:P",
+          "capture1113At": "2026-11-13T19:48:22.561Z to 2026-11-13T19:48:24.920Z"
+        },
+        "ap-south-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.561Z to 2026-11-13T19:48:24.944Z"
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.600Z to 2026-11-13T19:48:25.720Z"
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.561Z to 2026-11-13T19:48:26.055Z"
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.827Z to 2026-11-13T19:48:26.300Z"
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:23.081Z to 2026-11-13T19:48:27.800Z"
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.640Z to 2026-11-13T19:48:25.949Z"
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:23.082Z to 2026-11-13T19:48:27.801Z"
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.900Z to 2026-11-13T19:48:26.500Z"
+        },
+        "ca-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.124Z to 2026-11-13T19:48:23.921Z"
+        },
+        "ca-west-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.244Z to 2026-11-13T19:48:24.658Z"
+        },
+        "eu-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:21.602Z to 2026-11-13T19:48:22.649Z"
+        },
+        "eu-central-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:21.810Z to 2026-11-13T19:48:23.081Z"
+        },
+        "eu-north-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:21.847Z to 2026-11-13T19:48:23.118Z"
+        },
+        "eu-south-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:21.841Z to 2026-11-13T19:48:23.112Z"
+        },
+        "eu-south-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:21.842Z to 2026-11-13T19:48:23.112Z"
+        },
+        "eu-west-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:21.811Z to 2026-11-13T19:48:22.840Z"
+        },
+        "eu-west-2": {
+          "verdicts": "capture1113:P confirm1114:P",
+          "capture1113At": "2026-11-13T19:48:04.935Z to 2026-11-13T19:48:22.367Z"
+        },
+        "eu-west-3": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:21.809Z to 2026-11-13T19:48:22.832Z"
+        },
+        "il-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.172Z to 2026-11-13T19:48:23.742Z"
+        },
+        "me-central-1": {
+          "verdicts": "capture1113:X confirm1114:X",
+          "capture1113At": "2026-11-13T19:48:22.560Z to 2026-11-13T19:48:24.855Z"
+        },
+        "me-south-1": {
+          "verdicts": "capture1113:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.406Z to 2026-11-13T19:48:24.796Z"
+        },
+        "sa-east-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.562Z to 2026-11-13T19:48:24.920Z"
+        },
+        "us-east-1": {
+          "verdicts": "capture1113:P confirm1114:P",
+          "capture1113At": "2026-11-13T19:48:21.772Z to 2026-11-13T19:48:23.692Z"
+        },
+        "us-east-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.309Z to 2026-11-13T19:48:24.231Z"
+        },
+        "us-west-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.560Z to 2026-11-13T19:48:24.878Z"
+        },
+        "us-west-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.405Z to 2026-11-13T19:48:24.795Z"
+        }
+      }
+    },
+    "transact-get-items-key-number-layer": {
+      "test": "Number values — transactions by region TransactGetItems refuses a malformed number in a key up front",
+      "requests": [
+        {
+          "operation": "TransactGetItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Get": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "N": "abc"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "The parameter cannot be converted to a numeric value: abc",
+          "older": "The parameter cannot be converted to a numeric value: abc"
+        },
+        {
+          "operation": "TransactGetItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Get": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "N": ""
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "The parameter cannot be converted to a numeric value: ",
+          "older": "The parameter cannot be converted to a numeric value"
+        },
+        {
+          "operation": "TransactGetItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Get": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "N": "1e126"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "Number overflow. Attempting to store a number with magnitude larger than supported range",
+          "older": "Number overflow. Attempting to store a number with magnitude larger than supported range"
+        },
+        {
+          "operation": "TransactGetItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Get": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "N": "1e2147483647"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "Number overflow. Attempting to store a number with magnitude larger than supported range",
+          "older": "Number underflow. Attempting to store a number with magnitude smaller than supported range"
+        }
+      ],
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.395Z to 2026-11-13T19:48:24.803Z"
+        },
+        "ap-east-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.800Z to 2026-11-13T19:48:25.946Z"
+        },
+        "ap-east-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.900Z to 2026-11-13T19:48:26.495Z"
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.792Z to 2026-11-13T19:48:25.782Z"
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:23.082Z to 2026-11-13T19:48:26.567Z"
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.796Z to 2026-11-13T19:48:25.940Z"
+        },
+        "ap-south-1": {
+          "verdicts": "capture1113:X confirm1114:P",
+          "capture1113At": "2026-11-13T19:48:22.826Z to 2026-11-13T19:48:25.182Z"
+        },
+        "ap-south-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.827Z to 2026-11-13T19:48:25.210Z"
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.905Z to 2026-11-13T19:48:26.027Z"
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.911Z to 2026-11-13T19:48:26.509Z"
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:23.159Z to 2026-11-13T19:48:26.753Z"
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:23.607Z to 2026-11-13T19:48:28.326Z"
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:23.081Z to 2026-11-13T19:48:26.261Z"
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:23.607Z to 2026-11-13T19:48:28.326Z"
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:23.354Z to 2026-11-13T19:48:26.840Z"
+        },
+        "ca-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.279Z to 2026-11-13T19:48:24.218Z"
+        },
+        "ca-west-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.560Z to 2026-11-13T19:48:24.856Z"
+        },
+        "eu-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:21.691Z to 2026-11-13T19:48:22.738Z"
+        },
+        "eu-central-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.036Z to 2026-11-13T19:48:23.177Z"
+        },
+        "eu-north-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.073Z to 2026-11-13T19:48:23.225Z"
+        },
+        "eu-south-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.066Z to 2026-11-13T19:48:23.211Z"
+        },
+        "eu-south-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.066Z to 2026-11-13T19:48:23.212Z"
+        },
+        "eu-west-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.040Z to 2026-11-13T19:48:22.927Z"
+        },
+        "eu-west-2": {
+          "verdicts": "capture1113:P confirm1114:P",
+          "capture1113At": "2026-11-13T19:48:05.016Z to 2026-11-13T19:48:22.571Z"
+        },
+        "eu-west-3": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.040Z to 2026-11-13T19:48:22.915Z"
+        },
+        "il-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.307Z to 2026-11-13T19:48:23.878Z"
+        },
+        "me-central-1": {
+          "verdicts": "capture1113:X confirm1114:X",
+          "capture1113At": "2026-11-13T19:48:22.756Z to 2026-11-13T19:48:25.182Z"
+        },
+        "me-south-1": {
+          "verdicts": "capture1113:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.699Z to 2026-11-13T19:48:25.004Z"
+        },
+        "sa-east-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.827Z to 2026-11-13T19:48:25.183Z"
+        },
+        "us-east-1": {
+          "verdicts": "capture1113:P confirm1114:P",
+          "capture1113At": "2026-11-13T19:48:22.048Z to 2026-11-13T19:48:23.853Z"
+        },
+        "us-east-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.561Z to 2026-11-13T19:48:24.398Z"
+        },
+        "us-west-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.777Z to 2026-11-13T19:48:25.182Z"
+        },
+        "us-west-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:22.699Z to 2026-11-13T19:48:25.003Z"
+        }
+      }
+    },
+    "transact-write-items-put-delete-duplicate-layer": {
+      "test": "Duplicate set members — transactions by region TransactWriteItems refuses a duplicate in a Put item and a Delete key up front",
+      "requests": [
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Put": {
+                  "TableName": "TABLE",
+                  "Item": {
+                    "pk": {
+                      "S": "layer-d"
+                    },
+                    "s": {
+                      "SS": [
+                        "b",
+                        "a",
+                        "b"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection [\"a\", \"b\", \"b\"] contains duplicates.",
+          "older": "One or more parameter values were invalid: Input collection [b, a, b] contains duplicates."
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Put": {
+                  "TableName": "TABLE",
+                  "Item": {
+                    "pk": {
+                      "S": "layer-d"
+                    },
+                    "s": {
+                      "BS": [
+                        "/w==",
+                        "AA==",
+                        "AA=="
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection [\"AA==\",\"/w==\",\"AA==\"]of type BS contains duplicates.",
+          "older": "One or more parameter values were invalid: Input collection [/w==, AA==, AA==]of type BS contains duplicates."
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Put": {
+                  "TableName": "TABLE",
+                  "Item": {
+                    "pk": {
+                      "S": "layer-d"
+                    },
+                    "s": {
+                      "NS": [
+                        "2",
+                        "1",
+                        "2"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection contains duplicates.",
+          "older": "Input collection contains duplicates"
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Delete": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "SS": [
+                        "b",
+                        "a",
+                        "b"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection [\"a\", \"b\", \"b\"] contains duplicates.",
+          "older": "One or more parameter values were invalid: Input collection [b, a, b] contains duplicates."
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Delete": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "BS": [
+                        "/w==",
+                        "AA==",
+                        "AA=="
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection [\"AA==\",\"/w==\",\"AA==\"]of type BS contains duplicates.",
+          "older": "One or more parameter values were invalid: Input collection [/w==, AA==, AA==]of type BS contains duplicates."
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Delete": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "NS": [
+                        "2",
+                        "1",
+                        "2"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection contains duplicates.",
+          "older": "Input collection contains duplicates"
+        }
+      ],
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:36.843Z to 2026-11-13T19:49:45.618Z"
+        },
+        "ap-east-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:48.475Z to 2026-11-13T19:49:57.269Z"
+        },
+        "ap-east-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:54.251Z to 2026-11-13T19:50:03.218Z"
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:44.484Z to 2026-11-13T19:49:56.705Z"
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:54.246Z to 2026-11-13T19:50:03.015Z"
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:48.918Z to 2026-11-13T19:49:57.244Z"
+        },
+        "ap-south-1": {
+          "verdicts": "capture1113:X confirm1114:P",
+          "capture1113At": "2026-11-13T19:08:37.926Z to 2026-11-13T19:49:46.182Z"
+        },
+        "ap-south-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:41.882Z to 2026-11-13T19:49:46.743Z"
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:49.035Z to 2026-11-13T19:49:57.468Z"
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:54.547Z to 2026-11-13T19:50:03.039Z"
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:49.250Z to 2026-11-13T19:50:02.745Z"
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:54.969Z to 2026-11-13T19:50:04.790Z"
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:49.454Z to 2026-11-13T19:49:57.483Z"
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:09:10.168Z to 2026-11-13T19:50:20.519Z"
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:54.251Z to 2026-11-13T19:50:03.316Z"
+        },
+        "ca-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:28.845Z to 2026-11-13T19:49:36.720Z"
+        },
+        "ca-west-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:36.093Z to 2026-11-13T19:49:45.522Z"
+        },
+        "eu-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:17.400Z to 2026-11-13T19:49:25.302Z"
+        },
+        "eu-central-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:18.294Z to 2026-11-13T19:49:27.320Z"
+        },
+        "eu-north-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:19.878Z to 2026-11-13T19:49:28.127Z"
+        },
+        "eu-south-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:19.873Z to 2026-11-13T19:49:27.892Z"
+        },
+        "eu-south-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:19.873Z to 2026-11-13T19:49:28.127Z"
+        },
+        "eu-west-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:16.890Z to 2026-11-13T19:49:24.524Z"
+        },
+        "eu-west-2": {
+          "verdicts": "capture1113:P confirm1114:P",
+          "capture1113At": "2026-11-13T19:08:15.887Z to 2026-11-13T19:49:24.139Z"
+        },
+        "eu-west-3": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:16.360Z to 2026-11-13T19:49:24.608Z"
+        },
+        "il-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:25.370Z to 2026-11-13T19:49:34.003Z"
+        },
+        "me-central-1": {
+          "verdicts": "capture1113:X confirm1114:X",
+          "capture1113At": "2026-11-13T19:08:36.289Z to 2026-11-13T19:49:46.114Z"
+        },
+        "me-south-1": {
+          "verdicts": "capture1113:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:36.094Z to 2026-11-13T19:49:45.606Z"
+        },
+        "sa-east-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:38.195Z to 2026-11-13T19:49:45.920Z"
+        },
+        "us-east-1": {
+          "verdicts": "capture1113:P confirm1114:P",
+          "capture1113At": "2026-11-13T19:08:28.319Z to 2026-11-13T19:49:36.722Z"
+        },
+        "us-east-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:29.610Z to 2026-11-13T19:49:38.755Z"
+        },
+        "us-west-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:36.839Z to 2026-11-13T19:49:45.920Z"
+        },
+        "us-west-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:08:36.620Z to 2026-11-13T19:49:45.919Z"
+        }
+      }
+    },
+    "transact-write-items-expression-duplicate-layer": {
+      "test": "Duplicate set members — transactions by region TransactWriteItems refuses a duplicate in a condition or update value of every action type up front",
+      "requests": [
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Put": {
+                  "TableName": "TABLE",
+                  "Item": {
+                    "pk": {
+                      "S": "layer-d"
+                    }
+                  },
+                  "ConditionExpression": "attribute_not_exists(pk) OR s = :t",
+                  "ExpressionAttributeValues": {
+                    ":t": {
+                      "SS": [
+                        "b",
+                        "a",
+                        "b"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection [\"a\", \"b\", \"b\"] contains duplicates.",
+          "older": "ExpressionAttributeValues contains invalid value: One or more parameter values were invalid: Input collection [b, a, b] contains duplicates. for key :t"
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Put": {
+                  "TableName": "TABLE",
+                  "Item": {
+                    "pk": {
+                      "S": "layer-d"
+                    }
+                  },
+                  "ConditionExpression": "attribute_not_exists(pk) OR s = :t",
+                  "ExpressionAttributeValues": {
+                    ":t": {
+                      "BS": [
+                        "/w==",
+                        "AA==",
+                        "AA=="
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection [\"AA==\",\"/w==\",\"AA==\"]of type BS contains duplicates.",
+          "older": "ExpressionAttributeValues contains invalid value: One or more parameter values were invalid: Input collection [/w==, AA==, AA==]of type BS contains duplicates. for key :t"
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Put": {
+                  "TableName": "TABLE",
+                  "Item": {
+                    "pk": {
+                      "S": "layer-d"
+                    }
+                  },
+                  "ConditionExpression": "attribute_not_exists(pk) OR s = :t",
+                  "ExpressionAttributeValues": {
+                    ":t": {
+                      "NS": [
+                        "2",
+                        "1",
+                        "2"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection contains duplicates.",
+          "older": "ExpressionAttributeValues contains invalid value: Input collection contains duplicates for key :t"
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Update": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "S": "layer-d"
+                    }
+                  },
+                  "UpdateExpression": "SET s = :t",
+                  "ExpressionAttributeValues": {
+                    ":t": {
+                      "SS": [
+                        "b",
+                        "a",
+                        "b"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection [\"a\", \"b\", \"b\"] contains duplicates.",
+          "older": "ExpressionAttributeValues contains invalid value: One or more parameter values were invalid: Input collection [b, a, b] contains duplicates. for key :t"
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Update": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "S": "layer-d"
+                    }
+                  },
+                  "UpdateExpression": "SET s = :t",
+                  "ExpressionAttributeValues": {
+                    ":t": {
+                      "BS": [
+                        "/w==",
+                        "AA==",
+                        "AA=="
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection [\"AA==\",\"/w==\",\"AA==\"]of type BS contains duplicates.",
+          "older": "ExpressionAttributeValues contains invalid value: One or more parameter values were invalid: Input collection [/w==, AA==, AA==]of type BS contains duplicates. for key :t"
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Update": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "S": "layer-d"
+                    }
+                  },
+                  "UpdateExpression": "SET s = :t",
+                  "ExpressionAttributeValues": {
+                    ":t": {
+                      "NS": [
+                        "2",
+                        "1",
+                        "2"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection contains duplicates.",
+          "older": "ExpressionAttributeValues contains invalid value: Input collection contains duplicates for key :t"
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Delete": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "S": "layer-d"
+                    }
+                  },
+                  "ConditionExpression": "attribute_not_exists(pk) OR s = :t",
+                  "ExpressionAttributeValues": {
+                    ":t": {
+                      "SS": [
+                        "b",
+                        "a",
+                        "b"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection [\"a\", \"b\", \"b\"] contains duplicates.",
+          "older": "ExpressionAttributeValues contains invalid value: One or more parameter values were invalid: Input collection [b, a, b] contains duplicates. for key :t"
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Delete": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "S": "layer-d"
+                    }
+                  },
+                  "ConditionExpression": "attribute_not_exists(pk) OR s = :t",
+                  "ExpressionAttributeValues": {
+                    ":t": {
+                      "BS": [
+                        "/w==",
+                        "AA==",
+                        "AA=="
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection [\"AA==\",\"/w==\",\"AA==\"]of type BS contains duplicates.",
+          "older": "ExpressionAttributeValues contains invalid value: One or more parameter values were invalid: Input collection [/w==, AA==, AA==]of type BS contains duplicates. for key :t"
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Delete": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "S": "layer-d"
+                    }
+                  },
+                  "ConditionExpression": "attribute_not_exists(pk) OR s = :t",
+                  "ExpressionAttributeValues": {
+                    ":t": {
+                      "NS": [
+                        "2",
+                        "1",
+                        "2"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection contains duplicates.",
+          "older": "ExpressionAttributeValues contains invalid value: Input collection contains duplicates for key :t"
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "ConditionCheck": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "S": "layer-d"
+                    }
+                  },
+                  "ConditionExpression": "attribute_not_exists(pk) OR s = :t",
+                  "ExpressionAttributeValues": {
+                    ":t": {
+                      "SS": [
+                        "b",
+                        "a",
+                        "b"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection [\"a\", \"b\", \"b\"] contains duplicates.",
+          "older": "ExpressionAttributeValues contains invalid value: One or more parameter values were invalid: Input collection [b, a, b] contains duplicates. for key :t"
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "ConditionCheck": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "S": "layer-d"
+                    }
+                  },
+                  "ConditionExpression": "attribute_not_exists(pk) OR s = :t",
+                  "ExpressionAttributeValues": {
+                    ":t": {
+                      "BS": [
+                        "/w==",
+                        "AA==",
+                        "AA=="
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection [\"AA==\",\"/w==\",\"AA==\"]of type BS contains duplicates.",
+          "older": "ExpressionAttributeValues contains invalid value: One or more parameter values were invalid: Input collection [/w==, AA==, AA==]of type BS contains duplicates. for key :t"
+        },
+        {
+          "operation": "TransactWriteItems",
+          "body": {
+            "TransactItems": [
+              {
+                "ConditionCheck": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "S": "layer-d"
+                    }
+                  },
+                  "ConditionExpression": "attribute_not_exists(pk) OR s = :t",
+                  "ExpressionAttributeValues": {
+                    ":t": {
+                      "NS": [
+                        "2",
+                        "1",
+                        "2"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection contains duplicates.",
+          "older": "ExpressionAttributeValues contains invalid value: Input collection contains duplicates for key :t"
+        }
+      ],
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:25.541Z to 2026-11-13T19:48:30.044Z"
+        },
+        "ap-east-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:26.994Z to 2026-11-13T19:48:32.799Z"
+        },
+        "ap-east-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:27.616Z to 2026-11-13T19:48:34.092Z"
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:26.833Z to 2026-11-13T19:48:32.688Z"
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:27.803Z to 2026-11-13T19:48:34.172Z"
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:26.989Z to 2026-11-13T19:48:32.782Z"
+        },
+        "ap-south-1": {
+          "verdicts": "capture1113:X confirm1114:P",
+          "capture1113At": "2026-11-13T19:48:25.966Z to 2026-11-13T19:48:30.425Z"
+        },
+        "ap-south-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:26.006Z to 2026-11-13T19:48:30.725Z"
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:27.074Z to 2026-11-13T19:48:32.877Z"
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:27.630Z to 2026-11-13T19:48:34.093Z"
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:27.872Z to 2026-11-13T19:48:34.358Z"
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:29.898Z to 2026-11-13T19:48:38.079Z"
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:27.308Z to 2026-11-13T19:48:33.115Z"
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:29.899Z to 2026-11-13T19:48:37.762Z"
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:28.075Z to 2026-11-13T19:48:34.434Z"
+        },
+        "ca-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:24.815Z to 2026-11-13T19:48:28.328Z"
+        },
+        "ca-west-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:25.704Z to 2026-11-13T19:48:30.099Z"
+        },
+        "eu-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:23.101Z to 2026-11-13T19:48:25.016Z"
+        },
+        "eu-central-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:23.607Z to 2026-11-13T19:48:25.703Z"
+        },
+        "eu-north-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:23.643Z to 2026-11-13T19:48:25.845Z"
+        },
+        "eu-south-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:23.636Z to 2026-11-13T19:48:25.832Z"
+        },
+        "eu-south-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:23.638Z to 2026-11-13T19:48:25.832Z"
+        },
+        "eu-west-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:23.287Z to 2026-11-13T19:48:25.199Z"
+        },
+        "eu-west-2": {
+          "verdicts": "capture1113:P confirm1114:P",
+          "capture1113At": "2026-11-13T19:48:06.316Z to 2026-11-13T19:48:24.666Z"
+        },
+        "eu-west-3": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:23.266Z to 2026-11-13T19:48:25.017Z"
+        },
+        "il-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:24.403Z to 2026-11-13T19:48:27.416Z"
+        },
+        "me-central-1": {
+          "verdicts": "capture1113:X confirm1114:X",
+          "capture1113At": "2026-11-13T19:48:25.903Z to 2026-11-13T19:48:30.424Z"
+        },
+        "me-south-1": {
+          "verdicts": "capture1113:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:25.843Z to 2026-11-13T19:48:30.252Z"
+        },
+        "sa-east-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:25.966Z to 2026-11-13T19:48:30.426Z"
+        },
+        "us-east-1": {
+          "verdicts": "capture1113:P confirm1114:P",
+          "capture1113At": "2026-11-13T19:48:24.442Z to 2026-11-13T19:48:27.956Z"
+        },
+        "us-east-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:24.995Z to 2026-11-13T19:48:28.589Z"
+        },
+        "us-west-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:25.925Z to 2026-11-13T19:48:30.425Z"
+        },
+        "us-west-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:25.843Z to 2026-11-13T19:48:30.252Z"
+        }
+      }
+    },
+    "transact-get-items-key-duplicate-layer": {
+      "test": "Duplicate set members — transactions by region TransactGetItems refuses a duplicate in a key up front",
+      "requests": [
+        {
+          "operation": "TransactGetItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Get": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "SS": [
+                        "b",
+                        "a",
+                        "b"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection [\"a\", \"b\", \"b\"] contains duplicates.",
+          "older": "One or more parameter values were invalid: Input collection [b, a, b] contains duplicates."
+        },
+        {
+          "operation": "TransactGetItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Get": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "BS": [
+                        "/w==",
+                        "AA==",
+                        "AA=="
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection [\"AA==\",\"/w==\",\"AA==\"]of type BS contains duplicates.",
+          "older": "One or more parameter values were invalid: Input collection [/w==, AA==, AA==]of type BS contains duplicates."
+        },
+        {
+          "operation": "TransactGetItems",
+          "body": {
+            "TransactItems": [
+              {
+                "Get": {
+                  "TableName": "TABLE",
+                  "Key": {
+                    "pk": {
+                      "NS": [
+                        "2",
+                        "1",
+                        "2"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "current": "One or more parameter values were invalid: Input collection contains duplicates.",
+          "older": "Input collection contains duplicates"
+        }
+      ],
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:26.587Z to 2026-11-13T19:48:30.256Z"
+        },
+        "ap-east-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:28.353Z to 2026-11-13T19:48:33.112Z"
+        },
+        "ap-east-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:29.188Z to 2026-11-13T19:48:34.427Z"
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:28.326Z to 2026-11-13T19:48:32.988Z"
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:29.376Z to 2026-11-13T19:48:34.618Z"
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:28.344Z to 2026-11-13T19:48:33.088Z"
+        },
+        "ap-south-1": {
+          "verdicts": "capture1113:X confirm1114:P",
+          "capture1113At": "2026-11-13T19:48:27.014Z to 2026-11-13T19:48:30.687Z"
+        },
+        "ap-south-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:27.062Z to 2026-11-13T19:48:30.993Z"
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:28.561Z to 2026-11-13T19:48:33.216Z"
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:29.201Z to 2026-11-13T19:48:34.441Z"
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:29.443Z to 2026-11-13T19:48:34.692Z"
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:31.796Z to 2026-11-13T19:48:38.607Z"
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:28.669Z to 2026-11-13T19:48:33.568Z"
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:31.788Z to 2026-11-13T19:48:38.288Z"
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:29.648Z to 2026-11-13T19:48:34.890Z"
+        },
+        "ca-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:25.704Z to 2026-11-13T19:48:28.485Z"
+        },
+        "ca-west-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:26.753Z to 2026-11-13T19:48:30.424Z"
+        },
+        "eu-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:23.607Z to 2026-11-13T19:48:25.202Z"
+        },
+        "eu-central-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:23.979Z to 2026-11-13T19:48:25.796Z"
+        },
+        "eu-north-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:24.167Z to 2026-11-13T19:48:25.948Z"
+        },
+        "eu-south-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:24.161Z to 2026-11-13T19:48:25.929Z"
+        },
+        "eu-south-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:24.163Z to 2026-11-13T19:48:25.931Z"
+        },
+        "eu-west-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:23.781Z to 2026-11-13T19:48:25.285Z"
+        },
+        "eu-west-2": {
+          "verdicts": "capture1113:P confirm1114:P",
+          "capture1113At": "2026-11-13T19:48:06.633Z to 2026-11-13T19:48:24.744Z"
+        },
+        "eu-west-3": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:23.708Z to 2026-11-13T19:48:25.199Z"
+        },
+        "il-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:25.182Z to 2026-11-13T19:48:27.551Z"
+        },
+        "me-central-1": {
+          "verdicts": "capture1113:X confirm1114:X",
+          "capture1113At": "2026-11-13T19:48:26.950Z to 2026-11-13T19:48:30.623Z"
+        },
+        "me-south-1": {
+          "verdicts": "capture1113:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:26.891Z to 2026-11-13T19:48:30.563Z"
+        },
+        "sa-east-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:27.014Z to 2026-11-13T19:48:30.687Z"
+        },
+        "us-east-1": {
+          "verdicts": "capture1113:P confirm1114:P",
+          "capture1113At": "2026-11-13T19:48:25.338Z to 2026-11-13T19:48:28.112Z"
+        },
+        "us-east-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:25.873Z to 2026-11-13T19:48:28.852Z"
+        },
+        "us-west-1": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:26.972Z to 2026-11-13T19:48:30.645Z"
+        },
+        "us-west-2": {
+          "verdicts": "capture1113:P",
+          "capture1113At": "2026-11-13T19:48:26.891Z to 2026-11-13T19:48:30.563Z"
+        }
+      }
+    }
+  }
+}
