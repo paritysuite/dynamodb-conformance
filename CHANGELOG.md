@@ -8,6 +8,15 @@ section its date and version, so several branches can write ahead of one.
 
 ## Unreleased
 
+ca-central-1 joins eu-west-2 on the five Scan rows. It gave the new wording on
+the 2026-11-07 and 2026-11-14 sweeps and on the three runs on 2026-11-13, which
+leaves me-central-1 the only region recorded on the old wording. Nothing else in
+the 2026-11-14 sweep moves a row. Nineteen regions, eu-west-2 among them,
+accepted a 32-level ExpressionAttributeValue they had refused on the three
+sweeps before, and eu-north-1 stored UpdateItem writes that the statement-sized
+rule refuses, which it had not done before. Each was seen on one sweep, so
+those rows stay as they are until a second sweep and separate runs agree.
+
 Ten regions join eu-west-2 on the five Scan rows: ap-northeast-1, ap-south-2,
 ap-southeast-6, ap-southeast-7, eu-central-2, eu-south-1, eu-south-2, eu-west-1,
 us-east-2 and us-west-2. Each gave the new wording on the 2026-11-07 sweep and at
