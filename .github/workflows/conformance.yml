@@ -139,8 +139,10 @@ jobs:
     # The weekly schedule and a manual dispatch (on any ref) always measure. A
     # merge to main measures only when it touched the suite - see the `changes`
     # job for why. Never on a pull request, so PRs stay on the emulator jobs and
-    # never spend real-AWS time. Verify a branch on demand with a dispatch on
-    # its ref, which is also how to force a refresh after a merge that skipped.
+    # never spend real-AWS time. A dispatch with a blank `ref` re-measures the
+    # latest release tag and republishes the board. The run a skipped merge
+    # would have made is a dispatch with `-f ref=main`, which measures main and
+    # publishes nothing; `-f ref=<branch>` verifies a branch the same way.
     if: >-
       github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'push' && needs.changes.outputs.suite == 'true')

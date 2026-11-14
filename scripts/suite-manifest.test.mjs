@@ -1,11 +1,17 @@
 import { describe, it, expect } from 'vitest'
-import { readdirSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { isTargetResultFile } from './lib/score.mjs'
+import { committedGradingInputs } from './lib/measured.mjs'
 import { readManifest, staleReport, suiteIdentities, suiteSizeOf } from './suite-manifest.mjs'
 import { assertMeasuredSuite, assertOneDenominator, readTargets } from './summarise.mjs'
 
 const MANIFEST = readManifest()
+
+// The tests a committed run may name: those the suite defined at the commit the
+// board was measured at, not this tree's. One function so that the check below
+// and the test pinning its source cannot disagree.
+const committedSuite = (options) => suiteIdentities(committedGradingInputs(undefined, options).manifest)
 
 describe('the committed suite manifest', () => {
   it('is a sorted, deduplicated list of file-qualified identities', () => {
@@ -23,13 +29,33 @@ describe('the committed suite manifest', () => {
     expect(suiteIdentities().size).toBe(MANIFEST.tests.length)
   })
 
-  // Regenerating the manifest without re-running the targets, or the reverse,
-  // leaves two inventories of the same suite disagreeing. Calls the publishing
-  // gate rather than restating it, so the two cannot drift apart.
+  // A committed run and the manifest it was measured against are two
+  // inventories of the same suite, so a run naming a test that manifest does
+  // not define is a stale or forged row. Calls the publishing gate rather than
+  // restating it, so the two cannot drift apart.
+  //
+  // The manifest is the one at the measured ref, not this tree's. Main runs
+  // ahead of the released suite, so grading the committed runs against main's
+  // manifest would refuse every rename or removal of a released test until a
+  // release re-measured the board, and a release cannot be cut from a red main.
+  // That main's own manifest matches main's own tests is `suite:manifest:check`.
   it('names the same tests every committed run does', () => {
     const files = readdirSync('results').filter(isTargetResultFile)
     expect(files.length, 'no committed results to check').toBeGreaterThan(0)
-    expect(() => assertMeasuredSuite(readTargets(files.map((f) => join('results', f))))).not.toThrow()
+    expect(() =>
+      assertMeasuredSuite(readTargets(files.map((f) => join('results', f))), committedSuite()),
+    ).not.toThrow()
+  })
+
+  it('takes those tests from the measured commit, not from main', () => {
+    const renamed = `${MANIFEST.tests[0]} (as released)`
+    const git = (spec) =>
+      spec.endsWith('suite-manifest.json')
+        ? JSON.stringify({ ...MANIFEST, tests: [renamed, ...MANIFEST.tests.slice(1)] })
+        : readFileSync('registry/splits.json', 'utf8')
+    const suite = committedSuite({ git })
+    expect(suite.has(renamed)).toBe(true)
+    expect(suite.has(MANIFEST.tests[0])).toBe(false)
   })
 })
 

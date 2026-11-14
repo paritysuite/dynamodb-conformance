@@ -1,8 +1,11 @@
-import { mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { assertMeasuredSuite } from '../summarise.mjs'
+import { suiteIdentities } from '../suite-manifest.mjs'
 import {
+  committedGradingInputs,
   gradingInputsAtRef,
   measuredOf,
   readMeasuredDir,
@@ -134,5 +137,83 @@ describe('gradingInputsAtRef', () => {
     expect(() => gradingInputsAtRef(WHOLE, { git })).toThrow(
       /Refusing to fall back to the working tree/,
     )
+  })
+})
+
+describe('committedGradingInputs', () => {
+  // The working tree's suite definition, and a measured one that differs from
+  // it in exactly one test name and one recorded answer. Main is expected to
+  // run ahead of the release the board was measured at, so this is the normal
+  // case, and anything that reads the tree instead of the board's commit
+  // returns the wrong half of each pair.
+  const tree = {
+    manifest: JSON.parse(readFileSync('registry/suite-manifest.json', 'utf8')),
+    registry: JSON.parse(readFileSync('registry/splits.json', 'utf8')),
+  }
+  const onlyOnMain = tree.manifest.tests[0]
+  const onlyMeasured = `${onlyOnMain} (as released)`
+  const measuredManifest = {
+    ...tree.manifest,
+    tests: [onlyMeasured, ...tree.manifest.tests.slice(1)].sort(),
+  }
+  // A row whose pinned answer is a refusal, so the recorded error message is a
+  // real field to change rather than one invented beside it.
+  const at = tree.registry.splits.findIndex((r) => r.regions[r.pinned]?.outcome === 'rejected')
+  const row = tree.registry.splits[at]
+  const pinned = row.regions[row.pinned]
+  const released = { ...pinned, error: { ...pinned.error, message: 'the released answer' } }
+  const measuredRegistry = {
+    ...tree.registry,
+    splits: tree.registry.splits.map((r, i) =>
+      i === at ? { ...row, regions: { ...row.regions, [row.pinned]: released } } : r,
+    ),
+  }
+  const git = (spec) => {
+    const [at, path] = spec.split(':')
+    if (at !== WHOLE.commit) throw new Error(`unexpected read at ${at}`)
+    if (path === 'registry/suite-manifest.json') return JSON.stringify(measuredManifest)
+    if (path === 'registry/splits.json') return JSON.stringify(measuredRegistry)
+    throw new Error(`unexpected read of ${path}`)
+  }
+  const board = () => {
+    const path = join(mkdtempSync(join(tmpdir(), 'committed-')), 'summary.json')
+    writeFileSync(path, JSON.stringify({ suite: WHOLE }))
+    return path
+  }
+  const ran = (id) => {
+    const [file, fullName] = id.split('::')
+    return {
+      slug: 'alpha',
+      raw: { testResults: [{ name: `/repo/${file}`, assertionResults: [{ fullName, status: 'passed' }] }] },
+    }
+  }
+
+  it('returns the suite definition at the board\'s commit, not the working tree\'s', () => {
+    const out = committedGradingInputs(board(), { git })
+    expect(out.measured).toEqual(WHOLE)
+    expect(out.manifest.tests).toContain(onlyMeasured)
+    expect(out.manifest.tests).not.toContain(onlyOnMain)
+    expect(at, 'no row in the working tree pins a refusal').toBeGreaterThan(-1)
+    expect(out.registry.splits[at].regions[row.pinned].error.message).toBe('the released answer')
+    expect(tree.registry.splits[at].regions[row.pinned].error.message).not.toBe('the released answer')
+    expect(out.registry).not.toEqual(tree.registry)
+  })
+
+  it('accepts a committed run naming a test only the measured suite defines', () => {
+    const { manifest } = committedGradingInputs(board(), { git })
+    expect(() => assertMeasuredSuite([ran(onlyMeasured)], suiteIdentities(manifest))).not.toThrow()
+  })
+
+  it('refuses a committed run naming a test only main defines', () => {
+    const { manifest } = committedGradingInputs(board(), { git })
+    expect(() => assertMeasuredSuite([ran(onlyOnMain)], suiteIdentities(manifest))).toThrow(
+      /no longer defines/,
+    )
+  })
+
+  it('refuses a board that names no measurement rather than reading the tree', () => {
+    const path = join(mkdtempSync(join(tmpdir(), 'committed-')), 'summary.json')
+    writeFileSync(path, JSON.stringify({}))
+    expect(() => committedGradingInputs(path, { git })).toThrow(/Refusing to fall back/)
   })
 })

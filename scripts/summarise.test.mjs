@@ -16,6 +16,7 @@ import {
   REPO,
   SUMMARY_PATH,
   SUMMARY_SCHEMA_VERSION,
+  assertGroundTruthAgrees,
   assertMeasuredManifest,
   assertMeasuredSuite,
   assertOneDenominator,
@@ -280,8 +281,12 @@ describe('buildSummary', () => {
     it('the committed board publishes evidence for every zero-divergence row', () => {
       // A change that stopped emitting the names would leave the build check
       // with nothing to check. It reports that rather than passing, but this
-      // fails first, against the tree, while someone is working.
-      const context = loadScoringContext()
+      // fails first, against the tree, while someone is working. Scored with
+      // the registry the board was measured against, as the build is.
+      const context = {
+        ...loadScoringContext(),
+        registry: committedGradingInputs(SUMMARY_PATH).registry,
+      }
       const summary = buildSummary(
         readTargets(
           readdirSync('results')
@@ -1029,9 +1034,9 @@ describe('committed results pipeline', () => {
   // the first time main's manifest or registry moved past the measured ref,
   // reporting the board stale when it is exactly right.
   const { measured: committedMeasured, ...measuredInputs } = committedGradingInputs(SUMMARY_PATH)
+  const measuredContext = { ...context, registry: measuredInputs.registry }
   const fresh = buildSummary(targets, {
-    ...context,
-    registry: measuredInputs.registry,
+    ...measuredContext,
     suiteTests: suiteIdentities(measuredInputs.manifest),
     measured: committedMeasured,
   })
@@ -1190,9 +1195,22 @@ describe('committed results pipeline', () => {
     // Not an assumption: results/dynamodb.json is a real eu-west-2 run, and
     // scored against eu-west-2's recorded expectations it passes everything.
     // Self-agreement is what pins the row, so assert it from the data.
+    //
+    // Those expectations are the registry at the measured ref, the one the run
+    // was graded against. Main's registry may since have recorded a different
+    // answer for a row, which the next release's run will reflect; scoring this
+    // run against it would refuse that change until a release re-measured.
+    //
+    // The publishing gate is called rather than restated, with the same inputs
+    // a release passes it, so a board this test would reject cannot be
+    // published in the first place.
     const dynamodb = targets.find((t) => t.slug === GROUND_TRUTH_SLUG)
-    const scored = scoreTarget(dynamodb.raw, dynamodb.sidecar, context)
-    const own = scored.regions['eu-west-2']
+    expect(committedMeasured.region).toBe('eu-west-2')
+    expect(() =>
+      assertGroundTruthAgrees(targets, measuredInputs.registry, committedMeasured.region),
+    ).not.toThrow()
+    const scored = scoreTarget(dynamodb.raw, dynamodb.sidecar, measuredContext)
+    const own = scored.regions[committedMeasured.region]
     expect(own.failed).toBe(0)
     expect(own.passed).toBeGreaterThan(0)
   })
@@ -1211,7 +1229,7 @@ describe('committed results pipeline', () => {
     // guards refuse without them, and this test is about what the pipeline
     // writes, not about the guards.
     const measured = { ...committedMeasured, kind: 'tag', ref: 'v3.1.0' }
-    const summary = buildSummary(read, { ...context, measured })
+    const summary = buildSummary(read, { ...measuredContext, measured })
     renderTable(summary)
     writeSummaryFile(summary, read, join(mkdtempSync(join(tmpdir(), 'summarise-')), 'summary.json'), {
       manifest: measuredInputs.manifest,
@@ -1364,6 +1382,162 @@ describe('the publishing gate refuses a forged population', () => {
     }
     expect(() => publish(summary, [], { readmePath: readme, summaryPath: join(dir, 's.json') })).toThrow()
     expect(readFileSync(readme, 'utf8')).toBe(original)
+  })
+})
+
+describe('the publishing gate refuses a ground truth that disagrees with its own region', () => {
+  // us-east-1's answer is what the test asserts; eu-west-2 is recorded as
+  // refusing. A ground-truth run in eu-west-2 agrees with the registry when it
+  // fails the test with exactly that refusal.
+  const REFUSAL = { outcome: 'rejected', error: { name: 'ValidationException', message: 'too deep' } }
+  const ACCEPTED = { outcome: 'accepted', detail: 'condition evaluated' }
+  const SPLIT = {
+    splits: [
+      {
+        ...REGISTRY.splits[0],
+        regions: { 'us-east-1': ACCEPTED, 'eu-west-2': REFUSAL },
+      },
+    ],
+  }
+  const run = (split, invariant = 'passed') => {
+    const raw = rawDoc({
+      '/repo/tests/tier1/a.test.ts': [
+        ['a', invariant],
+        ['b', 'passed'],
+      ],
+      '/repo/tests/tier3/split.test.ts': [['suite splits', split.status]],
+    })
+    raw.testResults[1].assertionResults[0].meta = { observed: split.observed }
+    return target(GROUND_TRUTH_SLUG, raw)
+  }
+  const refused = { status: 'failed', observed: REFUSAL }
+  const accepted = { status: 'passed', observed: ACCEPTED }
+
+  it('passes a run that gives its own region\'s recorded answers', () => {
+    expect(() => assertGroundTruthAgrees([run(refused)], SPLIT, 'eu-west-2')).not.toThrow()
+    // The same run is not checked against the pinned region's answer.
+    expect(() => assertGroundTruthAgrees([run(accepted)], SPLIT, 'us-east-1')).not.toThrow()
+  })
+
+  it('refuses a run that fails a region-invariant test', () => {
+    expect(() => assertGroundTruthAgrees([run(refused, 'failed')], SPLIT, 'eu-west-2')).toThrow(
+      /ground-truth run disagrees with eu-west-2's recorded answers at the measured ref on 1 test\(s\) - tests\/tier1\/a\.test\.ts::a\./,
+    )
+  })
+
+  it('refuses a run whose answer on a split row differs from what the region records', () => {
+    // The region has changed its answer since the row was recorded, or the
+    // answer was recorded wrong: either way the registry is what is wrong.
+    expect(() => assertGroundTruthAgrees([run(accepted)], SPLIT, 'eu-west-2')).toThrow(
+      /tests\/tier3\/split\.test\.ts::suite splits\..*When a release's board is refused/,
+    )
+    const otherRefusal = { status: 'failed', observed: { ...REFUSAL, error: { ...REFUSAL.error, message: 'deeper' } } }
+    expect(() => assertGroundTruthAgrees([run(otherRefusal)], SPLIT, 'eu-west-2')).toThrow(/suite splits/)
+  })
+
+  it('names the first few failures and counts the rest', () => {
+    const names = Array.from({ length: 7 }, (_, n) => [`t${n}`, 'failed'])
+    const raw = rawDoc({ '/repo/tests/tier1/many.test.ts': names })
+    let message = ''
+    try {
+      assertGroundTruthAgrees([target(GROUND_TRUTH_SLUG, raw)], SPLIT, 'eu-west-2')
+    } catch (err) {
+      message = err.message
+    }
+    expect(message).toContain('on 7 test(s)')
+    expect(message).toContain('tests/tier1/many.test.ts::t4')
+    expect(message).not.toContain('::t5')
+    expect(message).toContain('...and 2 more')
+  })
+
+  it('has nothing to check without a ground-truth run, and refuses without its inputs', () => {
+    expect(() => assertGroundTruthAgrees([target('alpha', suiteDoc('failed'))], SPLIT, 'eu-west-2')).not.toThrow()
+    expect(() => assertGroundTruthAgrees([run(refused)], undefined, 'eu-west-2')).toThrow(/no split registry/)
+    expect(() => assertGroundTruthAgrees([run(refused)], SPLIT, undefined)).toThrow(/names no region/)
+  })
+
+  it('reads a run-level sidecar, so a run that gave no answer is not a disagreement', () => {
+    // Failures under a run-level indeterminate are no answer either way. Scored
+    // without the sidecar they would read as real DynamoDB disagreeing with
+    // itself and refuse a board for a run that was throttled or timed out.
+    const raw = run(refused, 'failed').raw
+    const sidecar = { target: GROUND_TRUTH_SLUG, runLevel: [{ reason: 'table-active-timeout' }] }
+    expect(() =>
+      assertGroundTruthAgrees([target(GROUND_TRUTH_SLUG, raw, { sidecar })], SPLIT, 'eu-west-2'),
+    ).not.toThrow()
+  })
+
+  it('checks the merged lanes, not only the gating run', () => {
+    // A hard failure in a lane is real DynamoDB failing a test like any other.
+    const dir = mkdtempSync(join(tmpdir(), 'gate-lanes-'))
+    writeFileSync(join(dir, 'dynamodb.json'), JSON.stringify(run(refused).raw))
+    writeFileSync(
+      join(dir, 'dynamodb.integrations.json'),
+      JSON.stringify(rawDoc({ '/lane/tests/tier2/export/lane.test.ts': [['exports a table', 'failed']] })),
+    )
+    const targets = readTargets([join(dir, 'dynamodb.json')])
+    expect(() => assertGroundTruthAgrees(targets, SPLIT, 'eu-west-2')).toThrow(
+      /on 1 test\(s\) - tests\/tier2\/export\/lane\.test\.ts::exports a table\./,
+    )
+  })
+
+  it('is wired into the CLI: a fresh publish passes the measured registry and is gated, a rebuild is not', () => {
+    // main() decides which path a run is on; the publish call is where that
+    // decision reaches the gate. Read from the source rather than run, since
+    // the rebuild path reads git at the committed board's commit.
+    const source = readFileSync('scripts/summarise.mjs', 'utf8')
+    const cli = source.slice(source.indexOf('function main()'))
+    expect(cli).toMatch(/const \{ measured, manifest, registry, rebuild \} = resolveMeasurement\(\{ measuredDir \}\)/)
+    const calls = cli.match(/publish\([^)]*\)/g)
+    expect(calls).toEqual(['publish(summary, targets, { manifest, registry, rebuild })'])
+    // And the resolver is what tells the two apart.
+    const measuredDir = mkdtempSync(join(tmpdir(), 'measured-'))
+    writeFileSync(
+      join(measuredDir, 'suite.json'),
+      JSON.stringify({ ref: 'v3.1.0', kind: 'tag', commit: 'c0ffee', version: '3.1.0', region: 'eu-west-2', measuredAt: '2026-07-06T00:00:00Z' }),
+    )
+    writeFileSync(join(measuredDir, 'suite-manifest.json'), JSON.stringify({ tests: [...FIXTURE_SUITE] }))
+    const registry = JSON.parse(readFileSync('registry/splits.json', 'utf8'))
+    writeFileSync(join(measuredDir, 'splits.json'), JSON.stringify(registry))
+    const fresh = resolveMeasurement({ measuredDir })
+    expect(fresh.rebuild).toBe(false)
+    expect(fresh.registry).toEqual(registry)
+  })
+
+  it('is wired into publish for fresh results, and leaves a rebuild alone', () => {
+    const measured = {
+      ref: 'v3.1.0',
+      kind: 'tag',
+      commit: 'c0ffee',
+      version: '3.1.0',
+      region: 'eu-west-2',
+      measuredAt: '2026-07-06T00:00:00Z',
+    }
+    const targets = [run(accepted)]
+    const summary = buildSummary(targets, {
+      registry: SPLIT,
+      health: HEALTHY,
+      suiteTests: FIXTURE_SUITE,
+      measured,
+    })
+    const manifest = { tests: [...FIXTURE_SUITE] }
+    const dir = mkdtempSync(join(tmpdir(), 'ground-truth-gate-'))
+    const readme = join(dir, 'README.md')
+    const original = '# Board\n\n<!-- results:start -->\nold table\n<!-- results:end -->\n'
+    writeFileSync(readme, original)
+    const paths = { readmePath: readme, summaryPath: join(dir, 's.json'), manifest, registry: SPLIT }
+
+    expect(() => publish(summary, targets, paths)).toThrow(/ground-truth run disagrees/)
+    expect(readFileSync(readme, 'utf8')).toBe(original)
+    // A rebuild re-derives a board already committed; the sweep's health update
+    // must not be held up by it.
+    expect(() => publish(summary, targets, { ...paths, rebuild: true })).not.toThrow()
+    expect(readFileSync(readme, 'utf8')).not.toBe(original)
+    // And a fresh publish that agrees goes through.
+    writeFileSync(readme, original)
+    const agreeing = [run(refused)]
+    const ok = buildSummary(agreeing, { registry: SPLIT, health: HEALTHY, suiteTests: FIXTURE_SUITE, measured })
+    expect(() => publish(ok, agreeing, paths)).not.toThrow()
   })
 })
 

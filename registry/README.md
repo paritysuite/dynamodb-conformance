@@ -30,7 +30,10 @@ than about the tag.
 
 The practical consequence for a row: admitting one to `main` does not change
 the published board. It takes effect at the next release, alongside the
-changelog entry that describes it.
+changelog entry that describes it. That release's own ground-truth run is
+checked against the registry: the board is refused if, in the measured region,
+the run fails a test, or passes one on a split row with an answer recorded for
+a different region.
 
 ## What a row means
 

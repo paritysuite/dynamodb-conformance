@@ -102,6 +102,15 @@ but not the sort key is refused like any other member without the full primary
 key. All four gave the same answers on three runs each in eu-west-2 and
 us-east-1 on 2026-11-14.
 
+Renaming or removing a released test, or changing a region's recorded answer,
+no longer fails the checks on its own pull request. The committed results are
+now checked against the suite and registry as they stood at the release they
+were measured at, as the rest of the published board already was, rather than
+against main. The change reaches the board at the next release, when every
+target is re-run. A board is now refused if real DynamoDB's own run, in its own
+region, fails a test or passes one on a split row with an answer recorded for a
+different region.
+
 ## 2026-11-02 (3.9.0)
 
 Query's XOR ConditionalOperator beside an unknown Select is now pinned to the

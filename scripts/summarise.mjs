@@ -596,7 +596,13 @@ export function assertMeasuredSuite(targets, suite = suiteIdentities()) {
 export function publish(
   summary,
   targets,
-  { readmePath = 'README.md', summaryPath = SUMMARY_PATH, manifest = undefined } = {},
+  {
+    readmePath = 'README.md',
+    summaryPath = SUMMARY_PATH,
+    manifest = undefined,
+    registry = undefined,
+    rebuild = false,
+  } = {},
 ) {
   // The denominator and the population are checked against the manifest the
   // board was measured against, not the one the publishing job happens to have
@@ -609,6 +615,11 @@ export function publish(
   assertMeasuredManifest(manifest)
   assertOneDenominator(summary, suiteSizeOf(manifest))
   assertMeasuredSuite(targets, suiteIdentities(manifest))
+  // Only where fresh results are being published. A rebuild re-derives a board
+  // that is already committed, from the same runs and the same registry, so it
+  // can only find what the publish before it already checked; refusing there
+  // would strand the sweep's health update and leave the board stale on top.
+  if (!rebuild) assertGroundTruthAgrees(targets, registry, summary.suite?.region)
 
   const start = '<!-- results:start -->'
   const end = '<!-- results:end -->'
@@ -620,6 +631,54 @@ export function publish(
   }
   writeFileSync(readmePath, `${md.slice(0, s + start.length)}\n${renderTable(summary)}\n${md.slice(e)}`)
   writeSummaryFile(summary, targets, summaryPath, { manifest })
+}
+
+/**
+ * The ground-truth run agrees with its own region's recorded answers, or the
+ * board is not published.
+ *
+ * The baseline row is 100% by self-agreement: real DynamoDB in the measured
+ * region, scored against what the suite expects there: the registry's answer
+ * for that region on a split row, the test's own assertion everywhere else. A
+ * run that disagrees either did not measure cleanly (a lane test that timed out,
+ * a region mid-rollout answering both ways) or shows the suite at the measured
+ * ref is wrong for that region. Either way every target is
+ * being graded against an answer real DynamoDB does not give, and publishing
+ * would also commit a board the tooling tests reject, which only a release can
+ * clear, while a release cannot be cut from a red main.
+ *
+ * Scored against the measured region alone, not the observed set, so region
+ * health cannot excuse or cause a refusal. A publish with no ground-truth run
+ * among its files has nothing to check.
+ */
+export function assertGroundTruthAgrees(targets, registry, region, shown = 5) {
+  const baseline = targets.find((t) => t.slug === GROUND_TRUTH_SLUG)
+  if (!baseline || !Array.isArray(baseline.raw?.testResults)) return
+  if (!registry || !Array.isArray(registry.splits)) {
+    throw new Error(
+      'refusing to publish: no split registry from the measured ref to check the ground-truth ' +
+        'run against. Pass { registry } read from the measuring run.',
+    )
+  }
+  if (typeof region !== 'string' || region === '') {
+    throw new Error(
+      'refusing to publish: the measured suite identity names no region, so the ground-truth ' +
+        'run cannot be checked against its own recorded answers.',
+    )
+  }
+  const fails = verdictsForRegion(classifyResults(baseline.raw, baseline.sidecar ?? null), registry, region)
+    .filter((v) => v.verdict === 'fail')
+    .map((v) => `${relativeTestPath(v.file)}::${v.fullName}`)
+    .sort()
+  if (fails.length === 0) return
+  const listed = fails.slice(0, shown).join('; ')
+  const more = fails.length > shown ? ` ...and ${fails.length - shown} more` : ''
+  throw new Error(
+    `refusing to publish: the ground-truth run disagrees with ${region}'s recorded answers at ` +
+      `the measured ref on ${fails.length} test(s) - ${listed}${more}. Re-run the measurement ` +
+      'if the run itself was at fault, or re-record the answer and cut the next version; see ' +
+      `"When a release's board is refused" in AGENTS.md.`,
+  )
 }
 
 /**
@@ -1142,7 +1201,7 @@ function main() {
   const table = renderTable(summary)
 
   if (write) {
-    publish(summary, targets, { manifest })
+    publish(summary, targets, { manifest, registry, rebuild })
     console.error(
       `Updated the results table in README.md and wrote ${SUMMARY_PATH} ` +
         `(${rebuild ? 'rebuilt' : 'measured'} at ${measured.ref}, ${measured.measuredAt}).`,
