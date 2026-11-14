@@ -136,3 +136,19 @@ export function indexTestTimeoutMs(
 ): number {
   return ceilings.tableActiveMs + indexWaits * ceilings.indexBackfillMs + otherWaitsMs + 60_000
 }
+
+/**
+ * The fixed deadlines inside the UpdateTable vector index tests in
+ * tests/tier2/vectorSearch/updateLifecycle.test.ts. They are the same on every
+ * target and in every region. Each test sets its deadlines and its timeout
+ * from these, so the two cannot drift apart, and src/index-test-timeouts.test.ts
+ * checks the sum against the same numbers.
+ */
+export const VECTOR_INDEX_WAITS = {
+  /** The table back to ACTIVE while the added index is still CREATING. */
+  activeTableBesideCreatingIndexMs: 300_000,
+  /** Backfilling reading true, once the index leaves resource allocation. */
+  backfillStartMs: 600_000,
+  /** A deleted or cancelled index gone from DescribeTable. */
+  indexGoneMs: 300_000,
+} as const
