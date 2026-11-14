@@ -163,6 +163,16 @@ over an external store rather than a self-contained emulator. There is no
 release yet, so it is built from `main` with the project's own Docker setup and
 the row records the commit it ran.
 
+`npm run suite:manifest` no longer writes into `results/`. It lists the suite by
+running it against an endpoint nothing answers, and that run wrote its own
+"provisioning never completed" file beside the results of whichever target the
+shell named. With `CONFORMANCE_TARGET` exported, that target then showed as not
+scored until the file was deleted, and with nothing set it replaced the one a
+real local run had left. The listing run now keeps everything in a temporary
+directory and ignores the caller's target, results directory, endpoint and AWS
+settings
+([#342](https://github.com/paritysuite/dynamodb-conformance/issues/342)).
+
 ## 2026-11-02 (3.9.0)
 
 Query's XOR ConditionalOperator beside an unknown Select is now pinned to the
