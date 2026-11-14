@@ -207,7 +207,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-      issues: write # split-candidate, registry-drift and region-dropped issues
+      issues: write # split-candidate, registry-drift, region-dropped and confirmation-error issues
     environment: conformance-testing
     env:
       # The ONE definition of report-only: recording is on for the schedule
@@ -271,12 +271,38 @@ jobs:
           # the sweep measured, not against main's. This job stands on main
           # because it commits back, so the row a candidate is raised against
           # would otherwise be one the swept suite never ran under.
+          #
+          # Confirmation re-runs candidates from main's checkout, so a test
+          # renamed or removed since the measured commit cannot be found;
+          # --measured-ref names that commit in what gets filed. The step has
+          # a 75-minute budget of its own (--confirm-budget-minutes, or
+          # SWEEP_CONFIRM_BUDGET_MINUTES), so it always finishes and files
+          # what it has rather than being cancelled with the report half
+          # written. The arithmetic: the rest of this job takes about 10
+          # minutes, so 75 + 10 = 85 of the job's 115, leaving 30 to spare,
+          # and the AWS credential (role-duration-seconds: 7200, two hours,
+          # assumed after install) outlives the job's own limit. No re-run
+          # can run past the budget: each one's time limit is capped by what
+          # is left of it. A re-run that outlives its
+          # own limit or the budget is killed with every process it started;
+          # tables it leaves are removed by the next re-run's prefix sweep in
+          # that region, or by the daily orphan cleanup below.
+          #
+          # A candidate that could not be re-run (no test or several selected,
+          # the test gone, nothing observed, a timeout, the budget spent) is
+          # not a verdict on it. It goes in the report, gets an error
+          # annotation per kind on this run and lands on a confirmation-error
+          # issue, and those are the signal: the step still exits 0. This run
+          # is attributed to main's head, and the release refuses to cut over
+          # a failed check there, so a red step here would hold up the
+          # release for something the sweep was never meant to gate.
           git show "$MEASURED_REF:registry/splits.json" > "$RUNNER_TEMP/splits.json"
 
           node scripts/sweep-detect.mjs ground-truth \
             --expect "$(node -e 'console.log(JSON.parse(process.env.EXPECT).join(","))')" \
             --registry "$RUNNER_TEMP/splits.json" \
             --confirm \
+            --measured-ref "$MEASURED_REF" \
             --run-url "$RUN_URL" \
             --out ground-truth/sweep-report.json \
             "${flags[@]}"
@@ -288,10 +314,11 @@ jobs:
           name: sweep-report
           path: ground-truth/sweep-report.json
 
-      # A full sweep's confirmation tail runs well over an hour, outliving the
-      # results-bot token minted at job start (a GitHub App token lives ~1h). The
-      # health push at the end is re-authed with a freshly minted token, or it
-      # fails with "could not read Username" and the record is lost.
+      # Install, download and a confirmation tail of up to its 75-minute budget
+      # outlive the results-bot token minted at job start (a GitHub App token
+      # lives ~1h). The health push at the end is re-authed with a
+      # freshly minted token, or it fails with "could not read Username" and
+      # the record is lost.
       - name: Re-mint the bot token for the health push
         id: health-token
         if: always() && env.RECORD == 'true'
