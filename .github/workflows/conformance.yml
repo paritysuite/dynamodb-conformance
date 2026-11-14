@@ -37,6 +37,10 @@ on:
         description: "ExtendDB git ref to build (blank = latest release)"
         required: false
         default: ""
+      phoenix_adapters_ref:
+        description: "Phoenix-Adapters git ref to build (blank = main; no release exists yet)"
+        required: false
+        default: ""
       dynoxide_wasm_ref:
         description: "Dynoxide git ref to build the wasm engine from (blank = latest release)"
         required: false
@@ -931,6 +935,116 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: results-dynoxide-wasm
+          path: results/
+
+  test-phoenix-adapters:
+    name: Phoenix-Adapters
+    needs: changes
+    # A REST layer over Apache Phoenix on HBase, run from the project's own
+    # Docker setup: ZooKeeper, an HDFS namenode and datanode, an HBase master
+    # and regionserver, and the REST service, with the HBase and REST images
+    # built from source. No release exists, so this builds main (or the
+    # dispatch input) at a resolved commit. Heavy for the same reasons as
+    # ExtendDB, so it skips PRs the same way.
+    if: github.event_name != 'pull_request'
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    # The images build from source, the stack gets up to 40 minutes to report
+    # healthy, and the suite itself takes about half an hour here, so two hours
+    # leaves room for a slow build without holding a runner for six if the
+    # stack hangs. A job cut off here uploads no results file and the row stays
+    # carried.
+    timeout-minutes: 120
+
+    steps:
+      # No git credential left in the workspace: a third-party project is built
+      # in the same tree. Nothing below needs one.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.changes.outputs.ref }}
+          persist-credentials: false
+
+      - name: Resolve the Phoenix-Adapters ref (main unless overridden)
+        id: ref
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # Through the environment rather than spliced into the script, and
+          # resolved to a commit rather than built by name, for the same two
+          # reasons as the wasm engine above. The repository comes from the
+          # target registry, which has no imports, so this runs before npm ci.
+          REQUESTED_REF: ${{ github.event.inputs.phoenix_adapters_ref }}
+        run: |
+          REPO=$(node --input-type=module -e "
+            import { repoUrl } from './scripts/lib/targets.mjs'
+            process.stdout.write(new URL(repoUrl('phoenix-adapters')).pathname.slice(1))
+          ")
+          REF="${REQUESTED_REF:-main}"
+          SHA=$(gh api "repos/$REPO/commits/$REF" --jq .sha)
+          echo "repo=$REPO" >> "$GITHUB_OUTPUT"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "Building Phoenix-Adapters from $REPO at $REF ($SHA)"
+
+      - name: Checkout Phoenix-Adapters
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ steps.ref.outputs.repo }}
+          ref: ${{ steps.ref.outputs.sha }}
+          path: phoenix-adapters
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # Six containers, two built from source, on a hosted runner's disk: the
+      # free space either side of the build shows how much room is left.
+      - name: Disk before the build
+        run: df -h / && docker system df
+
+      # The project's compose file, unchanged. --wait holds until every service
+      # reports healthy, and the REST service's healthcheck is a real ListTables,
+      # so the endpoint answers DynamoDB requests once this returns.
+      - name: Build and start Phoenix-Adapters
+        working-directory: phoenix-adapters
+        run: docker compose -f docker/docker-compose.yml up -d --build --wait --wait-timeout 2400
+
+      - name: Disk after the build
+        if: always()
+        run: df -h / && docker system df
+
+      - name: Show the stack's state and logs
+        if: failure()
+        run: |
+          # A failure before the checkout leaves no stack to show.
+          [ -d phoenix-adapters ] || exit 0
+          cd phoenix-adapters
+          docker compose -f docker/docker-compose.yml ps -a
+          docker compose -f docker/docker-compose.yml logs --tail 200
+
+      - name: Run conformance suite
+        continue-on-error: true
+        env:
+          CONFORMANCE_TARGET: phoenix-adapters
+          DYNAMODB_ENDPOINT: http://localhost:8842
+          AWS_ACCESS_KEY_ID: fakeAccessKeyId
+          AWS_SECRET_ACCESS_KEY: fakeSecretAccessKey
+          AWS_REGION: us-east-1
+        run: npm test
+
+      - name: Record target version
+        continue-on-error: true
+        env:
+          PHOENIX_ADAPTERS_REF: ${{ steps.ref.outputs.sha }}
+        run: scripts/record-version.sh phoenix-adapters
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: results-phoenix-adapters
           path: results/
 
   test-floci:

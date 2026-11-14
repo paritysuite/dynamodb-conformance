@@ -157,6 +157,12 @@ headline, and its page says no region has a figure rather than naming a
 headline region. It still sits below every lettered row. The rule itself
 doesn't change: a run that gets no answer to any one test is not scored.
 
+Phoenix-Adapters joins the board. It is an Apache project serving the DynamoDB
+API as a REST layer over Apache Phoenix on HBase, so the row measures an adapter
+over an external store rather than a self-contained emulator. There is no
+release yet, so it is built from `main` with the project's own Docker setup and
+the row records the commit it ran.
+
 ## 2026-11-02 (3.9.0)
 
 Query's XOR ConditionalOperator beside an unknown Select is now pinned to the

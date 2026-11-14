@@ -233,6 +233,27 @@ export const TARGETS = {
       { channel: 'jar', url: 'https://github.com/floci-io/floci-cli' },
     ],
   },
+  // Source only, checked rather than assumed: no release, no tag, no artefact
+  // on Maven Central and no published image. The project's own Docker setup
+  // builds the REST server and an HBase-with-Phoenix image locally and runs
+  // them beside upstream ZooKeeper and Hadoop images, so the source link is
+  // also where that setup is documented. Revisit when a release is cut:
+  // `gh api repos/apache/phoenix-adapters/releases --jq length` going above 0
+  // is the check.
+  'phoenix-adapters': {
+    display: 'Phoenix-Adapters',
+    project: 'phoenix-adapters',
+    reference: true,
+    url: 'https://github.com/apache/phoenix-adapters',
+    requires: 'Docker, and a from-source build; the stack is six containers',
+    note:
+      'A DynamoDB-compatible REST layer over Apache Phoenix on HBase rather ' +
+      'than a self-contained store. No release is published, so the row ' +
+      'measures a commit of main.',
+    distribution: [
+      { channel: 'source', url: 'https://github.com/apache/phoenix-adapters' },
+    ],
+  },
   kumo: {
     display: 'Kumo',
     project: 'kumo',
