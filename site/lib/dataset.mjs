@@ -21,6 +21,7 @@ import {
   axesOf,
   configurationOf,
   gradeOf,
+  isNotScored,
   isSelfMaintained,
   isVariant,
   projectOf,
@@ -109,12 +110,22 @@ function tierScores(tiers) {
 // The headline region a row's total was earned in, compacted for every row
 // (latest and historical). `kind` says how the headline relates to the pinned
 // baseline region: "all" (ties everywhere), "pinned-plus" (eu-west-2 is in the
-// best cohort) or "beats-pinned" (the best cohort excludes eu-west-2, so the
-// target matches a region eu-west-2 disagrees with). null before the per-region
-// data begins. The full per-region breakdown is on the latest endpoint.
+// best cohort), "beats-pinned" (the best cohort excludes eu-west-2, so the
+// target matches a region eu-west-2 disagrees with) or "none" (the row is not
+// scored, so it has no headline and an empty cohort). null before the
+// per-region data begins. The full per-region breakdown is on the latest endpoint.
 function regionSummary(row) {
   const label = row.regionLabel;
   if (!label) return null;
+  // A cohort is the regions a scored headline matched. A not-scored row still
+  // carries per-region pass rates to build one from, but no scored headline,
+  // so it publishes the empty cohort cohortOf gives a row with nothing scored.
+  // `observed` is the row's own count, as on a scored row; the model takes it
+  // from the sweep for a run-level fault, which rates no region, and null
+  // means that sweep did not say rather than that it observed none.
+  if (isNotScored(row)) {
+    return { kind: "none", headline: null, cohort: [], cohortSize: 0, observed: label.observed || null, pinned: label.pinned ?? "eu-west-2", beatsPinned: false, worst: null };
+  }
   return {
     kind: label.kind,
     // The region this row's figures were measured against. Every figure on the
@@ -228,7 +239,9 @@ function regionTier(t) {
       }
     : null;
 }
-function regionDetail(pt) {
+function regionDetail(pt, row) {
+  // No region is in the cohort of a row that has none (see regionSummary).
+  const cohortless = isNotScored(row);
   return (pt.regions || []).map((r) => ({
     region: r.region,
     rate: r.rate,
@@ -238,7 +251,7 @@ function regionDetail(pt) {
     // every other level of this schema rather than half of it.
     coverage: { pct: asPct(coverageOf(r)), value: coverageOf(r) },
     pinned: !!r.pinned,
-    inCohort: !!r.inCohort,
+    inCohort: !cohortless && !!r.inCohort,
     passed: r.passed,
     failed: r.failed,
     skipped: r.skipped,
@@ -383,7 +396,7 @@ export function buildIndex(conformance, site, summary = null) {
     regions: {
       pinned: "eu-west-2",
       description:
-        "Each target is scored against every observed region, and its headline is its best-matching region. A target's `region` field says how that headline relates to the pinned region (all, pinned-plus or beats-pinned) and lists the cohort it was measured against; the latest endpoint carries every region's divergence and tier split per target, plus the run's region health.",
+        "Each target is scored against every observed region, and its headline is its best-matching region. A target's `region` field says how that headline relates to the pinned region (all, pinned-plus or beats-pinned, or none for a target that is not scored, which has no headline and an empty cohort) and lists the cohort it was measured against; the latest endpoint carries every region's divergence and tier split per target, plus the run's region health.",
       health: [
         { key: "observed", description: "Completed this sweep and counts towards scores." },
         { key: "unresolved", description: "Missed this sweep but still trusted." },
@@ -396,7 +409,7 @@ export function buildIndex(conformance, site, summary = null) {
       { name: "Runs feed", format: "application/atom+xml", url: site.url + "/feed.xml", description: "Atom feed, one entry per run. Runs measured before the grading criteria took effect carry no letter." },
       // The badge and corpus endpoints are documented on the agent guide, so
       // leaving them out made the manifest disagree with the page it points at.
-      { name: "Target badge", format: "application/json", url: BADGE_URL_TEMPLATE, description: "Per-target shields.io endpoint badge carrying the letter grade under a `parity` label, or `baseline` for live AWS. Substitute the target's slug; the path is the contract, and shields' own `schemaVersion` says nothing about this project's." },
+      { name: "Target badge", format: "application/json", url: BADGE_URL_TEMPLATE, description: "Per-target shields.io endpoint badge carrying the letter grade under a `parity` label, `baseline` for live AWS, or `not scored` for a target whose latest run is not scored. Substitute the target's slug; the path is the contract, and shields' own `schemaVersion` says nothing about this project's." },
       { name: "Corpus", format: "text/plain", url: site.url + "/llms.txt", description: "The site as plain text for language models, with the full corpus at /llms-full.txt." },
       // The registry the A+ premise is checked against. /ground-truth renders
       // it as cards, and the methodology's grading section leans on it, but it
@@ -438,7 +451,7 @@ export function buildLatest(conformance, site, summary = null) {
           coverage: { pct: asPct(coverageOf(a)), value: coverageOf(a) },
           passed: a.passed, failed: a.failed, skipped: a.skipped, total: a.total,
         })),
-        regions: regionDetail(pt),
+        regions: regionDetail(pt, row),
       };
     }),
   };

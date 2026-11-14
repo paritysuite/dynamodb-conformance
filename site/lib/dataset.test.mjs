@@ -4,8 +4,9 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-import { CAPABILITIES, sortRows } from "./scoring.mjs";
+import { CAPABILITIES, isNotScored, sortRows } from "./scoring.mjs";
 import { buildIndex, buildLatest, buildRuns, TIERS, DATA_SCHEMA_VERSION } from "./dataset.mjs";
+import { SCENARIOS, markMixed } from "../fixtures/not-scored-models.mjs";
 
 // The committed history fallback is a real, fully-built model, so it doubles as
 // a fixture for the data endpoints without re-deriving one here.
@@ -21,6 +22,77 @@ const site = {
 };
 
 const sortedKeys = (obj) => Object.keys(obj).sort();
+
+// The invariants below hold on every board, so they run over the committed
+// model and over each board a not-scored run produces, built from the results
+// files through the publish's own steps (fixtures/not-scored-models.mjs).
+// A scenario's model is built when a test first reads it, so one that cannot
+// be built fails that test by name rather than the whole file on import.
+const MODELS = [
+  { name: "committed", model, notScored: [], observed: null },
+  ...SCENARIOS.map((s) => ({
+    name: s.name,
+    notScored: s.notScored,
+    mixed: s.mixed,
+    get model() {
+      return s.build().model;
+    },
+    // Every scenario is one sweep, so this is how many regions it observed.
+    get observed() {
+      return s.build().summary.regions.observed.length;
+    },
+  })),
+];
+
+test("markMixed leaves every tier mixed whatever the run held, and the row a skip", () => {
+  const tier = (n, statuses) => ({ name: `/x/tests/tier${n}/a.test.ts`, assertionResults: statuses.map((status) => ({ status, meta: {} })) });
+  const runs = [
+    [
+      tier(1, ["skipped", "skipped", "skipped", "skipped"]),
+      tier(2, ["passed", "passed", "passed", "passed", "passed"]),
+      tier(3, ["failed", "failed", "failed", "failed"]),
+    ],
+    // Fewer than three passes, with the tier's one fail ahead of a last test
+    // that is not a fail: making passes must not spend that fail.
+    [
+      tier(1, ["failed", "passed", "skipped", "passed"]),
+      tier(2, ["passed", "failed", "passed", "passed"]),
+      tier(3, ["passed", "passed", "failed", "skipped"]),
+    ],
+  ];
+  for (const testResults of runs) {
+    const raw = { testResults };
+    markMixed(raw);
+    for (const tr of raw.testResults) {
+      const by = (test) => tr.assertionResults.filter(test).length;
+      const statuses = tr.assertionResults.map((a) => (a.meta?.indeterminate ? "indeterminate" : a.status)).join(",");
+      assert.ok(by((a) => a.meta?.indeterminate) > 0, `${tr.name} has an indeterminate: ${statuses}`);
+      assert.ok(by((a) => a.status === "passed") > 0, `${tr.name} keeps a pass: ${statuses}`);
+      assert.ok(by((a) => a.status === "failed" && !a.meta?.indeterminate) > 0, `${tr.name} keeps a fail: ${statuses}`);
+    }
+    assert.ok(raw.testResults.some((tr) => tr.assertionResults.some((a) => a.status === "skipped")), "the row keeps a skip");
+  }
+});
+
+test("each not-scored scenario really leaves its targets not scored", () => {
+  for (const entry of MODELS.slice(1)) {
+    const { name, model: m, notScored, mixed } = entry;
+    assert.ok(notScored.length > 0, `${name}: names a target it leaves not scored`);
+    const latest = buildLatest(m, site);
+    for (const slug of notScored) {
+      const t = latest.targets.find((x) => x.slug === slug);
+      assert.ok(t, `${name}: no row for ${slug}`);
+      assert.equal(t.grade.qualifier, "not scored", `${name}: ${slug}`);
+      // The mixed run really is mixed: every tier holds indeterminates beside
+      // passes and fails, and skips stay somewhere on the row.
+      if (!mixed) continue;
+      for (const [key, tier] of Object.entries(m.latest.standings.find((r) => r.slug === slug).tiers)) {
+        assert.ok(tier.indeterminate > 0 && tier.passed > 0 && tier.failed > 0, `${name}: ${key} is mixed`);
+      }
+      assert.ok(t.counts.skipped > 0, `${name}: skips stay`);
+    }
+  }
+});
 
 test("every endpoint carries the self-describing envelope", () => {
   for (const doc of [buildIndex(model, site), buildLatest(model, site), buildRuns(model, site)]) {
@@ -100,48 +172,56 @@ test("index documents the measurement identity it publishes", () => {
   );
 });
 
-test("latest exposes every target on an identical schema, baseline included", () => {
-  const latest = buildLatest(model, site);
-  assert.ok(latest.targets.length >= 2);
-
-  const shape = sortedKeys(latest.targets[0]);
-  for (const t of latest.targets) {
-    assert.deepEqual(sortedKeys(t), shape, `target ${t.slug} diverges from the shared schema`);
-    assert.deepEqual(Object.keys(t.tiers).sort(), ["tier1", "tier2", "tier3"]);
-    assert.equal(t.capabilities.length, CAPABILITIES.length);
-    // The two published axes always travel together, and the legacy
-    // correctness percentage sits beside them under its own name rather than
-    // sharing "total" with the raw count in `counts`.
-    assert.ok("divergence" in t && "coverage" in t);
-    assert.ok("correctness" in t && !("total" in t));
-    assert.equal(typeof t.counts.total, "number");
-    // Every tier reports on the same axes as the headline, so a tier figure
-    // and the figure above it can't run in opposite directions.
-    for (const tier of Object.values(t.tiers)) {
-      if (!tier) continue;
-      assert.ok("divergence" in tier && "coverage" in tier && "correctness" in tier);
-      assert.ok(!("pct" in tier) && !("value" in tier));
+for (const entry of MODELS) {
+  const { name } = entry;
+  test(`latest exposes every target on an identical schema, baseline included (${name})`, () => {
+    const { model: m } = entry;
+    const latest = buildLatest(m, site);
+    assert.ok(latest.targets.length >= 2);
+  
+    const shape = sortedKeys(latest.targets[0]);
+    for (const t of latest.targets) {
+      assert.deepEqual(sortedKeys(t), shape, `target ${t.slug} diverges from the shared schema`);
+      assert.deepEqual(Object.keys(t.tiers).sort(), ["tier1", "tier2", "tier3"]);
+      assert.equal(t.capabilities.length, CAPABILITIES.length);
+      // The two published axes always travel together, and the legacy
+      // correctness percentage sits beside them under its own name rather than
+      // sharing "total" with the raw count in `counts`.
+      assert.ok("divergence" in t && "coverage" in t);
+      assert.ok("correctness" in t && !("total" in t));
+      assert.equal(typeof t.counts.total, "number");
+      // Every tier reports on the same axes as the headline, so a tier figure
+      // and the figure above it can't run in opposite directions.
+      for (const tier of Object.values(t.tiers)) {
+        if (!tier) continue;
+        assert.ok("divergence" in tier && "coverage" in tier && "correctness" in tier);
+        assert.ok(!("pct" in tier) && !("value" in tier));
+      }
     }
-  }
+  
+    const baselines = latest.targets.filter((t) => t.baseline);
+    assert.equal(baselines.length, 1, "exactly one baseline row");
+    assert.equal(baselines[0].slug, "dynamodb");
+  });
+}
 
-  const baselines = latest.targets.filter((t) => t.baseline);
-  assert.equal(baselines.length, 1, "exactly one baseline row");
-  assert.equal(baselines[0].slug, "dynamodb");
-});
-
-test("runs endpoint mirrors the model's runs, newest first, shared target schema", () => {
-  const runs = buildRuns(model, site);
-  assert.equal(runs.runs.length, model.runs.length);
-  assert.equal(runs.runs[0].id, model.latest.id);
-  assert.equal(runs.latestRun, model.latest.id);
-
-  const shape = sortedKeys(runs.runs[0].targets[0]);
-  for (const run of runs.runs) {
-    for (const t of run.targets) {
-      assert.deepEqual(sortedKeys(t), shape, `run ${run.id} target ${t.slug} diverges`);
+for (const entry of MODELS) {
+  const { name } = entry;
+  test(`runs endpoint mirrors the model's runs, newest first, shared target schema (${name})`, () => {
+    const { model: m } = entry;
+    const runs = buildRuns(m, site);
+    assert.equal(runs.runs.length, m.runs.length);
+    assert.equal(runs.runs[0].id, m.latest.id);
+    assert.equal(runs.latestRun, m.latest.id);
+  
+    const shape = sortedKeys(runs.runs[0].targets[0]);
+    for (const run of runs.runs) {
+      for (const t of run.targets) {
+        assert.deepEqual(sortedKeys(t), shape, `run ${run.id} target ${t.slug} diverges`);
+      }
     }
-  }
-});
+  });
+}
 
 test("index documents the tier and capability vocabularies and the endpoints", () => {
   const index = buildIndex(model, site);
@@ -174,108 +254,143 @@ test("schema version 4 reflects the grade addition", () => {
 // different rules. The baseline is the one row with no letter to reproduce, and
 // it is asserted to be that rather than skipped, so an ungraded row can only
 // ever be the yardstick and never a target that quietly lost its grade.
-test("every published letter is reproducible from the envelope's criteria alone", () => {
-  const latest = buildLatest(model, site);
-  const criteria = latest.metrics.grade;
-  assert.ok(criteria.bands.length > 0);
-  assert.equal(criteria.gradingVersion, 1);
-  const ORDER = ["A+", "A", "B", "C", "D", "F"];
-  const regrade = (d, c) => {
-    if (d == null || c == null) return { letter: null, capAt: null };
-    // The bands read the figures at the published one-decimal precision; only
-    // the A+ gate reads raw values, on both axes. Mirrors
-    // metrics.grade.description, deliberately written from the published
-    // criteria rather than by importing gradeOf.
-    const d1 = Number(d.toFixed(1));
-    const c1 = Number(c.toFixed(1));
-    const band = (x) => criteria.bands.find((b) => x < b.under)?.letter ?? "F";
-    const effective = Number((d1 + (100 - c1) / criteria.coverageDivisor).toFixed(1));
-    const perfect =
-      d === criteria.aPlus.divergence && c === criteria.aPlus.coverage;
-    const base = d === criteria.aPlus.divergence ? "A+" : band(d1);
-    const letter = perfect ? "A+" : band(effective);
-    // The ceiling is published only where coverage lowered the letter.
-    const capped = letter !== base;
-    return { letter, capAt: capped ? letter : null };
-  };
-
-  let baselines = 0;
-  for (const t of latest.targets) {
-    assert.ok("grade" in t, `${t.slug} missing grade`);
-    if (t.baseline) {
-      baselines++;
-      assert.equal(t.grade.letter, null, "the baseline must carry no letter");
-      assert.equal(t.grade.qualifier, "baseline");
-      assert.ok(t.divergence.value != null && t.coverage.value != null,
-        "the baseline's figures still publish - they are what every other row is read against");
-      continue;
+for (const entry of MODELS) {
+  const { name } = entry;
+  test(`every published letter is reproducible from the envelope's criteria alone (${name})`, () => {
+    const { model: m } = entry;
+    const latest = buildLatest(m, site);
+    const criteria = latest.metrics.grade;
+    assert.ok(criteria.bands.length > 0);
+    assert.equal(criteria.gradingVersion, 1);
+    const ORDER = ["A+", "A", "B", "C", "D", "F"];
+    const regrade = (d, c) => {
+      if (d == null || c == null) return { letter: null, capAt: null };
+      // The bands read the figures at the published one-decimal precision; only
+      // the A+ gate reads raw values, on both axes. Mirrors
+      // metrics.grade.description, deliberately written from the published
+      // criteria rather than by importing gradeOf.
+      const d1 = Number(d.toFixed(1));
+      const c1 = Number(c.toFixed(1));
+      const band = (x) => criteria.bands.find((b) => x < b.under)?.letter ?? "F";
+      const effective = Number((d1 + (100 - c1) / criteria.coverageDivisor).toFixed(1));
+      const perfect =
+        d === criteria.aPlus.divergence && c === criteria.aPlus.coverage;
+      const base = d === criteria.aPlus.divergence ? "A+" : band(d1);
+      const letter = perfect ? "A+" : band(effective);
+      // The ceiling is published only where coverage lowered the letter.
+      const capped = letter !== base;
+      return { letter, capAt: capped ? letter : null };
+    };
+  
+    let baselines = 0;
+    for (const t of latest.targets) {
+      assert.ok("grade" in t, `${t.slug} missing grade`);
+      if (t.baseline) {
+        baselines++;
+        assert.equal(t.grade.letter, null, "the baseline must carry no letter");
+        assert.equal(t.grade.qualifier, "baseline");
+        assert.ok(t.divergence.value != null && t.coverage.value != null,
+          "the baseline's figures still publish - they are what every other row is read against");
+        continue;
+      }
+      const expected = regrade(t.divergence.value, t.coverage.value);
+      assert.equal(
+        t.grade.letter,
+        expected.letter,
+        `${t.slug}'s published letter must equal one rederived from its own figures`,
+      );
+      assert.equal(
+        t.grade.capAt,
+        expected.capAt,
+        `${t.slug}'s published ceiling must equal one rederived from its own coverage`,
+      );
     }
-    const expected = regrade(t.divergence.value, t.coverage.value);
-    assert.equal(
-      t.grade.letter,
-      expected.letter,
-      `${t.slug}'s published letter must equal one rederived from its own figures`,
-    );
-    assert.equal(
-      t.grade.capAt,
-      expected.capAt,
-      `${t.slug}'s published ceiling must equal one rederived from its own coverage`,
-    );
-  }
-  assert.equal(baselines, 1, "exactly one row is the baseline");
-});
+    assert.equal(baselines, 1, "exactly one row is the baseline");
+  });
+}
 
 // Every level of this schema pre-computes the published pair. Leaving one level
 // as raw counts made a consumer reimplement the one formula the schema otherwise
 // hands them, and a consumer computing it themselves can silently desync.
-test("every level publishes the same divergence/coverage pair, not just some", () => {
-  const latest = buildLatest(model, site);
-  for (const t of latest.targets) {
-    for (const tier of Object.values(t.tiers)) {
-      if (!tier) continue;
-      assert.ok("value" in tier.correctness, "a tier's correctness carries a value");
-    }
-    for (const a of t.areas) {
-      assert.ok(a.divergence && a.coverage, `area ${a.key} carries both figures`);
-      if (a.total && a.passed + a.failed > 0) {
-        assert.ok(Math.abs(a.divergence.value - (a.failed / a.total) * 100) < 0.001);
-        assert.ok(Math.abs(a.coverage.value - ((a.passed + a.failed) / a.total) * 100) < 0.001);
-      } else {
-        assert.equal(a.divergence.value, null, `area ${a.key} implements nothing, so has no divergence`);
+for (const entry of MODELS) {
+  const { name } = entry;
+  test(`every level publishes the same divergence/coverage pair, not just some (${name})`, () => {
+    const { model: m } = entry;
+    const latest = buildLatest(m, site);
+    for (const t of latest.targets) {
+      for (const tier of Object.values(t.tiers)) {
+        if (!tier) continue;
+        assert.ok("value" in tier.correctness, "a tier's correctness carries a value");
+      }
+      for (const a of t.areas) {
+        assert.ok(a.divergence && a.coverage, `area ${a.key} carries both figures`);
+        if (a.total && a.passed + a.failed + a.skipped < a.total) {
+          // The rest are indeterminate, so the area is not scored either.
+          assert.equal(a.divergence.value, null, `area ${a.key} holds an indeterminate, so has no divergence`);
+          assert.equal(a.coverage.value, null, `area ${a.key} holds an indeterminate, so has no coverage`);
+        } else if (a.total && a.passed + a.failed > 0) {
+          assert.ok(Math.abs(a.divergence.value - (a.failed / a.total) * 100) < 0.001);
+          assert.ok(Math.abs(a.coverage.value - ((a.passed + a.failed) / a.total) * 100) < 0.001);
+        } else {
+          assert.equal(a.divergence.value, null, `area ${a.key} implements nothing, so has no divergence`);
+        }
+      }
+      for (const r of t.regions) {
+        assert.ok(r.divergence && r.coverage, `region ${r.region} carries both figures`);
+        for (const tier of Object.values(r.tiers)) {
+          if (tier) assert.ok("value" in tier.correctness, "a region tier's correctness carries a value");
+        }
       }
     }
-    for (const r of t.regions) {
-      assert.ok(r.divergence && r.coverage, `region ${r.region} carries both figures`);
-      for (const tier of Object.values(r.tiers)) {
-        if (tier) assert.ok("value" in tier.correctness, "a region tier's correctness carries a value");
-      }
+  });
+}
+
+for (const entry of MODELS) {
+  const { name } = entry;
+  test(`a target's region summary says how wide the cohort behind its headline is (${name})`, () => {
+    const { model: m } = entry;
+    const latest = buildLatest(m, site);
+    for (const t of latest.targets) {
+      if (!t.region) continue;
+      assert.equal(t.region.cohortSize, t.region.cohort.length);
+      assert.ok(t.region.observed === null || t.region.cohortSize <= t.region.observed);
     }
-  }
-});
+  });
+}
 
-test("a target's region summary says how wide the cohort behind its headline is", () => {
-  const latest = buildLatest(model, site);
-  for (const t of latest.targets) {
-    if (!t.region) continue;
-    assert.equal(t.region.cohortSize, t.region.cohort.length);
-    assert.ok(t.region.observed === null || t.region.cohortSize <= t.region.observed);
-  }
-});
-
-test("every target carries a uniform region summary; baseline is 'all'", () => {
-  const latest = buildLatest(model, site);
+function assertUniformRegionSummaries(source, observed) {
+  const latest = buildLatest(source, site);
   for (const t of latest.targets) {
     assert.ok("region" in t, `${t.slug} missing region key`);
-    if (t.region) {
-      assert.ok(["all", "pinned-plus", "beats-pinned"].includes(t.region.kind));
-      assert.ok(Array.isArray(t.region.cohort));
-      assert.equal(t.region.pinned, "eu-west-2");
-      assert.equal(t.region.beatsPinned, t.region.kind === "beats-pinned");
+    if (!t.region) continue;
+    assert.ok(Array.isArray(t.region.cohort));
+    assert.equal(t.region.pinned, "eu-west-2");
+    assert.equal(t.region.beatsPinned, t.region.kind === "beats-pinned");
+    if (t.grade.letter === null && !t.baseline) {
+      // A not-scored row has no scored headline, so no cohort behind one.
+      assert.equal(t.region.kind, "none", `${t.slug} is not scored`);
+      assert.equal(t.region.headline, null);
+      assert.deepEqual(t.region.cohort, []);
+      assert.equal(t.region.cohortSize, 0);
+      assert.equal(t.region.beatsPinned, false);
+      // The regions its sweep observed, the same count a scored row reports,
+      // whether the fault was in one test or in the whole run.
+      if (observed !== null) assert.equal(t.region.observed, observed, `${t.slug} observed`);
+    } else {
+      assert.ok(["all", "pinned-plus", "beats-pinned"].includes(t.region.kind), `${t.slug} kind ${t.region.kind}`);
     }
   }
   const ddb = latest.targets.find((t) => t.baseline);
   assert.equal(ddb.region.kind, "all");
-});
+}
+
+for (const entry of MODELS) {
+  const { name } = entry;
+  test(`every target carries a uniform region summary; baseline is 'all' (${name})`, () => {
+    const { model: m, observed } = entry;
+    assertUniformRegionSummaries(m, observed);
+  });
+}
 
 test("latest exposes the per-region breakdown and the run's region health", () => {
   const latest = buildLatest(model, site);
@@ -365,45 +480,53 @@ test("the split registry is discoverable from the data index", () => {
   assert.match(endpoint.url, /registry\/splits\.json$/);
 });
 
-test("every target says whether its row starts closed on the board", () => {
-  // A consumer reading the endpoints beside the board would otherwise find a
-  // build here that the board did not appear to show, with nothing to say why.
-  const latest = buildLatest(model, site);
-  for (const t of latest.targets) {
-    assert.equal(
-      typeof t.collapsedIntoProject,
-      "boolean",
-      `target ${t.slug} does not say whether its row starts closed`,
-    );
-  }
-  // A build reading different figures from its project's reference build
-  // starts open.
-  const wasm = latest.targets.find((t) => t.slug === "dynoxide-wasm");
-  assert.equal(wasm.collapsedIntoProject, false);
-});
+for (const entry of MODELS) {
+  const { name } = entry;
+  test(`every target says whether its row starts closed on the board (${name})`, () => {
+    const { model: m } = entry;
+    // A consumer reading the endpoints beside the board would otherwise find a
+    // build here that the board did not appear to show, with nothing to say why.
+    const latest = buildLatest(m, site);
+    for (const t of latest.targets) {
+      assert.equal(
+        typeof t.collapsedIntoProject,
+        "boolean",
+        `target ${t.slug} does not say whether its row starts closed`,
+      );
+    }
+    // A build reading different figures from its project's reference build
+    // starts open.
+    const wasm = latest.targets.find((t) => t.slug === "dynoxide-wasm");
+    assert.equal(wasm.collapsedIntoProject, false);
+  });
+}
 
-test("every target says which row stands for its project", () => {
-  // `isVariant` cannot answer it. When a project's reference build records no
-  // result a build is promoted to stand for it, and every row of that project
-  // then reads `isVariant: true` - so a consumer grouping by `project` and
-  // looking for the one that is not a variant would find none. That is the
-  // mistake the board itself made before it read this flag.
-  const latest = buildLatest(model, site);
-  for (const t of latest.targets) {
-    assert.equal(typeof t.standsForProject, "boolean", `target ${t.slug} does not say`);
-  }
-  assert.equal(latest.targets.find((t) => t.slug === "dynoxide").standsForProject, true);
-  assert.equal(latest.targets.find((t) => t.slug === "dynoxide-wasm").standsForProject, false);
-
-  // Every project has exactly one row standing for it.
-  const byProject = new Map();
-  for (const t of latest.targets.filter((t) => t.slug !== "dynamodb")) {
-    byProject.set(t.project, (byProject.get(t.project) ?? 0) + (t.standsForProject ? 1 : 0));
-  }
-  for (const [project, standing] of byProject) {
-    assert.equal(standing, 1, `${project} has ${standing} rows standing for it`);
-  }
-});
+for (const entry of MODELS) {
+  const { name } = entry;
+  test(`every target says which row stands for its project (${name})`, () => {
+    const { model: m } = entry;
+    // `isVariant` cannot answer it. When a project's reference build records no
+    // result a build is promoted to stand for it, and every row of that project
+    // then reads `isVariant: true` - so a consumer grouping by `project` and
+    // looking for the one that is not a variant would find none. That is the
+    // mistake the board itself made before it read this flag.
+    const latest = buildLatest(m, site);
+    for (const t of latest.targets) {
+      assert.equal(typeof t.standsForProject, "boolean", `target ${t.slug} does not say`);
+    }
+    assert.equal(latest.targets.find((t) => t.slug === "dynoxide").standsForProject, true);
+    assert.equal(latest.targets.find((t) => t.slug === "dynoxide-wasm").standsForProject, false);
+  
+    // Every project has exactly one row standing for it.
+    const byProject = new Map();
+    for (const t of latest.targets.filter((t) => t.slug !== "dynamodb")) {
+      byProject.set(t.project, (byProject.get(t.project) ?? 0) + (t.standsForProject ? 1 : 0));
+    }
+    for (const [project, standing] of byProject) {
+      assert.equal(standing, 1, `${project} has ${standing} rows standing for it`);
+    }
+  });
+}
 
 test("a promoted build says it stands for its project, though it is a variant", () => {
   // The case the field exists for: drop the reference build's row and the
@@ -430,6 +553,8 @@ test("a build reading the same figures as its reference build starts closed", ()
   // to the committed model made this assertion depend on which run the
   // snapshot came from rather than on the code it is testing.
   Object.assign(parent, { carried: false, reTested: true });
+  // A pair that is not scored never closes, so give such a parent figures.
+  if (isNotScored(parent)) Object.assign(parent, { divergence: "1.2%", coverage: "95.0%", divergenceValue: 1.2, coverageValue: 95 });
   Object.assign(build, {
     divergence: parent.divergence,
     coverage: parent.coverage,

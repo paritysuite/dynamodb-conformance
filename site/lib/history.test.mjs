@@ -4,6 +4,8 @@ import assert from "node:assert/strict";
 import { scoreEmulator } from "./scoring.mjs";
 import { buildModel, assignRunIds, targetRunsOf, leanForFallback, gradedUnderCriteria } from "./history.mjs";
 import { GRADING_CRITERIA_EFFECTIVE } from "./scoring.mjs";
+import { SCENARIOS } from "../fixtures/not-scored-models.mjs";
+import { buildRuns } from "./dataset.mjs";
 
 test("targetRunsOf pairs each target with the runs that measured it", () => {
   const model = {
@@ -643,4 +645,66 @@ test("the reading never contradicts the sign the endpoints publish", () => {
   const mv = model.runs[0].standings.find((r) => r.slug === "dynoxide").movement;
   assert.equal(mv.deltaReading, `${Math.abs(mv.delta).toFixed(1)}pp less`);
   assert.equal(mv.deltaLabel, `${mv.delta.toFixed(1)}pp`);
+});
+
+// A target tested between sweeps has its entry filed only under a later
+// sweep's key, and the latest sweep may observe a different set again. A
+// run-level fault rates no region, so its own label counts none observed; the
+// count it publishes is the one from the sweep its entry was found in. A
+// scored row keeps its own count.
+test("a run's observed region count comes from its own sweep, never the latest one", () => {
+  const OBSERVED_THEN = ["us-east-1", "eu-west-2", "ap-south-1"];
+  const OBSERVED_NOW = [...OBSERVED_THEN, "us-west-2", "sa-east-1"];
+  const runLevel = {
+    rate: null,
+    label: { kind: "none", regions: [], rate: null, others: 0, observed: 0 },
+    suiteHeadlineRegion: "us-east-1",
+    regions: [{ region: "us-east-1", rate: null, passed: 0, failed: 0, skipped: 0, indeterminate: 100, count: 100, tiers: {} }],
+    divergenceBest: null,
+    divergenceWorst: null,
+    runDate: "2026-01-01",
+  };
+  const scored = {
+    rate: 92,
+    label: { kind: "all", regions: ["us-east-1", "eu-west-2"], rate: 92, others: 1, observed: 2 },
+    suiteHeadlineRegion: "us-east-1",
+    regions: [{ region: "us-east-1", rate: 92, passed: 92, failed: 8, skipped: 0, indeterminate: 0, count: 100, tiers: {} }],
+    divergenceBest: 8,
+    divergenceWorst: 8,
+    runDate: "2026-01-01",
+  };
+  const snaps = [at("dynoxide", "2026-01-01T10:00:00Z", "a1", 80), at("dynalite", "2026-01-01T10:00:00Z", "a1", 80)];
+  const model = buildModel(snaps, {
+    available: true,
+    latest: { regions: { observed: OBSERVED_NOW }, targets: { dynoxide: runLevel, dynalite: scored } },
+    // No sweep is keyed on the run's own date.
+    byRunDate: {
+      "2026-01-03": { regions: { observed: OBSERVED_THEN }, targets: { dynoxide: runLevel, dynalite: scored } },
+      "2026-01-05": { regions: { observed: OBSERVED_NOW }, targets: {} },
+    },
+  });
+  const run = model.runs.find((r) => r.date === "2026-01-01");
+  assert.ok(run, "the run is on the board under its own date");
+  assert.equal(rowFor(run, "dynoxide").regionLabel.observed, OBSERVED_THEN.length);
+  assert.equal(rowFor(run, "dynalite").regionLabel.observed, 2, "a scored row keeps its own count");
+  const published = buildRuns(model, { url: "https://example.com" }).runs.find((r) => r.date === "2026-01-01").targets;
+  assert.equal(published.find((t) => t.slug === "dynoxide").region.observed, OBSERVED_THEN.length);
+  assert.equal(published.find((t) => t.slug === "dynoxide").region.kind, "none");
+  assert.equal(published.find((t) => t.slug === "dynalite").region.observed, 2);
+});
+
+// The run-history table and a run's own page print a target's series point.
+// A run-level fault rates no test, so its counts read 0 of N implemented, and
+// only the indeterminate count beside them stops that reading as 0.0% coverage
+// under a board that says "-".
+test("a not-scored run's series point withholds both figures, as the board does", () => {
+  for (const s of SCENARIOS) {
+    const { model } = s.build();
+    for (const slug of s.notScored) {
+      const point = model.perTarget[slug].series.at(-1);
+      assert.equal(point.coverageValue, null, `${s.name}: ${slug} coverage`);
+      assert.equal(point.coverage, "-", `${s.name}: ${slug} coverage`);
+      assert.equal(point.divergenceValue, null, `${s.name}: ${slug} divergence`);
+    }
+  }
 });

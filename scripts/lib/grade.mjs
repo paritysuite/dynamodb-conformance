@@ -127,7 +127,7 @@ export function gradeOf(divergenceValue, coverageValue) {
   // all false) and grade F: the worst published letter, manufactured from a
   // data fault rather than a measurement.
   if (!Number.isFinite(divergenceValue) || !Number.isFinite(coverageValue)) {
-    return { letter: null, qualifier: 'not scored', band: 'none', capped: false, capAt: null }
+    return { letter: null, qualifier: NOT_SCORED_LABEL, band: 'none', capped: false, capAt: null }
   }
 
   // The bands read the figures at the one decimal place the board publishes,
@@ -271,6 +271,11 @@ export function regionalClauseOf(gap) {
 // reads this one constant - the results table, the badges and the data
 // endpoints - so none of them can grade the baseline while another declines to.
 export const BASELINE_LABEL = 'baseline'
+
+// The label a row wears when it has figures nobody can grade: the run got no
+// answer to a test, or the target implements nothing. gradeOf returns it as
+// the qualifier of a letterless grade, and the table and the badges print it.
+export const NOT_SCORED_LABEL = 'not scored'
 
 // The same decision in the shape `gradeOf` returns, for consumers that read a
 // grade object per row. It reuses the null-letter case they already handle for

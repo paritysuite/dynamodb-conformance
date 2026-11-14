@@ -31,6 +31,9 @@ import { GRADE_BANDS, gradeOf, gradingCriteriaEffectiveLabel } from "../lib/scor
 import { checkAPlusPremise } from "../lib/premise.mjs";
 import { checkRegionalNotes, expectedRegionalNotes } from "../lib/regional-note.mjs";
 import { checkProseLiterals } from "../lib/prose-literals.mjs";
+import notScoredFixture from "../fixtures/board/_data/notScored.js";
+import { partitionProblems } from "../lib/letterless.mjs";
+import { OPERATION_MARKS } from "../lib/matrix.mjs";
 
 const failures = [];
 const check = (ok, label, detail = "") => {
@@ -136,6 +139,53 @@ try {
     "the board reaches every scored engine, builds included",
     `${linked.size} of ${scored.length} linked${missing.length ? `; missing ${missing.join(", ")}` : ""}`,
   );
+
+  // A target page says its run is not scored in place of naming a headline
+  // region, exactly when the endpoint gives that target no letter for a reason
+  // other than being the baseline. The sentence opens the per-region drilldown,
+  // which renders only where the per-region data exists, so a page without the
+  // drilldown expects no sentence either. The fixture's region-intro page below
+  // renders the not-scored branch, which real data may not reach.
+  const notScoredMismatch = [];
+  let targetPagesRead = 0;
+  let expectedNotScored = 0;
+  for (const t of JSON.parse(await readFile(join(out, "data", "latest.json"), "utf8")).targets) {
+    const page = docs.find((d) => d.path === `/targets/${t.slug}/index.html`);
+    if (!page) continue;
+    targetPagesRead++;
+    const drilldown = /id="regions"/.test(page.html);
+    const expected = drilldown && t.grade.letter === null && t.grade.qualifier === "not scored";
+    if (expected) expectedNotScored++;
+    if (/This run is not scored, so no region has/.test(page.html) !== expected) notScoredMismatch.push(`${t.slug} (expected ${expected})`);
+  }
+  check(
+    targetPagesRead > 0 && notScoredMismatch.length === 0,
+    "a target page says its run is not scored exactly when it has no letter",
+    `${targetPagesRead} page(s) read; ${notScoredMismatch.join(", ")}`,
+  );
+  console.log(`        ${targetPagesRead} pages, ${expectedNotScored} expected not scored`);
+
+  // The legend above a target's operations names every mark the list can
+  // print, and every mark the list did print. The marks are the hidden glyph
+  // spans: in the legend paragraph, then in the list below it.
+  const glyphsIn = (html) => [...html.matchAll(/<span\b(?=[^>]*aria-hidden="true")[^>]*>([^<]{1,2})<\/span>/g)].map((m) => m[1].trim());
+  const legendGaps = [];
+  let legendsRead = 0;
+  for (const page of docs.filter((d) => /^\/targets\/[^/]+\/index\.html$/.test(d.path) && /id="operations"/.test(d.html))) {
+    const block = page.html.split('id="operations"')[1];
+    const [legendPart, rest = ""] = block.split(/<div class="space-y-6"/);
+    const listPart = rest.split(/<h2\b/)[0];
+    const legend = new Set(glyphsIn(legendPart));
+    legendsRead++;
+    const missing = [...new Set([...OPERATION_MARKS, ...glyphsIn(listPart)])].filter((g) => !legend.has(g));
+    if (missing.length) legendGaps.push(`${page.path}: ${missing.join(" ")}`);
+  }
+  check(
+    legendsRead > 0 && legendGaps.length === 0,
+    "a target's operations legend names every mark the list can print",
+    `${legendsRead} legend(s) read; ${legendGaps.join("; ")}`,
+  );
+  console.log(`        ${legendsRead} legends, ${OPERATION_MARKS.length} marks`);
 
   // The same completeness question for the directory, which is now the page the
   // nav, both retired routes and the methodology all point at. Asserting the
@@ -646,6 +696,70 @@ try {
         `the fixture board carries ${slug}'s own row`,
       );
     }
+
+    // ── A row the suite did not score ────────────────────────────────────────
+    //
+    // A row with no letter prints no figure and no region count, says so in
+    // words beside its dash, and sits below every lettered row. The fixture
+    // (fixtures/board/_data/notScored.js) adds a not-scored project and makes
+    // one existing build not scored.
+    const fixture = await notScoredFixture();
+    const notScoredPage = await readFile(join(fixtureOut, "not-scored.html"), "utf8");
+    const textOf = (html) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ");
+    // Says "not scored" in words from the grade line, and states no cohort.
+    const readsNotScored = (html) =>
+      /standing-regions[^>]*>not scored</.test(html) || /<span class="font-medium">not scored<\/span>/.test(html);
+    const cohortIn = (html) => textOf(html).match(/in (all )?\d+ (of \d+ )?regions?/)?.[0] ?? null;
+    const seated = notScoredPage.split(/<li class="rounded-xl/).slice(1).map((li) => ({
+      // The row's own markup, up to its builds, so a build's text is not read as the row's.
+      html: li.split(/<details[^>]*>\s*<summary[^>]*>[\s\S]*?Also built for/)[0],
+      full: li,
+      name: (li.match(/<span class="truncate">([^<]*)</) ?? [, ""])[1],
+      chip: (li.match(/grade-chip[^>]*>\s*<span aria-hidden="true">([^<]*)</) ?? [, ""])[1],
+      qualifier: (li.match(/grade-chip[\s\S]*?<span class="sr-only">Grade ([^<]*)</) ?? [, ""])[1],
+    }));
+    // Found by name: real letterless rows may sit below it, since the rule is
+    // that lettered rows come first, not that this row comes last.
+    const row = seated.find((r) => r.name === fixture.display);
+    const rowProblems = [
+      !row && `no row named ${fixture.display}`,
+      ...partitionProblems(seated),
+      row && row.chip !== "–" && `chip "${row.chip}"`,
+      row && !/ Grade not scored /.test(textOf(row.html)) && "no screen-reader grade",
+      row && !readsNotScored(row.html) && "no visible not scored",
+      row && cohortIn(row.html) && `states a cohort: "${cohortIn(row.html)}"`,
+      row && /NaN|undefined/.test(textOf(row.html)) && "prints NaN or undefined",
+    ].filter(Boolean);
+    check(
+      seated.length > 1 && rowProblems.length === 0,
+      "a not-scored row sits below every lettered row and reads not scored, with no letter, figure or region count",
+      `${seated.length} row(s); ${rowProblems.join("; ")}`,
+    );
+    // A build of a project can be not scored while the project is lettered.
+    const build = seated
+      .flatMap((r) => r.full.split(/<li class="flex flex-col/).slice(1))
+      .find((li) => li.includes(`/targets/${fixture.variant}"`));
+    check(
+      !!build && readsNotScored(build) && !cohortIn(build) && !/NaN|undefined/.test(textOf(build)),
+      "a not-scored build reads not scored, with no region count",
+      build ? textOf(build).slice(0, 200) : `no row for ${fixture.variant}`,
+    );
+
+    // The per-region intro on a target page, both branches.
+    const intro = await readFile(join(fixtureOut, "region-intro.html"), "utf8");
+    const introOf = (key) => (intro.match(new RegExp(`data-intro="${key}">([\\s\\S]*?)</section>`)) ?? [, ""])[1];
+    const notScoredIntro = introOf("not-scored");
+    const letteredIntro = introOf("lettered");
+    check(
+      /This run is not scored, so no region has/.test(notScoredIntro) && !/The headline is/.test(notScoredIntro) &&
+        /The headline is/.test(letteredIntro) && !/This run is not scored/.test(letteredIntro),
+      "a target page's per-region intro says a run is not scored instead of naming a headline, and only then",
+      `not scored: "${textOf(notScoredIntro).trim().slice(0, 80)}"; lettered: "${textOf(letteredIntro).trim().slice(0, 80)}"`,
+    );
+  } catch (err) {
+    // A fixture that cannot be built from the data is a failure of this gate,
+    // named, not an abort that leaves the checks after it unreported.
+    check(false, "the board fixtures build from the committed data", String(err?.message ?? err).split("\n")[0]);
   } finally {
     await rm(fixtureOut, { recursive: true, force: true });
   }

@@ -14,7 +14,8 @@
  * two axes from the shared axesOf, and grade them with the shared gradeOf.
  * Real DynamoDB reads `baseline` rather than a letter, on the same grounds the
  * table and the site use it (BASELINE_LABEL in lib/grade.mjs): the yardstick is
- * what a grade measures distance from. The badge carried the retired
+ * what a grade measures distance from. A run that is not scored reads `not
+ * scored`, as its table row does. The badge carried the retired
  * correctness percentage until the board moved to divergence and coverage; a
  * letter cannot be mistaken for either axis, where a bare percentage read as
  * whichever one the reader expected.
@@ -50,7 +51,8 @@ const RESULTS_DIR = 'results'
 
 // shields.io named colours per letter, brightest at the top of the scale. The
 // steps track the grade bands, so a badge and the site row it mirrors read the
-// same way. A letterless row (the baseline) falls through to the neutral grey.
+// same way. A letterless row (the baseline, or a run that is not scored) falls
+// through to the neutral grey.
 const COLOURS = {
   'A+': 'brightgreen',
   A: 'green',
@@ -65,18 +67,19 @@ export function colour(letter) {
 }
 
 // A target's grade, or null when there is nothing to show: the slug is a
-// reserved scratch slug (e.g. local), the file is not a target result (e.g.
-// tag-manifest.json), or the target ran no scored tests. `context` carries
-// the registry and observed region set (loadScoringContext) plus the run's
-// indeterminate sidecar, when it wrote one.
+// reserved scratch slug (e.g. local) or the file is not a target result (e.g.
+// tag-manifest.json). A target whose run is not scored - an indeterminate, or
+// nothing implemented - gets gradeOf's letterless `not scored` grade, the same
+// one its summary row carries. `context` carries the registry and observed
+// region set (loadScoringContext) plus the run's indeterminate sidecar, when it
+// wrote one.
 export function gradeFor(slug, raw, context) {
   if (!isPublishedTarget(slug)) return null
   if (slug === GROUND_TRUTH_SLUG) return BASELINE_GRADE
   const scored = scoreTarget(raw, context.sidecar ?? null, context)
   if (!scored) return null
   const { divergence, coverage } = axesOf(scored.regions[scored.headline.region])
-  const grade = gradeOf(divergence, coverage)
-  return grade.letter === null ? null : grade
+  return gradeOf(divergence, coverage)
 }
 
 // Build the shields.io endpoint badge object for a target, or null when there
@@ -85,10 +88,8 @@ export function gradeFor(slug, raw, context) {
 export function buildBadge(slug, raw, context) {
   const grade = gradeFor(slug, raw, context)
   if (grade === null) return null
-  // Every graded target has a letter; the baseline has a qualifier instead, and
-  // no letter to colour, so it renders in the neutral fallback. gradeFor returns
-  // null rather than a letterless grade for anything else, so this is the one
-  // case that takes the second branch.
+  // A letterless grade badges its qualifier in the neutral fallback colour:
+  // `baseline` for the ground truth, `not scored` for a run with no letter.
   const message = grade.letter ?? grade.qualifier
   return {
     schemaVersion: 1,
@@ -98,13 +99,15 @@ export function buildBadge(slug, raw, context) {
   }
 }
 
-// Write results/<slug>.badge.json for every target result file, and delete the
-// badge of any target that no longer produces one. Returns both counts.
+// Write results/<slug>.badge.json for every target result file, scored or
+// not, and deal with any badge whose results file is gone: a target still on
+// the board gets a `no data` tombstone, and a slug the suite no longer knows
+// has its badge deleted. Returns the three counts.
 //
-// Third parties embed these in their own READMEs, so a badge left behind after
-// its target stopped being gradeable keeps serving a letter about someone else
-// from a URL they do not control. The freshness test notices the drift; only
-// deleting the file fixes it.
+// Third parties embed these in their own READMEs, so a badge must not keep
+// serving a letter its results no longer support, from a URL they do not
+// control. The freshness test notices the drift; only rewriting or deleting
+// the file fixes it.
 //
 // Sidecar and badge files are companions of a target's results file, not
 // targets, so they are never scored themselves.
@@ -133,9 +136,9 @@ export function writeBadges(resultsDir = RESULTS_DIR, context = loadScoringConte
     const badge = buildBadge(slug, raw, { ...context, sidecar })
     // A results file that exists keeps its badge even when this run produced
     // no letter. A run-level indeterminate - one provisioning timeout - makes
-    // the row ungradeable for that sweep, and deleting the badge would 404 a
-    // URL inside a third party's README over an infrastructure fault. Only a
-    // target with no results file at all is gone.
+    // the row unscored for that sweep, and deleting the badge would 404 a URL
+    // inside a third party's README over an infrastructure fault, so it reads
+    // `not scored` instead. Only a target with no results file at all is gone.
     current.add(`${slug}.badge.json`)
     if (!badge) continue
     writeFileSync(

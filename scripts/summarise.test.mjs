@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { createHash } from 'node:crypto'
-import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { buildBadge, writeBadges } from './badges.mjs'
@@ -514,9 +514,9 @@ describe('tableRows / renderTable', () => {
       'beta',
       'empty',
     ])
-    // A target that implemented nothing has no divergence to grade, so its
-    // grade is the same "-" as its figures rather than an invented letter.
-    expect(rows.at(-1)).toMatchObject({ total: '-', divergence: '-', grade: '-' })
+    // A target that implemented nothing has no divergence to grade, so it
+    // reads `not scored`, as its badge does, rather than an invented letter.
+    expect(rows.at(-1)).toMatchObject({ total: '-', divergence: '-', grade: 'not scored' })
   })
 
   it('publishes the best-matching region\'s divergence, with the cohort kept for the drilldown', () => {
@@ -637,11 +637,11 @@ describe('tableRows / renderTable', () => {
     for (const slug of Object.keys(summary.targets)) {
       const badge = buildBadge(slug, docs[slug], context)
       const row = rows.find((r) => r.target === label(slug))
-      expect(row.grade).toBe(badge === null ? '-' : badge.message)
+      expect(row.grade).toBe(badge.message)
     }
   })
 
-  it('a badge is deleted when its target stops being gradeable', () => {
+  it('a badge is deleted when its results file is gone and its slug is not a target', () => {
     // Third parties embed these in their own READMEs, so a badge left behind
     // after its results file goes serves a letter about someone else from a
     // URL they do not control. The freshness test spots the drift; only the
@@ -1022,6 +1022,106 @@ describe('renderTable variant nesting', () => {
 
 // ── The committed artefacts: freshness, no-drift, and the shape contract ────
 
+// The badge message a summary row must carry: its headline letter, or `not
+// scored` where the headline has none. Spelt out here rather than read from
+// badges.mjs, so the check does not mark the writer with its own code.
+const expectedBadgeMessage = (t) => {
+  const { divergence, coverage } = axesOf(t.regions[t.headline.region])
+  return gradeOf(divergence, coverage).letter ?? 'not scored'
+}
+
+// The targets whose badge disagrees with their summary row, as
+// `slug: badge message (expected ...)`. Empty when every badge agrees.
+// `readBadge` returns a target's parsed badge, or undefined when it has none.
+function badgeDrift(summary, readBadge) {
+  return Object.entries(summary.targets).flatMap(([slug, t]) => {
+    const message = readBadge(slug)?.message
+    const expected = expectedBadgeMessage(t)
+    return message === expected ? [] : [`${slug}: ${message} (expected ${expected})`]
+  })
+}
+
+describe('badge and summary agree on a row that is not scored', () => {
+  // One indeterminate observation and the run is not scored.
+  const unscoredDoc = () => {
+    const doc = suiteDoc('passed')
+    doc.testResults[0].assertionResults[1].status = 'failed'
+    doc.testResults[0].assertionResults[1].meta = { indeterminate: { reason: 'transport', at: 'test' } }
+    return doc
+  }
+  // Named to sort first by name, so the table placing it last is the grade
+  // order at work rather than the alphabet.
+  const docs = { lettered: suiteDoc('passed'), 'aa-unscored': unscoredDoc() }
+  const context = { registry: REGISTRY, health: HEALTHY, observed: ['eu-west-2', 'us-east-1'] }
+  const summary = buildSummary(
+    Object.entries(docs).map(([slug, doc]) => target(slug, doc)),
+    { registry: REGISTRY, health: HEALTHY, suiteTests: FIXTURE_SUITE },
+  )
+  const badge = (message) => ({ schemaVersion: 1, label: 'parity', message, color: 'lightgrey' })
+
+  it('the badge writer badges both rows the way the summary reads them', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'badges-'))
+    for (const [slug, doc] of Object.entries(docs)) {
+      writeFileSync(join(dir, `${slug}.json`), JSON.stringify(doc))
+    }
+    const { written } = writeBadges(dir, context, FIXTURE_SUITE)
+    expect(written).toBe(2)
+    const read = (slug) => {
+      const path = join(dir, `${slug}.badge.json`)
+      return existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : undefined
+    }
+    expect(read('lettered')).toMatchObject({ message: 'A+' })
+    expect(read('aa-unscored')).toEqual(badge('not scored'))
+    expect(badgeDrift(summary, read)).toEqual([])
+  })
+
+  it('a lettered badge is overwritten when its target\'s run is not scored', () => {
+    // The URL may already sit in someone's README carrying the last letter.
+    const dir = mkdtempSync(join(tmpdir(), 'badges-'))
+    writeFileSync(join(dir, 'aa-unscored.json'), JSON.stringify(docs['aa-unscored']))
+    writeFileSync(
+      join(dir, 'aa-unscored.badge.json'),
+      JSON.stringify({ schemaVersion: 1, label: 'parity', message: 'A', color: 'green' }),
+    )
+    writeBadges(dir, context, FIXTURE_SUITE)
+    expect(JSON.parse(readFileSync(join(dir, 'aa-unscored.badge.json'), 'utf8'))).toEqual(badge('not scored'))
+  })
+
+  it('accepts a not-scored badge only where the summary row is not scored', () => {
+    const agree = { lettered: badge('A+'), 'aa-unscored': badge('not scored') }
+    expect(badgeDrift(summary, (slug) => agree[slug])).toEqual([])
+    // A lettered row wearing a not-scored badge, and the reverse, both fail.
+    const swapped = { lettered: badge('not scored'), 'aa-unscored': badge('A+') }
+    expect(badgeDrift(summary, (slug) => swapped[slug])).toEqual([
+      'aa-unscored: A+ (expected not scored)',
+      'lettered: not scored (expected A+)',
+    ])
+    // So does a missing badge.
+    expect(badgeDrift(summary, (slug) => (slug === 'aa-unscored' ? undefined : agree[slug]))).toEqual([
+      'aa-unscored: undefined (expected not scored)',
+    ])
+  })
+
+  it('the README table prints the row as not scored, below every lettered row', () => {
+    const lines = renderTable(summary).split('\n').filter((l) => l.startsWith('| '))
+    const at = (name) => lines.findIndex((l) => l.startsWith(`| ${name} |`))
+    expect(at('lettered')).toBeGreaterThan(-1)
+    expect(at('aa unscored')).toBeGreaterThan(at('lettered'))
+    const cells = lines[at('aa unscored')].split('|').map((c) => c.trim())
+    // Target, Grade, Version, Divergence, Coverage, Fail, Skip, Tier 1-3, Regions.
+    expect(cells.slice(1, 6)).toEqual(['aa unscored', 'not scored', '1.0.0', '-', '-'])
+    // No Regions count either: a cohort is the regions a scored headline
+    // matched, and this row has no scored headline.
+    expect(cells[11]).toBe('-')
+    expect(lines.join('\n')).not.toMatch(/NaN|undefined|null/)
+    // The structured rows carry no cohort label for it either, and the
+    // lettered row keeps its own.
+    const rows = tableRows(summary)
+    expect(rows.find((r) => r.slug === 'aa-unscored')).toMatchObject({ cohort: '-', cohortLabel: '-' })
+    expect(rows.find((r) => r.slug === 'lettered').cohortLabel).not.toBe('-')
+  })
+})
+
 describe('committed results pipeline', () => {
   const context = loadScoringContext()
   const files = readdirSync('results')
@@ -1049,12 +1149,14 @@ describe('committed results pipeline', () => {
   })
 
   it('badge letter equals the summary headline grade for every target (the no-drift invariant)', () => {
-    for (const [slug, t] of Object.entries(fresh.targets)) {
-      const badge = JSON.parse(readFileSync(join('results', `${slug}.badge.json`), 'utf8'))
-      const { divergence, coverage } = axesOf(t.regions[t.headline.region])
-      const expected = gradeOf(divergence, coverage).letter
-      expect(badge.message, `${slug} badge disagrees with the summary headline`).toBe(expected)
+    // A target with no letter must carry a `not scored` badge, and only such a
+    // target may; badgeDrift is exercised on both cases above.
+    const read = (slug) => {
+      const path = join('results', `${slug}.badge.json`)
+      return existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : undefined
     }
+    expect(Object.keys(fresh.targets).length).toBeGreaterThan(0)
+    expect(badgeDrift(fresh, read), 'badges disagree with the summary headline').toEqual([])
     // And the table's Total column is rendered from the same headline.
     // Variants nest, so flatten before asserting: the invariant covers every
     // scored target, including the ones that are not their own row.

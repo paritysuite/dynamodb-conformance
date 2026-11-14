@@ -123,6 +123,14 @@ target is re-run. A board is now refused if real DynamoDB's own run, in its own
 region, fails a test or passes one on a split row with an answer recorded for a
 different region.
 
+A target whose run is not scored now publishes as one everywhere. Its badge
+reads `not scored` in grey rather than going missing, and its row in the results
+table reads `not scored` where the letter would be. Neither the table nor the
+board gives it a region count, because a cohort is only ever read off a scored
+headline, and its page says no region has a figure rather than naming a
+headline region. It still sits below every lettered row. The rule itself
+doesn't change: a run that gets no answer to any one test is not scored.
+
 ## 2026-11-02 (3.9.0)
 
 Query's XOR ConditionalOperator beside an unknown Select is now pinned to the
