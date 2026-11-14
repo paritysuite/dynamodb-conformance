@@ -20,6 +20,13 @@ RequestItems across the same runs.
 
 ## Unreleased
 
+The wait for an index added by UpdateTable to become ACTIVE is now 2 minutes on
+any emulator, down from 40. Real DynamoDB keeps 40 minutes. The slowest passing
+index test on any emulator in the published results takes about 31 seconds,
+against about 25 minutes on real DynamoDB, so the shorter wait only shortens
+runs where an index never completes. An expired wait is recorded as no answer
+either way, never as a failure, so no score can change.
+
 PartiQL reads whose OR branches stay in one partition now have paging and
 capacity tests. Under `Limit`, a set of sort keys ends on its last key, a
 missing last key keeps the token for one empty half-unit page, and a branch the

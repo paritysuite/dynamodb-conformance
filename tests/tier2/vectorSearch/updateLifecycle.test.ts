@@ -4,12 +4,19 @@ import { uniqueTableName, waitUntilActive, deleteTable, expectDynamoError } from
 import { skipUnlessVectorIndexes, describeVectorIndex } from '../../../src/vector.js'
 import { isUnsupportedFault } from '../../../src/unsupported.js'
 import { IndeterminateError, indeterminateFrom } from '../../../src/indeterminate.js'
+import { region } from '../../../src/aws-config.js'
+import { ceilingsFor, indexTestTimeoutMs } from '../../../src/regions.js'
 
 // The UpdateTable path of the vector index lifecycle. Separated from
 // lifecycle.test.ts because index creation here runs on GSI timescales
 // (~17 minutes observed for a 25-item table, eu-west-2, 2026-08-11), so this
 // file rides in the slow online-index lane beside
 // tests/tier2/updateTable/gsi.test.ts rather than in the gating run.
+
+// The wait for an added index to become searchable: 40 minutes on real
+// DynamoDB, 2 minutes on an emulator (see indexBackfillMs in src/regions.ts).
+const CEILINGS = ceilingsFor(region)
+const INDEX_WAIT_MS = CEILINGS.indexBackfillMs
 
 const tablesToCleanup: string[] = []
 
@@ -114,7 +121,7 @@ describe('UpdateTable — vector index lifecycle', { tags: ['update-table', 'del
     const seenStatuses = new Set<string>()
     let sawBackfillingField = false
     let sawActiveTableWithCreatingIndex = false
-    const deadline = Date.now() + 2_400_000
+    const deadline = Date.now() + INDEX_WAIT_MS
     for (;;) {
       const described = await ddb.send(new DescribeTableCommand({ TableName: tableName }))
       const ix = (described.Table?.VectorIndexes ?? []).find((i) => i.IndexName === 'vix')
@@ -213,11 +220,11 @@ describe('UpdateTable — vector index lifecycle', { tags: ['update-table', 'del
     const table = await ddb.send(new DescribeTableCommand({ TableName: tableName }))
     expect(table.Table?.TableStatus).toBe('ACTIVE')
     expect(table.Table?.VectorIndexes ?? []).toHaveLength(0)
-    // Timeout: the searchable ceiling (2,400s) plus the delete ceiling (300s)
-    // plus setup/seeding margin — the outer bound must exceed the summed
-    // internal deadlines or vitest kills the test as a failure before either
-    // internal ceiling can type the expiry as indeterminate.
-  }, 2_820_000)
+    // Timeout: the table-creation wait, the searchable ceiling (INDEX_WAIT_MS)
+    // and the delete ceiling (300s), plus a minute. The outer bound must exceed
+    // the summed internal deadlines or vitest kills the test as a failure
+    // before either internal ceiling can type the expiry as indeterminate.
+  }, indexTestTimeoutMs(CEILINGS, { otherWaitsMs: 300_000 }))
 
   // The other half of "wait for the index, not just the table": while a vector
   // index is being created, the table underneath it cannot be deleted. AWS
