@@ -6,6 +6,8 @@ broadened, and targets brought into the run. Newest first.
 Work lands its notes under `## Unreleased` as it merges. The release gives that
 section its date and version, so several branches can write ahead of one.
 
+## Unreleased
+
 Ten regions join eu-west-2 on the five Scan rows: ap-northeast-1, ap-south-2,
 ap-southeast-6, ap-southeast-7, eu-central-2, eu-south-1, eu-south-2, eu-west-1,
 us-east-2 and us-west-2. Each gave the new wording on the 2026-11-07 sweep and at
@@ -18,7 +20,12 @@ Scan both ways for now and keeps its recorded answer, the new wording. The
 BatchGetItem row doesn't change: me-central-1 gave both answers to an empty
 RequestItems across the same runs.
 
-## Unreleased
+The wait for an index added by UpdateTable to become ACTIVE is now 2 minutes on
+any emulator, down from 40. Real DynamoDB keeps 40 minutes. The slowest passing
+index test on any emulator in the published results takes about 31 seconds,
+against about 25 minutes on real DynamoDB, so the shorter wait only shortens
+runs where an index never completes. An expired wait is recorded as no answer
+either way, never as a failure, so no score can change.
 
 PartiQL reads whose OR branches stay in one partition now have paging and
 capacity tests. Under `Limit`, a set of sort keys ends on its last key, a
