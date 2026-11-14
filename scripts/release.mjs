@@ -139,12 +139,16 @@ export function assertChecksGreen(checkRuns = []) {
  * results/ from jobs on main, and the board would carry whichever landed last.
  * The failure is confusing rather than destructive, which is the kind that goes
  * undiagnosed.
+ *
+ * An abandoned cut keeps its tag. Its bump is already on main, and the next
+ * run's plan step diffs against the tag package.json's version names, so a
+ * deleted tag stops every later run at the plan.
  */
 export function assertNoOpenDraft(releases = []) {
   const open = releases.filter((r) => r.draft).map((r) => r.tag_name)
   if (open.length > 0) {
     throw new Error(
-      `refusing to release: ${open.join(', ')} ${open.length === 1 ? 'is' : 'are'} still a draft, so a measurement is in flight. Wait for its board to land - a full run takes about three hours - or delete the draft and its tag if that cut is being abandoned.`,
+      `refusing to release: ${open.join(', ')} ${open.length === 1 ? 'is' : 'are'} still a draft, so a measurement is in flight. Wait for its board to land - a full run takes about three hours - or, if that cut is being abandoned, delete the draft release but keep its tag (see "When a release's board is refused" in AGENTS.md).`,
     )
   }
   return releases

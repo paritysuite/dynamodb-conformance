@@ -18,10 +18,14 @@ Run these from the repository root, not from `site/`:
 
 ```bash
 npm install
-npm run site:dev          # serves at http://localhost:8080 with CSS + 11ty watching
-npm run site:build        # writes the static site to site/_site/
-npm run site:test         # the scoring, history and rendering unit tests
-npm run site:check-build  # build with the network stubbed, then assert on the built HTML
+# Serves at http://localhost:8080 with CSS + 11ty watching.
+npm run site:dev
+# Writes the static site to site/_site/.
+npm run site:build
+# The scoring, history and rendering unit tests.
+npm run site:test
+# Build with the network stubbed, then assert on the built HTML.
+npm run site:check-build
 ```
 
 ## How the data gets here
@@ -42,7 +46,8 @@ If a fetch fails or runs unauthenticated, the build falls back to the committed 
 The committed fallback is the derived model, not raw API responses. Regenerate it whenever the upstream history has meaningfully moved:
 
 ```bash
-npm run site:snapshot   # re-fetches the history and rewrites data/conformance-history.json
+# Re-fetches the history and rewrites data/conformance-history.json.
+npm run site:snapshot
 ```
 
 A `GITHUB_TOKEN` in the environment lifts the commits-API rate limit; it's optional locally and supplied automatically in CI.

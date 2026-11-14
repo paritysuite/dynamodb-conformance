@@ -39,7 +39,7 @@ const CHANNEL_ICONS = {
   "maven": { icon: "apachemaven", label: "Maven" },
   "homebrew": { icon: "homebrew", label: "Homebrew" },
   "scoop": { icon: "box", label: "Scoop" },
-  "package": { icon: "archive", label: "package" },
+  "package": { icon: "archive", label: "OS package" },
   "install-script": { icon: "gnubash", label: "install script" },
   "binary": { icon: "box", label: "binary" },
   "embedded": { icon: "chip", label: "embedded" },
