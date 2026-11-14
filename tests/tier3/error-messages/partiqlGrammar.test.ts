@@ -6,7 +6,7 @@ import {
 } from '@aws-sdk/client-dynamodb'
 import { ddb } from '../../../src/client.js'
 import { isUnsupportedFault } from '../../../src/infra.js'
-import { declareTables, hashTableDef, hashNTableDef, compositeTableDef } from '../../../src/helpers.js'
+import { declareTables, hashTableDef, hashNTableDef, compositeTableDef, withBody } from '../../../src/helpers.js'
 
 declareTables(hashTableDef, hashNTableDef, compositeTableDef)
 
@@ -26,6 +26,9 @@ const ALIASING = 'Aliasing is not supported'
 const OVERFLOW = 'Number overflow. Attempting to store a number with magnitude larger than supported range'
 const UNDERFLOW = 'Number underflow. Attempting to store a number with magnitude smaller than supported range'
 const DIGITS = 'Attempting to store more than 38 significant digits in a Number'
+const OVERLAPPING = 'Overlapping conditions with range keys are not supported in where clause'
+const KEY_TYPE_MISMATCH = "Key attribute's data type should match its data type in table's schema: Key pk"
+const BOOL_KEY = 'Key value must be of type S, N, or B. Key name: pk, Key type: BOOL'
 
 describe('PartiQL grammar - exact error messages', { tags: ['partiql', 'data-plane', 'negative-path'] }, () => {
   let supported = true
@@ -49,9 +52,9 @@ describe('PartiQL grammar - exact error messages', { tags: ['partiql', 'data-pla
   beforeEach(({ skip }) => { if (!supported) skip() })
 
   /** Run a statement and hand back the exception it raises. */
-  async function rejection(Statement: string) {
+  async function rejection(Statement: string, extra: Record<string, unknown> = {}) {
     try {
-      await ddb.send(new ExecuteStatementCommand({ Statement }))
+      await ddb.send(new ExecuteStatementCommand({ Statement, ...extra }))
       expect.unreachable('should have thrown')
       throw new Error('unreachable')
     } catch (err) {
@@ -60,8 +63,8 @@ describe('PartiQL grammar - exact error messages', { tags: ['partiql', 'data-pla
     }
   }
 
-  async function expectMessage(Statement: string, message: string) {
-    const err = await rejection(Statement)
+  async function expectMessage(Statement: string, message: string, extra: Record<string, unknown> = {}) {
+    const err = await rejection(Statement, extra)
     expect(err.name).toBe('ValidationException')
     expect(err.message).toBe(message)
   }
@@ -311,5 +314,118 @@ describe('PartiQL grammar - exact error messages', { tags: ['partiql', 'data-pla
       `SELECT * FROM "${C}" WHERE pk = 'a' AND ${condition} OR pk = 'a' AND sk = '2'`,
       'Overlapping conditions with range keys are not supported in where clause',
     )
+  })
+
+  // Captured in eu-west-2 and us-east-1, 2026-11-03.
+  it('OR branches whose sort-key ranges meet - exact message', async () => {
+    const C = compositeTableDef.name
+    await expectMessage(
+      `SELECT * FROM "${C}" WHERE pk = 'a' AND (sk <= 'row-2' OR sk >= 'row-2')`,
+      OVERLAPPING,
+    )
+  })
+
+  it('an OR beside a sort-key equality with a non-key branch - exact message', async () => {
+    // The non-key branch leaves the sort key unbounded, so it overlaps the
+    // equality whatever the values.
+    const C = compositeTableDef.name
+    await expectMessage(`SELECT * FROM "${C}" WHERE pk = 'a' AND (sk = 'row-1' OR x = 3)`, OVERLAPPING)
+  })
+
+  // ── A negated sort-key term inside an OR filter ─────────────────────
+
+  // Captured in eu-west-2 and us-east-1, 2026-11-03 and 2026-11-05.
+  // A negated sort-key equality can't become a key condition, so it is left in
+  // the filter, and a filter may not name a key attribute. The width of the
+  // conjunction makes no difference.
+  it.each([1, 2, 9])('%i (NOT sk = ... OR x = ...) pairs - exact message', async (width) => {
+    const C = compositeTableDef.name
+    const pairs = Array.from({ length: width }, (_, i) => `(NOT sk = 's${i}' OR x = ${i})`).join(' AND ')
+    await expectMessage(
+      `SELECT * FROM "${C}" WHERE pk = 'a' AND ${pairs}`,
+      'Filter Expression can only contain non-primary key attributes: Primary key attribute: sk',
+    )
+  })
+
+  // ── A partition key value of the wrong type ─────────────────────────
+
+  // Captured in eu-west-2 and us-east-1, 2026-11-03 and 2026-11-05.
+  it('a string partition key given the same number twice - exact message', async () => {
+    const C = compositeTableDef.name
+    await expectMessage(`SELECT * FROM "${C}" WHERE pk = 1 AND pk = 1.0`, KEY_TYPE_MISMATCH)
+  })
+
+  it('a string partition key given one number - exact message', async () => {
+    const C = compositeTableDef.name
+    await expectMessage(`SELECT * FROM "${C}" WHERE pk = 1`, KEY_TYPE_MISMATCH)
+  })
+
+  // A boolean can't be a key of any table, so the message names the key types
+  // rather than this table's schema.
+  it('a partition key given a boolean - exact message', async () => {
+    const C = compositeTableDef.name
+    await expectMessage(`SELECT * FROM "${C}" WHERE pk = true`, BOOL_KEY)
+  })
+
+  it('a partition key given a boolean beside two sort-key equalities - exact message', async () => {
+    const C = compositeTableDef.name
+    await expectMessage(`SELECT * FROM "${C}" WHERE pk = true AND (sk = 'row-1' OR sk = 'row-2')`, BOOL_KEY)
+  })
+
+  // ── ORDER BY over OR branches that each name the partition key ──────
+
+  // Captured in eu-west-2 and us-east-1, 2026-11-03 and 2026-11-05.
+  // Two branches on one partition with no sort-key condition each cover the
+  // whole sort-key range, so they overlap. A literal and a parameter naming the
+  // same value count as the same partition.
+  it('ORDER BY over two branches on one partition - exact message', async () => {
+    const C = compositeTableDef.name
+    await expectMessage(
+      `SELECT * FROM "${C}" WHERE (pk = 'a' AND x = 1) OR (pk = 'a' AND x = 2) ORDER BY sk DESC`,
+      OVERLAPPING,
+    )
+  })
+
+  it('ORDER BY over a literal branch and a parameter branch on one partition - exact message', async () => {
+    const C = compositeTableDef.name
+    await expectMessage(
+      `SELECT * FROM "${C}" WHERE (pk = 'a' AND x = 1) OR (pk = ? AND x = 2) ORDER BY sk`,
+      OVERLAPPING,
+      { Parameters: [{ S: 'a' }] },
+    )
+  })
+
+  it('ORDER BY on the sort key over two partitions - exact message', async () => {
+    const C = compositeTableDef.name
+    await expectMessage(
+      `SELECT * FROM "${C}" WHERE (pk = 'a' AND x = 1) OR (pk = 'b' AND x = 2) ORDER BY sk`,
+      'Must have hash key in ORDER BY clause when more than one hash key condition specified in WHERE clause.',
+    )
+  })
+
+  // ── ExecuteStatement's Limit ────────────────────────────────────────
+
+  // Captured in 33 regions, 2026-11-05. Every region gives the same string,
+  // envelope included, so the whole message is pinned.
+  it.each([0, -1])('a Limit of %i - exact message', async (limit) => {
+    await expectMessage(
+      `SELECT * FROM "${S}" WHERE pk = 'a'`,
+      `1 validation error detected: Value '${limit}' at 'limit' failed to satisfy constraint: Member must have value greater than or equal to 1`,
+      { Limit: limit },
+    )
+  })
+
+  // Captured in eu-west-2 and us-east-1, 2026-11-05. The SDK won't send a
+  // string Limit, so the body is written by hand.
+  it('a Limit sent as a string - exact error', async () => {
+    const Statement = `SELECT * FROM "${S}" WHERE pk = 'a'`
+    try {
+      await ddb.send(withBody(new ExecuteStatementCommand({ Statement }), { Statement, Limit: '2' }))
+      expect.unreachable('should have thrown')
+    } catch (err) {
+      if (!(err instanceof DynamoDBServiceException)) throw err
+      expect(err.name).toBe('SerializationException')
+      expect(err.message).toBe('STRING_VALUE cannot be converted to Integer')
+    }
   })
 })

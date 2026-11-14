@@ -6,7 +6,74 @@ broadened, and targets brought into the run. Newest first.
 Work lands its notes under `## Unreleased` as it merges. The release gives that
 section its date and version, so several branches can write ahead of one.
 
+Ten regions join eu-west-2 on the five Scan rows: ap-northeast-1, ap-south-2,
+ap-southeast-6, ap-southeast-7, eu-central-2, eu-south-1, eu-south-2, eu-west-1,
+us-east-2 and us-west-2. Each gave the new wording on the 2026-11-07 sweep and at
+least one sweep before it, and on three runs against every region on 2026-11-13,
+which leaves ca-central-1 and me-central-1 on the old wording. ca-central-1 gave
+the new wording on the 2026-11-07 sweep and on all three runs, but the old wording
+on the two sweeps before, so it keeps its recorded answer until a second sweep
+agrees. eu-north-1 gave the old wording on one of the three runs, so it answers
+Scan both ways for now and keeps its recorded answer, the new wording. The
+BatchGetItem row doesn't change: me-central-1 gave both answers to an empty
+RequestItems across the same runs.
+
 ## Unreleased
+
+PartiQL reads whose OR branches stay in one partition now have paging and
+capacity tests. Under `Limit`, a set of sort keys ends on its last key, a
+missing last key keeps the token for one empty half-unit page, and a branch the
+read hasn't reached holds the token. Each shape pinned page by page gave the
+same pages on every walk in eu-west-2 and us-east-1 between 2026-11-03 and
+2026-11-05. Page endings that DynamoDB answers at random, such as a page ending
+inside an open range, are checked only for the keys they return. Each branch
+costs a unit under `ConsistentRead` even when it finds nothing, a sort-key `IN`
+costs and pages exactly as the equivalent OR does, and a partition key that
+can't be a key reads the whole table, so beside sort-key ranges it costs what
+that read does: 2.0, or 4.0 consistent, on the small on-demand table the test
+uses.
+
+Items tied on an index key come back in a fixed order that isn't the table's
+sort-key order, and descending is its exact reverse. The order was the same in
+nine fresh tables across two regions and two AWS accounts, whatever order the
+items were written in, so Query on an LSI and a GSI, and PartiQL on an LSI,
+now pin it.
+
+The PartiQL refusals these reads run into are pinned word for word: a negated
+sort key inside an OR filter, a partition key given the wrong type or a
+boolean, ORDER BY over branches that each name the partition key, a KEYS_ONLY
+index asked to filter on an attribute it doesn't project, and ExecuteStatement
+`Limit` values of 0, -1 and a string. What DynamoDB accepts is pinned beside
+them: ORDER BY on an OR in one partition, the same key written twice, and
+`Limit` values past 2^31, past 2^64 and written with an exponent or a fraction.
+
+An attribute name starting with an underscore is a syntax error in every
+expression type unless it goes through `ExpressionAttributeNames`, including
+key conditions. An UpdateItem that creates its item returns no `Attributes`
+under `ALL_OLD` or `UPDATED_OLD`.
+
+Deep PutItem, UpdateItem and DeleteItem requests, read by the older validation
+layer, now have their joined errors pinned: every bad member, in each
+operation's own order, under the `N validation errors detected` envelope even
+when only one member is wrong.
+
+A table name's length is counted in UTF-16 units on deep writes and on
+CreateTable, DescribeTable, DeleteTable and UpdateTable, and in characters on
+shallow item operations, ListTables' start name and index names. So two emoji
+are long enough for CreateTable and too short for PutItem. Deep writes also
+check the name in two stages: a missing or empty name is listed among the
+member errors, while length and pattern errors only show when nothing else is
+wrong.
+
+Fourteen new rows in `registry/splits.json` record where me-central-1, and
+eu-north-1 on Scan, gave the older validation layer's answer to the shallow
+table-name and leading-underscore cases on 2026-11-05. The other regions agree
+with eu-west-2. The answers from all 33 regions on 2026-11-05 are in
+`captures/2026-11-05-shallow-validation-rollout.json`. On three later runs on
+2026-11-13, me-central-1 gave eu-west-2's answer to the twelve cases that aren't
+Scan (once cut short, on UpdateItem) and eu-north-1 gave it on Scan, so the rows
+keep the 2026-11-05 answers until a sweep has run the tests. Those runs are in
+`captures/2026-11-13-shallow-validation-follow-up.json`.
 
 ## 2026-11-02 (3.9.0)
 

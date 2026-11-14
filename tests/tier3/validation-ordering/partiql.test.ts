@@ -3,7 +3,7 @@ import {
   DynamoDBServiceException,
 } from '@aws-sdk/client-dynamodb'
 import { ddb } from '../../../src/client.js'
-import { absentTableName } from '../../../src/helpers.js'
+import { absentTableName, withBody } from '../../../src/helpers.js'
 import { isUnsupportedFault } from '../../../src/infra.js'
 
 // Which check answers first when a PartiQL statement has more than one problem.
@@ -75,6 +75,72 @@ describe('PartiQL — validation ordering', { tags: ['partiql', 'data-plane', 'n
       expect(err).toBeInstanceOf(DynamoDBServiceException)
       expect((err as DynamoDBServiceException).name).toBe('ValidationException')
       expect((err as DynamoDBServiceException).message).toContain('Path component cannot be an empty string')
+    }
+  })
+
+  // Captured in eu-west-2 and us-east-1, 2026-11-05. These refusals turn on the
+  // table's key schema or an index's projection, so DynamoDB looks the table up
+  // first. On a table that doesn't exist each one reports the table missing.
+  it.each([
+    ['a negated sort-key term in an OR filter', `WHERE pk = 'k' AND (NOT sk = 's0' OR x = 0)`],
+    ['a number for a partition key, twice', 'WHERE pk = 1 AND pk = 1.0'],
+    ['a number for a partition key', 'WHERE pk = 1'],
+    ['a boolean for a partition key', 'WHERE pk = true'],
+    ['a boolean for a partition key beside two sort keys', `WHERE pk = true AND (sk = 'row-1' OR sk = 'row-2')`],
+    ['ORDER BY over two branches on one partition', `WHERE (pk = 'k' AND x = 1) OR (pk = 'k' AND x = 2) ORDER BY sk DESC`],
+    ['ORDER BY on the sort key over two partitions', `WHERE (pk = 'a' AND x = 1) OR (pk = 'k' AND x = 2) ORDER BY sk`],
+    ['sort-key ranges that meet', `WHERE pk = 'k' AND (sk <= 'row-2' OR sk >= 'row-2')`],
+    ['an unbounded OR branch beside a sort-key equality', `WHERE pk = 'k' AND (sk = 'row-1' OR x = 3)`],
+  ])('%s waits for table resolution', async (_label, where) => {
+    try {
+      await ddb.send(new ExecuteStatementCommand({
+        Statement: `SELECT * FROM "${absentTableName('vo_partiql_missing')}" ${where}`,
+      }))
+      expect.unreachable('should have thrown')
+    } catch (err) {
+      if (!(err instanceof DynamoDBServiceException)) throw err
+      expect(err.name).toBe('ResourceNotFoundException')
+    }
+  })
+
+  it('an unprojected OR filter on an index waits for table resolution', async () => {
+    try {
+      await ddb.send(new ExecuteStatementCommand({
+        Statement: `SELECT * FROM "${absentTableName('vo_partiql_missing')}"."gsi-keys" WHERE gsiPk2 = 'k' AND (nonproj = 1 OR nonproj = 2)`,
+      }))
+      expect.unreachable('should have thrown')
+    } catch (err) {
+      if (!(err instanceof DynamoDBServiceException)) throw err
+      expect(err.name).toBe('ResourceNotFoundException')
+    }
+  })
+
+  // Captured in 33 regions, 2026-11-05, none of which had the table. Limit is
+  // checked as a request member, before the table is looked up.
+  it.each([0, -1])('a Limit of %i fires ahead of table resolution', async (Limit) => {
+    try {
+      await ddb.send(new ExecuteStatementCommand({
+        Statement: `SELECT * FROM "${absentTableName('vo_partiql_missing')}" WHERE pk = 'k'`,
+        Limit,
+      }))
+      expect.unreachable('should have thrown')
+    } catch (err) {
+      if (!(err instanceof DynamoDBServiceException)) throw err
+      expect(err.name).toBe('ValidationException')
+      expect(err.message).toContain(`Value '${Limit}' at 'limit' failed to satisfy constraint`)
+    }
+  })
+
+  // Captured in eu-west-2 and us-east-1, 2026-11-05. The SDK won't send a
+  // string Limit, so the body is written by hand.
+  it('a Limit sent as a string fails deserialisation ahead of table resolution', async () => {
+    const Statement = `SELECT * FROM "${absentTableName('vo_partiql_missing')}" WHERE pk = 'k'`
+    try {
+      await ddb.send(withBody(new ExecuteStatementCommand({ Statement }), { Statement, Limit: '2' }))
+      expect.unreachable('should have thrown')
+    } catch (err) {
+      if (!(err instanceof DynamoDBServiceException)) throw err
+      expect(err.name).toBe('SerializationException')
     }
   })
 })

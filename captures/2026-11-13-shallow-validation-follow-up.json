@@ -1,0 +1,1985 @@
+{
+  "capturedAt": "2026-11-13T18:51:30Z",
+  "note": "Follow-up to the 2026-11-05 capture behind the fourteen shallow-validation rows. The same requests the tests send, at a table that does not exist, sent from three separate processes to every region registry/regions.json lists. A verdict is P when a source gave the pinned region's answer and X when it gave anything else; answer is the exact observation when every 2026-11-13 run agreed. me-south-1 did not answer.",
+  "sources": {
+    "capture1105": "captures/2026-11-05-shallow-validation-rollout.json",
+    "local-A": "2026-11-13, 18:29 to 18:31 UTC",
+    "local-B": "2026-11-13, 18:32 to 18:35 UTC",
+    "local-C": "2026-11-13, 18:48 to 18:51 UTC"
+  },
+  "subjects": {
+    "condition-expression-leading-underscore-message": {
+      "test": "Leading underscore — exact error messages in a ConditionExpression",
+      "pinned": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\"",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "ap-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "ap-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "ap-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "ap-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "ca-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "ca-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "eu-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "eu-central-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "eu-north-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "eu-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "eu-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "eu-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "eu-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "eu-west-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "il-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "me-central-1": {
+          "verdicts": "capture1105:X local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "me-south-1": {
+          "verdicts": "capture1105:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "sa-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "us-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "us-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "us-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        },
+        "us-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid ConditionExpression: Syntax error; token: \"_\", near: \"(_x\""
+        }
+      }
+    },
+    "update-expression-leading-underscore-message": {
+      "test": "Leading underscore — exact error messages in an UpdateExpression",
+      "pinned": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\"",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "ap-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "ap-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "ap-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "ap-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "ca-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "ca-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "eu-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "eu-central-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "eu-north-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "eu-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "eu-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "eu-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "eu-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "eu-west-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "il-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "me-central-1": {
+          "verdicts": "capture1105:X local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "me-south-1": {
+          "verdicts": "capture1105:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "sa-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "us-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "us-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "us-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        },
+        "us-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Invalid UpdateExpression: Syntax error; token: \"_\", near: \"SET _x\""
+        }
+      }
+    },
+    "put-item-two-accented-table-name": {
+      "test": "Item operations count a table name in characters, split by region PutItem reports only the length for two accented letters",
+      "pinned": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ca-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ca-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-central-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-north-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "il-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "me-central-1": {
+          "verdicts": "capture1105:X local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "me-south-1": {
+          "verdicts": "capture1105:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "sa-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value 'éé' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        }
+      }
+    },
+    "put-item-two-emoji-table-name": {
+      "test": "Item operations count a table name in characters, split by region PutItem finds two emoji too short",
+      "pinned": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ca-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ca-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-central-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-north-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "il-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "me-central-1": {
+          "verdicts": "capture1105:X local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "me-south-1": {
+          "verdicts": "capture1105:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "sa-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        }
+      }
+    },
+    "put-item-128-emoji-table-name": {
+      "test": "Item operations count a table name in characters, split by region PutItem does not find 128 emoji too long",
+      "pinned": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ca-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ca-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-central-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-north-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-west-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "il-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "me-central-1": {
+          "verdicts": "capture1105:X local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "me-south-1": {
+          "verdicts": "capture1105:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "sa-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        }
+      }
+    },
+    "update-item-two-emoji-table-name": {
+      "test": "Item operations count a table name in characters, split by region UpdateItem finds two emoji too short, after the pattern",
+      "pinned": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ca-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ca-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-central-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-north-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "il-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "me-central-1": {
+          "verdicts": "capture1105:X local-A:P local-B:X local-C:P"
+        },
+        "me-south-1": {
+          "verdicts": "capture1105:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "sa-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+; Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        }
+      }
+    },
+    "get-item-two-emoji-table-name": {
+      "test": "Item operations count a table name in characters, split by region GetItem finds two emoji too short",
+      "pinned": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ca-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ca-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-central-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-north-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "il-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "me-central-1": {
+          "verdicts": "capture1105:X local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "me-south-1": {
+          "verdicts": "capture1105:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "sa-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        }
+      }
+    },
+    "get-item-128-emoji-table-name": {
+      "test": "Item operations count a table name in characters, split by region GetItem does not find 128 emoji too long",
+      "pinned": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ca-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ca-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-central-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-north-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-west-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "il-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "me-central-1": {
+          "verdicts": "capture1105:X local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "me-south-1": {
+          "verdicts": "capture1105:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "sa-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        }
+      }
+    },
+    "delete-item-two-emoji-table-name": {
+      "test": "Item operations count a table name in characters, split by region DeleteItem finds two emoji too short",
+      "pinned": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ca-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ca-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-central-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-north-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "il-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "me-central-1": {
+          "verdicts": "capture1105:X local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "me-south-1": {
+          "verdicts": "capture1105:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "sa-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        }
+      }
+    },
+    "delete-item-128-emoji-table-name": {
+      "test": "Item operations count a table name in characters, split by region DeleteItem does not find 128 emoji too long",
+      "pinned": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ca-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ca-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-central-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-north-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-west-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "il-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "me-central-1": {
+          "verdicts": "capture1105:X local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "me-south-1": {
+          "verdicts": "capture1105:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "sa-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        }
+      }
+    },
+    "query-two-emoji-table-name": {
+      "test": "Item operations count a table name in characters, split by region Query finds two emoji too short",
+      "pinned": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ca-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ca-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-central-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-north-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "il-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "me-central-1": {
+          "verdicts": "capture1105:X local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "me-south-1": {
+          "verdicts": "capture1105:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "sa-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        }
+      }
+    },
+    "query-128-emoji-table-name": {
+      "test": "Item operations count a table name in characters, split by region Query does not find 128 emoji too long",
+      "pinned": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ca-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ca-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-central-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-north-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-west-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "il-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "me-central-1": {
+          "verdicts": "capture1105:X local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "me-south-1": {
+          "verdicts": "capture1105:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "sa-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        }
+      }
+    },
+    "scan-two-emoji-table-name": {
+      "test": "Item operations count a table name in characters, split by region Scan finds two emoji too short",
+      "pinned": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ca-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "ca-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-central-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-north-1": {
+          "verdicts": "capture1105:X local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "eu-west-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "il-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "me-central-1": {
+          "verdicts": "capture1105:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "me-south-1": {
+          "verdicts": "capture1105:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "sa-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        },
+        "us-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+        }
+      }
+    },
+    "scan-128-emoji-table-name": {
+      "test": "Item operations count a table name in characters, split by region Scan does not find 128 emoji too long",
+      "pinned": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-northeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-northeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-northeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-4": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-5": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-6": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ap-southeast-7": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ca-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "ca-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-central-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-north-1": {
+          "verdicts": "capture1105:X local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-south-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-south-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "eu-west-3": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "il-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "me-central-1": {
+          "verdicts": "capture1105:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must have length less than or equal to 255; Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "me-south-1": {
+          "verdicts": "capture1105:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "sa-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-east-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-east-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-west-1": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        },
+        "us-west-2": {
+          "verdicts": "capture1105:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+        }
+      }
+    }
+  }
+}

@@ -419,6 +419,14 @@
         "lsi"
       ]
     },
+    "tests/tier1/query/indexTieOrder.test.ts": {
+      "Query - order of rows tied on an index key": [
+        "query",
+        "data-plane",
+        "gsi",
+        "lsi"
+      ]
+    },
     "tests/tier1/query/keyConditionParens.test.ts": {
       "Query — KeyConditionExpression with parentheses": [
         "query",
@@ -804,12 +812,36 @@
         "lsi"
       ]
     },
+    "tests/tier2/partiql/indexTieOrder.test.ts": {
+      "ExecuteStatement - order of rows tied on an index key": [
+        "partiql",
+        "data-plane",
+        "gsi",
+        "lsi"
+      ]
+    },
     "tests/tier2/partiql/multiAttributeIndex.test.ts": {
       "PartiQL - GSI with a multi-attribute key": [
         "partiql",
         "data-plane",
         "gsi",
         "lsi"
+      ]
+    },
+    "tests/tier2/partiql/orReads.test.ts": {
+      "PartiQL - OR reads in one partition: paging": [
+        "partiql",
+        "data-plane"
+      ]
+    },
+    "tests/tier2/partiql/readCapacity.test.ts": {
+      "PartiQL - read capacity of OR and IN on the sort key": [
+        "partiql",
+        "data-plane"
+      ],
+      "PartiQL - read capacity of a partition key that cannot be a key": [
+        "partiql",
+        "data-plane"
       ]
     },
     "tests/tier2/partiql/setFunctions.test.ts": {
@@ -1067,6 +1099,17 @@
         "negative-path"
       ]
     },
+    "tests/tier3/error-messages/controlPlaneNameUnits.test.ts": {
+      "Table and index operations measure a name": [
+        "create-table",
+        "describe-table",
+        "delete-table",
+        "update-table",
+        "list-tables",
+        "control-plane",
+        "negative-path"
+      ]
+    },
     "tests/tier3/error-messages/createTable.test.ts": {
       "CreateTable — exact error messages": [
         "create-table",
@@ -1135,6 +1178,16 @@
         "negative-path",
         "gsi",
         "lsi"
+      ]
+    },
+    "tests/tier3/error-messages/leadingUnderscore.test.ts": {
+      "Leading underscore — exact error messages": [
+        "query",
+        "scan",
+        "put-item",
+        "update-item",
+        "data-plane",
+        "negative-path"
       ]
     },
     "tests/tier3/error-messages/partiql.test.ts": {
@@ -1243,6 +1296,28 @@
         "search-vectors",
         "data-plane",
         "vector",
+        "negative-path"
+      ]
+    },
+    "tests/tier3/error-messages/tableNameUnits.test.ts": {
+      "Item operations count a table name in characters": [
+        "put-item",
+        "update-item",
+        "get-item",
+        "delete-item",
+        "query",
+        "scan",
+        "data-plane",
+        "negative-path"
+      ],
+      "Item operations count a table name in characters, split by region": [
+        "put-item",
+        "update-item",
+        "get-item",
+        "delete-item",
+        "query",
+        "scan",
+        "data-plane",
         "negative-path"
       ]
     },
@@ -1479,6 +1554,15 @@
         "data-plane"
       ]
     },
+    "tests/tier3/limits/leadingUnderscore.test.ts": {
+      "Leading underscore in expressions": [
+        "query",
+        "scan",
+        "put-item",
+        "update-item",
+        "data-plane"
+      ]
+    },
     "tests/tier3/limits/nestingDepth.test.ts": {
       "Nesting depth — 32-level document limit": [
         "put-item",
@@ -1598,6 +1682,30 @@
         "delete-item",
         "data-plane",
         "negative-path"
+      ],
+      "Deep writes list every bad member in order": [
+        "put-item",
+        "update-item",
+        "delete-item",
+        "legacy",
+        "data-plane",
+        "negative-path"
+      ],
+      "Deep writes check the table name in two stages": [
+        "put-item",
+        "update-item",
+        "delete-item",
+        "legacy",
+        "data-plane",
+        "negative-path"
+      ],
+      "Deep writes count a table name in UTF-16 units": [
+        "put-item",
+        "update-item",
+        "delete-item",
+        "legacy",
+        "data-plane",
+        "negative-path"
       ]
     },
     "tests/tier3/validation-ordering/deleteItem.test.ts": {
@@ -1710,6 +1818,28 @@
         ],
         "mixing ProjectionExpression on one table and AttributesToGet on another is rejected": [
           "legacy"
+        ]
+      }
+    },
+    "tests/tier3/error-messages/controlPlaneNameUnits.test.ts": {
+      "Table and index operations measure a name": {
+        "CreateTable finds a GSI name of two emoji too short": [
+          "gsi"
+        ],
+        "CreateTable does not find a GSI name of 128 emoji too long": [
+          "gsi"
+        ],
+        "CreateTable finds an LSI name of two emoji too short": [
+          "lsi"
+        ],
+        "CreateTable does not find an LSI name of 128 emoji too long": [
+          "lsi"
+        ],
+        "UpdateTable finds a new GSI name of two emoji too short": [
+          "gsi"
+        ],
+        "UpdateTable does not find a new GSI name of 128 emoji too long": [
+          "gsi"
         ]
       }
     },

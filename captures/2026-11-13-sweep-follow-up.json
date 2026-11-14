@@ -1,0 +1,851 @@
+{
+  "capturedAt": "2026-11-13T19:26:26Z",
+  "note": "Follow-up to the 2026-10-24, 2026-10-31 and 2026-11-07 sweeps. The five Scan rows and the BatchGetItem row, checked region by region across the three sweeps and three local runs against every region registry/regions.json lists, from separate processes started at about 18:24, 18:45 and 19:06 UTC. Each local run sends the requests the tests send, at a table that does not exist, because each check fires before the table is looked up. The malformed ExclusiveStartKey needs a real table, so it was sent once per region from a fourth run (local-D, 18:54 to 18:56 UTC) that created and deleted its own temporary tables, and twice more in eu-north-1 (local-E and local-F) after local-D found it on the old wording. A verdict is P when a source gave the pinned region's answer and X when it gave anything else; answer is the exact observation when every local run agreed. me-south-1 did not answer any local run, and no sweep has resolved it. A region moved only where at least two sweeps and every local run agreed on the pinned answer.",
+  "sources": {
+    "sweep1024": "https://github.com/paritysuite/dynamodb-conformance/actions/runs/40074998860",
+    "sweep1031": "https://github.com/paritysuite/dynamodb-conformance/actions/runs/41186801355",
+    "sweep1107": "https://github.com/paritysuite/dynamodb-conformance/actions/runs/42359294432",
+    "local-A": "2026-11-13, started 18:24 UTC",
+    "local-B": "2026-11-13, started 18:45 UTC",
+    "local-C": "2026-11-13, started 19:06 UTC",
+    "local-D": "2026-11-13, 18:54 to 18:56 UTC, malformed ExclusiveStartKey only",
+    "local-E": "2026-11-13, 19:06 to 19:06 UTC, malformed ExclusiveStartKey in eu-north-1 only",
+    "local-F": "2026-11-13, 19:08 to 19:08 UTC, malformed ExclusiveStartKey in eu-north-1 only"
+  },
+  "subjects": {
+    "scan-segment-out-of-range-message": {
+      "pinned": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "ap-east-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "ap-east-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "ap-northeast-1": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "ap-northeast-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "ap-northeast-3": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "ap-south-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "ap-south-2": {
+          "verdicts": "sweep1024:P sweep1031:X sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "ap-southeast-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "ap-southeast-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "ap-southeast-3": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "ap-southeast-4": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "ap-southeast-5": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "ap-southeast-6": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "ap-southeast-7": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "ca-central-1": {
+          "verdicts": "sweep1024:X sweep1031:X sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "ca-west-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "eu-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "eu-central-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "eu-north-1": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:X"
+        },
+        "eu-south-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "eu-south-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "eu-west-1": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "eu-west-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "eu-west-3": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "il-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "me-central-1": {
+          "verdicts": "sweep1024:X sweep1031:X sweep1107:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments: Segment: 5 is not less than TotalSegments: 5"
+        },
+        "me-south-1": {
+          "verdicts": "sweep1024:- sweep1031:- sweep1107:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "sa-east-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "us-east-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "us-east-2": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "us-west-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        },
+        "us-west-2": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: The Segment parameter is zero-based and must be less than parameter TotalSegments"
+        }
+      }
+    },
+    "scan-limit-zero-message": {
+      "pinned": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "ap-east-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "ap-east-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "ap-northeast-1": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "ap-northeast-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "ap-northeast-3": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "ap-south-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "ap-south-2": {
+          "verdicts": "sweep1024:P sweep1031:X sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "ap-southeast-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "ap-southeast-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "ap-southeast-3": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "ap-southeast-4": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "ap-southeast-5": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "ap-southeast-6": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "ap-southeast-7": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "ca-central-1": {
+          "verdicts": "sweep1024:X sweep1031:X sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "ca-west-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "eu-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "eu-central-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "eu-north-1": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:X"
+        },
+        "eu-south-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "eu-south-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "eu-west-1": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "eu-west-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "eu-west-3": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "il-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "me-central-1": {
+          "verdicts": "sweep1024:X sweep1031:X sweep1107:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '0' at 'limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "me-south-1": {
+          "verdicts": "sweep1024:- sweep1031:- sweep1107:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "sa-east-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "us-east-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "us-east-2": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "us-west-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        },
+        "us-west-2": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+        }
+      }
+    },
+    "scan-segment-negative-message": {
+      "pinned": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "ap-east-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "ap-east-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "ap-northeast-1": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "ap-northeast-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "ap-northeast-3": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "ap-south-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "ap-south-2": {
+          "verdicts": "sweep1024:P sweep1031:X sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "ap-southeast-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "ap-southeast-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "ap-southeast-3": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "ap-southeast-4": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "ap-southeast-5": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "ap-southeast-6": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "ap-southeast-7": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "ca-central-1": {
+          "verdicts": "sweep1024:X sweep1031:X sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "ca-west-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "eu-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "eu-central-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "eu-north-1": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:X"
+        },
+        "eu-south-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "eu-south-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "eu-west-1": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "eu-west-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "eu-west-3": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "il-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "me-central-1": {
+          "verdicts": "sweep1024:X sweep1031:X sweep1107:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: 1 validation error detected: Value '-1' at 'segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "me-south-1": {
+          "verdicts": "sweep1024:- sweep1031:- sweep1107:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "sa-east-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "us-east-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "us-east-2": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "us-west-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        },
+        "us-west-2": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+        }
+      }
+    },
+    "scan-specific-attributes-message": {
+      "pinned": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "ap-east-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "ap-east-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "ap-northeast-1": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "ap-northeast-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "ap-northeast-3": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "ap-south-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "ap-south-2": {
+          "verdicts": "sweep1024:P sweep1031:X sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "ap-southeast-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "ap-southeast-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "ap-southeast-3": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "ap-southeast-4": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "ap-southeast-5": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "ap-southeast-6": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "ap-southeast-7": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "ca-central-1": {
+          "verdicts": "sweep1024:X sweep1031:X sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "ca-west-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "eu-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "eu-central-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "eu-north-1": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:X"
+        },
+        "eu-south-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "eu-south-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "eu-west-1": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "eu-west-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "eu-west-3": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "il-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "me-central-1": {
+          "verdicts": "sweep1024:X sweep1031:X sweep1107:X local-A:X local-B:X local-C:X",
+          "answer": "rejected ValidationException: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "me-south-1": {
+          "verdicts": "sweep1024:- sweep1031:- sweep1107:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "sa-east-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "us-east-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "us-east-2": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "us-west-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        },
+        "us-west-2": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+        }
+      }
+    },
+    "scan-bad-start-key-message": {
+      "pinned": "rejected ValidationException: The provided starting key is invalid",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "ap-east-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "ap-east-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "ap-northeast-1": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "ap-northeast-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "ap-northeast-3": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "ap-south-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "ap-south-2": {
+          "verdicts": "sweep1024:P sweep1031:X sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "ap-southeast-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "ap-southeast-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "ap-southeast-3": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "ap-southeast-4": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "ap-southeast-5": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "ap-southeast-6": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "ap-southeast-7": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "ca-central-1": {
+          "verdicts": "sweep1024:X sweep1031:X sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "ca-west-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "eu-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "eu-central-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "eu-north-1": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-D:X local-E:P local-F:P"
+        },
+        "eu-south-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "eu-south-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "eu-west-1": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "eu-west-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "eu-west-3": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "il-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "me-central-1": {
+          "verdicts": "sweep1024:X sweep1031:X sweep1107:X local-D:X",
+          "answer": "rejected ValidationException: The provided starting key is invalid: The provided key element does not match the schema"
+        },
+        "me-south-1": {
+          "verdicts": "sweep1024:- sweep1031:- sweep1107:- local-D:-"
+        },
+        "mx-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "sa-east-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "us-east-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "us-east-2": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "us-west-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        },
+        "us-west-2": {
+          "verdicts": "sweep1024:X sweep1031:P sweep1107:P local-D:P",
+          "answer": "rejected ValidationException: The provided starting key is invalid"
+        }
+      }
+    },
+    "batch-get-item-empty-request-items-message": {
+      "pinned": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1",
+      "regions": {
+        "af-south-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "ap-east-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "ap-east-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "ap-northeast-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "ap-northeast-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "ap-northeast-3": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "ap-south-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "ap-south-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "ap-southeast-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "ap-southeast-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "ap-southeast-3": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "ap-southeast-4": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "ap-southeast-5": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "ap-southeast-6": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "ap-southeast-7": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "ca-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "ca-west-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "eu-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "eu-central-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "eu-north-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "eu-south-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "eu-south-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "eu-west-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "eu-west-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "eu-west-3": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "il-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "me-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:X local-B:P local-C:P"
+        },
+        "me-south-1": {
+          "verdicts": "sweep1024:- sweep1031:- sweep1107:- local-A:- local-B:- local-C:-"
+        },
+        "mx-central-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "sa-east-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "us-east-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "us-east-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "us-west-1": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        },
+        "us-west-2": {
+          "verdicts": "sweep1024:P sweep1031:P sweep1107:P local-A:P local-B:P local-C:P",
+          "answer": "rejected ValidationException: 1 validation error detected: Value at 'RequestItems' failed to satisfy constraint: Member must have length greater than or equal to 1"
+        }
+      }
+    }
+  }
+}

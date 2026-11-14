@@ -14,6 +14,7 @@ import {
   PARTIQL_UNPROJECTED_ATTR,
   cleanupItems,
   waitForGsiConsistency,
+  waitForReadsToSettle,
 } from '../../../src/helpers.js'
 
 declareTables(partiqlIndexTableDef)
@@ -54,6 +55,16 @@ const ITEMS: Record<string, AttributeValue>[] = [
     gsiPk2: { S: 'y2' },
     projattr: { S: 'proj5' }, [PARTIQL_UNPROJECTED_ATTR]: { S: 'np5' },
   },
+]
+
+// Partition `lk` exists only for the LSI key-set reads. Its rows carry `lsiSk`
+// and nothing else an index keys on, so they sit in lsi-all alone, and two of
+// them share a key. The rows are small, so each key a read touches costs one
+// unit under ConsistentRead.
+const LSI_SET_ITEMS: Record<string, AttributeValue>[] = [
+  { pk: { S: 'lk' }, sk: { S: 'r1' }, lsiSk: { S: 'a' } },
+  { pk: { S: 'lk' }, sk: { S: 'r2' }, lsiSk: { S: 'b' } },
+  { pk: { S: 'lk' }, sk: { S: 'r3' }, lsiSk: { S: 'b' } },
 ]
 
 /** Run a statement and hand back the rows and the per-arm capacity. */
@@ -99,6 +110,7 @@ const attrsOf = (item: Record<string, AttributeValue>) => Object.keys(item).sort
 
 describe('ExecuteStatement — index qualifier', { tags: ['partiql', 'data-plane', 'gsi', 'lsi'] }, () => {
   let supported = true
+  let lsiSetSettled: Promise<void> = Promise.resolve()
 
   beforeAll(async () => {
     try {
@@ -114,9 +126,20 @@ describe('ExecuteStatement — index qualifier', { tags: ['partiql', 'data-plane
       }
     }
 
-    for (const Item of ITEMS) {
+    for (const Item of [...ITEMS, ...LSI_SET_ITEMS]) {
       await ddb.send(new PutItemCommand({ TableName: TABLE, Item }))
     }
+
+    // The LSI key-set walks pin exact pages on eventually consistent reads.
+    // Awaited by those walks rather than here, so reads that never settle fail
+    // them as a failed observation instead of skipping the whole file.
+    lsiSetSettled = waitForReadsToSettle({
+      tableName: TABLE,
+      indexName: 'lsi-all',
+      partitionKey: { name: 'pk', value: { S: 'lk' } },
+      expectedCount: LSI_SET_ITEMS.length,
+    })
+    lsiSetSettled.catch(() => {})
 
     // A GSI fills asynchronously, and a read of one still filling is
     // indistinguishable from an engine returning the wrong rows.
@@ -160,7 +183,7 @@ describe('ExecuteStatement — index qualifier', { tags: ['partiql', 'data-plane
   afterAll(async () => {
     if (!supported) return
     await cleanupItems(TABLE, [
-      ...ITEMS.map((i) => ({ pk: i.pk, sk: i.sk })),
+      ...[...ITEMS, ...LSI_SET_ITEMS].map((i) => ({ pk: i.pk, sk: i.sk })),
       // The qualified INSERTs below are rejected by DynamoDB and write nothing.
       // An engine that wrongly accepts one leaves a row behind, in a table the
       // run shares with every other file.
@@ -395,6 +418,21 @@ describe('ExecuteStatement — index qualifier', { tags: ['partiql', 'data-plane
       expect(r.items.map((i) => i.sk.S)).toEqual(['s5'])
     })
 
+    // Unlike the case above, the OR here sits beside the key condition rather
+    // than holding it, so the read is keyed and the filter inside the OR is
+    // still a filter on an attribute the index cannot answer.
+    it('rejects an OR of unprojected filters beside the index partition key', async () => {
+      await expectRejected(
+        `SELECT * FROM "${TABLE}"."gsi-keys" WHERE gsiPk2 = 'y' AND (${PARTIQL_UNPROJECTED_ATTR} = 'np1' OR ${PARTIQL_UNPROJECTED_ATTR} = 'np2')`,
+      )
+    })
+
+    it('rejects the same OR beside a multi-value IN on the index partition key', async () => {
+      await expectRejected(
+        `SELECT * FROM "${TABLE}"."gsi-keys" WHERE gsiPk2 IN ['y', 'y2'] AND (${PARTIQL_UNPROJECTED_ATTR} = 'np1' OR ${PARTIQL_UNPROJECTED_ATTR} = 'np2')`,
+      )
+    })
+
     it('counts BETWEEN on the index sort key as keyed', async () => {
       await expectRejected(
         `SELECT pk FROM "${TABLE}"."lsi-keys" WHERE pk = 'p' AND lsiSk2 BETWEEN 'k1' AND 'k4' AND ${PARTIQL_UNPROJECTED_ATTR} = 'np1'`,
@@ -426,6 +464,62 @@ describe('ExecuteStatement — index qualifier', { tags: ['partiql', 'data-plane
         `SELECT pk, sk FROM "${TABLE}"."gsi-keys" WHERE gsiPk2 = 'y'`,
         { NextToken: first.nextToken },
       )
+    })
+  })
+
+  // An OR of LSI sort-key values reads each key in turn. Under a Limit the token
+  // is held until the read has passed every key, so a key with no rows still
+  // costs a page, and each key is charged on its own.
+  describe('a set of LSI keys', () => {
+    const KEY_SET = (a: string, b: string) =>
+      `SELECT * FROM "${TABLE}"."lsi-all" WHERE pk = 'lk' AND (lsiSk = '${a}' OR lsiSk = '${b}')`
+
+    /** Walk a statement a page at a time and record what each page held. */
+    async function walk(Statement: string, extra: Record<string, unknown> = {}) {
+      await lsiSetSettled
+      const pages: { items: (string | undefined)[]; token: boolean; total: number }[] = []
+      let NextToken: string | undefined
+      // Capped so an engine that never stops minting tokens fails rather than hangs.
+      for (let i = 0; i < 10; i++) {
+        const r = await select(Statement, { ...extra, NextToken })
+        pages.push({ items: r.items.map((it) => it.sk?.S), token: r.nextToken !== undefined, total: r.total })
+        NextToken = r.nextToken
+        if (!NextToken) break
+      }
+      return pages
+    }
+
+    it.each([
+      ['after the found key', 'a', 'z'],
+      ['before the found key', 'z', 'a'],
+    ])('holds the token past a missing key written %s', async (_label, a, b) => {
+      expect(await walk(KEY_SET(a, b), { Limit: 1 })).toEqual([
+        { items: ['r1'], token: true, total: 0.5 },
+        { items: [], token: false, total: 0.5 },
+      ])
+    })
+
+    it('charges a missing key beside a found one under ConsistentRead', async () => {
+      const r = await select(KEY_SET('a', 'z'), { ConsistentRead: true })
+      expect(r.items.map((i) => i.sk?.S)).toEqual(['r1'])
+      expect(r.nextToken).toBeUndefined()
+      expect(r.total).toBe(2)
+      expect(r.lsi('lsi-all')).toBe(2)
+    })
+
+    it('charges per key, not per row, for two found keys over three rows', async () => {
+      const r = await select(KEY_SET('a', 'b'), { ConsistentRead: true })
+      expect(r.items.map((i) => i.sk?.S).sort()).toEqual(['r1', 'r2', 'r3'])
+      expect(r.nextToken).toBeUndefined()
+      expect(r.total).toBe(2)
+    })
+
+    // Whether a page follows the last row varies from walk to walk, so only the
+    // rows the walk adds up to are asserted.
+    it('returns every row across pages when two rows share a key', async () => {
+      const pages = await walk(KEY_SET('a', 'b'), { Limit: 1 })
+      expect(pages.at(-1)?.token).toBe(false)
+      expect(pages.flatMap((p) => p.items).sort()).toEqual(['r1', 'r2', 'r3'])
     })
   })
 
