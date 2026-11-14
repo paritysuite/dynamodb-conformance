@@ -10,7 +10,7 @@ import { controlObservation, controlProvenance, controlSplit, regionCount, regio
 import { renderSplitEvidence, splitCoverageNote } from "./lib/splits.mjs";
 import { regionalSpread, renderCappedExamples, renderCheapestWithdrawal } from "./lib/worked-examples.mjs";
 import { carriedEach, countWord } from "./lib/suite-shape.mjs";
-import { GRADING_CRITERIA_EFFECTIVE, GRADING_VERSION, REGIONAL_CAUSE, TARGETS, capClauseOf, configurationOf, coverageShareSentenceOf, display, distributionOf, fallsShort, gradeForRow, gradeLegendOf, gradeLineOf, gradeOf, gradingCriteriaEffectiveLabel, isSelfMaintained, isVariant, notAttempted, projectOf, regionClauseOf, regionalClauseForRow, regionalLetterForRow, scoredOnCorrectness } from "./lib/scoring.mjs";
+import { GRADING_CRITERIA_EFFECTIVE, GRADING_VERSION, REGIONAL_CAUSE, TARGETS, capClauseOf, configurationOf, coverageShareSentenceOf, display, distributionOf, fallsShort, gradeForRow, gradeLegendOf, gradeLineOf, gradeOf, gradingCriteriaEffectiveLabel, isNotScored, isSelfMaintained, isVariant, notAttempted, projectOf, regionClauseOf, regionLineOf, regionalClauseForRow, regionalLetterForRow, scoredOnCorrectness } from "./lib/scoring.mjs";
 import { channelIcon } from "./lib/channel-icons.mjs";
 import { targetLinks, targetRunHref } from "./lib/links.mjs";
 import { areaFailures, sourceUrl } from "./lib/findings.mjs";
@@ -125,6 +125,8 @@ export default function (eleventyConfig) {
   eleventyConfig.addFilter("gradeForRow", (row, slug) => gradeForRow(row, slug));
   eleventyConfig.addFilter("gradeLine", (row) => gradeLineOf(row));
   eleventyConfig.addFilter("regionClause", (row) => regionClauseOf(row));
+  eleventyConfig.addFilter("regionLine", (row) => regionLineOf(row));
+  eleventyConfig.addFilter("isNotScored", (row) => isNotScored(row));
   eleventyConfig.addFilter("capClause", (row, slug) => capClauseOf(row, slug));
   // Where the row's letter does not hold in every region (#271). The letter
   // half and the cause are separate so a template can link the cause to the

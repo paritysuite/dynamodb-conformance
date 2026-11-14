@@ -23,7 +23,10 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-import { sortRows } from "../../../lib/scoring.mjs";
+import { isNotScored, sortRows } from "../../../lib/scoring.mjs";
+
+// Figures for a reference build whose own run is not scored (see below).
+const SCORED = { divergence: "1.2%", coverage: "95.0%", divergenceValue: 1.2, coverageValue: 95 };
 
 const MODEL_PATH = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "data", "conformance-history.json");
 
@@ -45,6 +48,9 @@ export default async function () {
   // fixture open and fail the check that asserts it closed, for a reason with
   // nothing to do with disclosures.
   Object.assign(dynoxide, { carried: false, reTested: true });
+  // A pair that is not scored never closes, since nobody knows its figures, so
+  // a reference build whose latest run is not scored gets scored ones here.
+  if (isNotScored(dynoxide)) Object.assign(dynoxide, SCORED);
 
   // The agreement. Only the three figures the disclosure reads are copied;
   // the version, the tier breakdown and the region cohort stay as measured,

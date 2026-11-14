@@ -1,0 +1,10 @@
+---
+permalink: /not-scored.html
+---
+<!-- The board's rows with a project and a build the suite did not score
+     (_data/notScored.js). scripts/check-build.mjs asserts on the output. -->
+<main>
+  <ul>
+    <standings-row webc:for="row of notScored.rows" :row="row" :run-id="notScored.runId"></standings-row>
+  </ul>
+</main>

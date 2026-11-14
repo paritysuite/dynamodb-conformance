@@ -1,0 +1,9 @@
+---
+permalink: /region-intro.html
+---
+<!-- The per-region intro of a target page, for a not-scored and a lettered
+     target (_data/notScored.js). scripts/check-build.mjs asserts on it. -->
+<main>
+  <section data-intro="not-scored"><region-intro :target="notScored.intro.notScored"></region-intro></section>
+  <section data-intro="lettered"><region-intro :target="notScored.intro.lettered"></region-intro></section>
+</main>
