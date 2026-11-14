@@ -482,18 +482,60 @@ export function assertDynamoError(
   }
 }
 
-/** Expect an async function to throw a DynamoDB error with the given name/message */
+/**
+ * Expect an async function to throw a DynamoDB error with the given
+ * name/message.
+ *
+ * Nothing is asserted inside the try that makes the request. An assertion
+ * thrown there would land in the catch and be judged as if the target had
+ * said it, and the original error would be lost to the AssertionError that
+ * replaced it. So the outcome is captured first and judged after, in this
+ * order:
+ *
+ * - The request was accepted: a real failure, saying so.
+ * - It threw the expected error name: judged by assertDynamoError exactly as
+ *   before, so a pass stays a pass and a wrong message stays a failure. This
+ *   comes first because an expected error can sit in the set
+ *   src/indeterminate.ts treats as no answer (`LimitExceededException` is
+ *   one), and when the test asked for it, it is the answer.
+ * - It threw something else that src/indeterminate.ts classifies as no answer
+ *   (an exhausted throttle, a transport fault or 5xx, an expired wait): the
+ *   original error is rethrown unchanged, so the run records no answer rather
+ *   than a wrong one.
+ * - Anything else: the same mismatch failure as before.
+ */
 export async function expectDynamoError(
   fn: () => Promise<unknown>,
   expectedName: string,
   expectedMessage?: string | RegExp,
 ): Promise<void> {
+  let accepted = false
+  let thrown: unknown
   try {
     await fn()
-    expect.unreachable('should have thrown')
+    accepted = true
   } catch (e) {
-    assertDynamoError(e, expectedName, expectedMessage)
+    thrown = e
   }
+
+  if (accepted) {
+    assert.fail(`expected ${describeExpectedError(expectedName, expectedMessage)}, but the request was accepted`)
+  }
+  if (!hasErrorName(thrown, expectedName) && indeterminateFrom(thrown)) {
+    throw thrown
+  }
+  assertDynamoError(thrown, expectedName, expectedMessage)
+}
+
+function hasErrorName(error: unknown, name: string): boolean {
+  return typeof error === 'object' && error !== null && (error as { name?: unknown }).name === name
+}
+
+function describeExpectedError(name: string, message?: string | RegExp): string {
+  if (!message) return name
+  return typeof message === 'string'
+    ? `${name} with a message containing ${JSON.stringify(message)}`
+    : `${name} with a message matching ${String(message)}`
 }
 
 /** Delete a batch of items by key, ignoring errors */

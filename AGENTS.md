@@ -110,6 +110,16 @@ Before opening a PR that adds or modifies a test:
    boundary is incomplete. Put the error-code assertion in the
    operation's own tier (or `tests/tier3/validation-ordering/`) and the
    exact message, where it's stable, in `tests/tier3/error-messages/`.
+   Assert an error with `expectDynamoError`, and never put an assertion
+   inside the `try` that makes the request: the `catch` would judge that
+   assertion as if the target had said it. The helper also rethrows a
+   throttle or transport fault untouched, so it is recorded as no answer
+   rather than a failure. Where the helper can't express the check (the
+   exact messages in `error-messages/`, which it only matches with
+   `toContain`), catch the error, rethrow it if `indeterminateFrom`
+   classifies it, and only then assert on it, as
+   `tests/tier2/vectorSearch/updateLifecycle.test.ts` does. Asserting
+   straight away records a throttle as a failure.
 5. **Required if you added, moved or renamed a test: regenerate both
    manifests in the same commit.** `node scripts/suite-manifest.mjs`
    rewrites `registry/suite-manifest.json`, the list of tests the suite

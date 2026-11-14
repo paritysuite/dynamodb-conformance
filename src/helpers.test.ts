@@ -1,5 +1,16 @@
 import { describe, it, expect } from 'vitest'
 import {
+  DynamoDBServiceException,
+  InternalServerError,
+  LimitExceededException,
+  ProvisionedThroughputExceededException,
+  RequestLimitExceeded,
+  ResourceNotFoundException,
+  ThrottlingException,
+} from '@aws-sdk/client-dynamodb'
+import {
+  assertDynamoError,
+  expectDynamoError,
   createTableRegistry,
   isSuiteTable,
   uniqueTableName,
@@ -9,6 +20,12 @@ import {
   PARTIQL_UNPROJECTED_ATTR,
 } from './helpers.js'
 import { resolveTablePrefix, CI_TABLE_PREFIX, LOCAL_TABLE_NAMESPACE } from './table-namespace.js'
+import {
+  INDETERMINATE_REASONS,
+  IndeterminateError,
+  indeterminateFrom,
+} from './indeterminate.js'
+import { stampIndeterminateMarker } from './indeterminate-sink.js'
 import type { TestTableDef } from './types.js'
 
 // The declaration registry behind demand-driven provisioning. Asserted against
@@ -407,5 +424,366 @@ describe('partiqlIndexTableDef', () => {
   it('is a composite-key table, since the LSIs need a range key', () => {
     expect(partiqlIndexTableDef.hashKey.name).toBe('pk')
     expect(partiqlIndexTableDef.rangeKey?.name).toBe('sk')
+  })
+})
+
+// expectDynamoError sits under a third of the suite, so these pin what it does
+// with every outcome a request can have: accepted, the expected answer, a
+// different answer, and no answer at all. No network: each request is a
+// promise settled with a constructed error, shaped the way the SDK throws it.
+
+/** What a call settled with: the value it threw, or 'resolved'. */
+async function outcomeOf(run: () => Promise<unknown>): Promise<{ threw: unknown } | 'resolved'> {
+  try {
+    await run()
+    return 'resolved'
+  } catch (e) {
+    return { threw: e }
+  }
+}
+
+/** The message the helper failed with, or a marker if it did not fail. */
+async function failureOf(run: () => Promise<unknown>): Promise<string> {
+  const outcome = await outcomeOf(run)
+  if (outcome === 'resolved') return '<did not fail>'
+  return (outcome.threw as Error).message
+}
+
+/** The message assertDynamoError alone gives for an error: the old helper's whole catch. */
+function mismatchOf(error: unknown, name: string, message?: string | RegExp): string {
+  try {
+    assertDynamoError(error, name, message)
+  } catch (e) {
+    return (e as Error).message
+  }
+  return '<did not fail>'
+}
+
+function serviceError(
+  name: string,
+  status: number,
+  extra: Record<string, unknown> = {},
+): DynamoDBServiceException {
+  return new DynamoDBServiceException({
+    name,
+    message: `${name} message`,
+    $fault: status >= 500 ? 'server' : 'client',
+    $metadata: { httpStatusCode: status },
+    ...extra,
+  } as ConstructorParameters<typeof DynamoDBServiceException>[0])
+}
+
+/**
+ * A copy of a thrown value as the test runner hands it to afterEach hooks.
+ * Mirrors vitest's serializeValue (vitest/dist/chunks/source-map.*.js, which
+ * can't be imported outside browser mode): every own property name along the
+ * prototype chain, stopping at Object.prototype, copied recursively into an
+ * object with no prototype, so nothing downstream can rely on instanceof.
+ */
+function runnerClone(value: unknown, seen = new WeakMap<object, unknown>()): unknown {
+  if (!value || typeof value !== 'object') return value
+  if (seen.has(value)) return seen.get(value)
+  if (Array.isArray(value)) {
+    const out: unknown[] = []
+    seen.set(value, out)
+    for (const v of value) out.push(runnerClone(v, seen))
+    return out
+  }
+  const out = Object.create(null) as Record<string, unknown>
+  seen.set(value, out)
+  for (let o: object | null = value; o && o !== Object.prototype; o = Object.getPrototypeOf(o)) {
+    for (const key of Object.getOwnPropertyNames(o)) {
+      if (key in out) continue
+      const v = (value as Record<string, unknown>)[key]
+      out[key] = typeof v === 'function' ? `Function<${v.name || 'anonymous'}>` : runnerClone(v, seen)
+    }
+  }
+  return out
+}
+
+function systemError(code: string): Error {
+  // Node's syscall failures, as the SDK passes them up: the code is the only
+  // identifying field, and an AggregateError can leave the message empty.
+  return Object.assign(new Error(''), { code, $metadata: { attempts: 3 } })
+}
+
+// Every shape src/indeterminate.ts classifies as no answer, one entry per
+// classification arm and per listed name or code.
+const NO_ANSWER: [label: string, error: () => unknown][] = [
+  ...INDETERMINATE_REASONS.map(
+    (reason): [string, () => unknown] => [
+      `IndeterminateError (${reason})`,
+      () => new IndeterminateError(reason, `${reason} expired`),
+    ],
+  ),
+  [
+    'ThrottlingException',
+    () => new ThrottlingException({ message: 'Rate exceeded', $metadata: { httpStatusCode: 400 } }),
+  ],
+  [
+    'ProvisionedThroughputExceededException',
+    () =>
+      new ProvisionedThroughputExceededException({
+        message: 'The level of configured provisioned throughput for the table was exceeded.',
+        $metadata: { httpStatusCode: 400 },
+      }),
+  ],
+  [
+    'RequestLimitExceeded',
+    () =>
+      new RequestLimitExceeded({
+        message: 'Throughput exceeds the current throughput limit for your account.',
+        $metadata: { httpStatusCode: 400 },
+      }),
+  ],
+  [
+    'LimitExceededException',
+    () =>
+      new LimitExceededException({
+        message: 'Subscriber limit exceeded',
+        $metadata: { httpStatusCode: 400 },
+      }),
+  ],
+  ...[
+    'RequestThrottled',
+    'RequestThrottledException',
+    'ThrottledException',
+    'Throttling',
+    'TooManyRequestsException',
+  ].map((name): [string, () => unknown] => [name, () => serviceError(name, 400)]),
+  ['HTTP 429, any name', () => serviceError('SlowDown', 429)],
+  [
+    'retry trait marks it as a throttle',
+    () => Object.assign(new Error('slow down'), { name: 'Bespoke', $retryable: { throttling: true } }),
+  ],
+  [
+    'InternalServerError (HTTP 500, JSON body)',
+    () =>
+      new InternalServerError({ message: 'Internal server error', $metadata: { httpStatusCode: 500 } }),
+  ],
+  ['HTTP 503, unmodelled name', () => serviceError('ServiceUnavailable', 503)],
+  ['server fault with no status', () => serviceError('InternalFailure', 0, { $fault: 'server', $metadata: {} })],
+  [
+    'HTML 500 body that fails to deserialise',
+    () =>
+      Object.assign(new SyntaxError(`Unexpected token '<', "<html><bod"... is not valid JSON`), {
+        $metadata: { httpStatusCode: 500 },
+      }),
+  ],
+  ...['TimeoutError', 'RequestTimeout', 'RequestTimeoutException'].map(
+    (name): [string, () => unknown] => [
+      name,
+      () => Object.assign(new Error('socket hang up'), { name }),
+    ],
+  ),
+  ...['ECONNREFUSED', 'ECONNRESET', 'EPIPE', 'ETIMEDOUT', 'EHOSTUNREACH', 'ENETUNREACH', 'ENOTFOUND', 'EAI_AGAIN'].map(
+    (code): [string, () => unknown] => [code, () => systemError(code)],
+  ),
+]
+
+describe('expectDynamoError', () => {
+  it('passes when the expected error is thrown', async () => {
+    const err = serviceError('ValidationException', 400)
+    expect(
+      await outcomeOf(() => expectDynamoError(() => Promise.reject(err), 'ValidationException', 'message')),
+    ).toBe('resolved')
+  })
+
+  it('passes on a regex match, as before', async () => {
+    const err = serviceError('ValidationException', 400)
+    expect(
+      await outcomeOf(() =>
+        expectDynamoError(() => Promise.reject(err), 'ValidationException', /^ValidationException message$/),
+      ),
+    ).toBe('resolved')
+  })
+
+  it('fails an accepted request with a message saying it was accepted', async () => {
+    const message = await failureOf(() =>
+      expectDynamoError(() => Promise.resolve({}), 'ValidationException'),
+    )
+    expect(message).toBe('expected ValidationException, but the request was accepted')
+  })
+
+  it('names the expected message or pattern when an accepted request was meant to fail', async () => {
+    expect(
+      await failureOf(() =>
+        expectDynamoError(() => Promise.resolve({}), 'ValidationException', 'Invalid KeyConditionExpression'),
+      ),
+    ).toBe(
+      'expected ValidationException with a message containing "Invalid KeyConditionExpression", but the request was accepted',
+    )
+    expect(
+      await failureOf(() => expectDynamoError(() => Promise.resolve({}), 'ValidationException', /^Bad/)),
+    ).toBe('expected ValidationException with a message matching /^Bad/, but the request was accepted')
+  })
+
+  it('keeps an accepted request a real failure, not a no-answer', async () => {
+    const outcome = await outcomeOf(() =>
+      expectDynamoError(() => Promise.resolve({}), 'ValidationException'),
+    )
+    expect(outcome).not.toBe('resolved')
+    const thrown = (outcome as { threw: unknown }).threw
+    expect((thrown as Error).name).toBe('AssertionError')
+    expect(indeterminateFrom(thrown)).toBeNull()
+  })
+
+  it.each(NO_ANSWER)(
+    'rethrows %s unchanged, so the run records no answer',
+    async (_label, make) => {
+      const original = make()
+      const raw = indeterminateFrom(original)
+      // The table above is only worth something if every entry really is a
+      // no-answer shape to the classifier.
+      expect(raw).not.toBeNull()
+
+      const outcome = await outcomeOf(() =>
+        expectDynamoError(() => Promise.reject(original), 'ValidationException'),
+      )
+      expect(outcome).not.toBe('resolved')
+      const thrown = (outcome as { threw: unknown }).threw
+      expect(thrown).toBe(original)
+      expect(indeterminateFrom(thrown)?.reason).toBe(raw!.reason)
+    },
+  )
+
+  // The afterEach hook in src/setup.ts never sees the thrown value itself: the
+  // runner clones it first. This pins the whole helper -> marker path for every
+  // shape, on the clone the hook actually gets.
+  it.each(NO_ANSWER)(
+    'stamps the no-answer marker for %s rethrown by the helper, once the runner has cloned it',
+    async (_label, make) => {
+      const original = make()
+      const outcome = await outcomeOf(() =>
+        expectDynamoError(() => Promise.reject(original), 'ConditionalCheckFailedException'),
+      )
+      const clone = runnerClone((outcome as { threw: unknown }).threw)
+      expect(Object.getPrototypeOf(clone)).toBeNull()
+
+      const task: Parameters<typeof stampIndeterminateMarker>[0] = {
+        meta: {},
+        result: { state: 'fail', errors: [clone] },
+      }
+      stampIndeterminateMarker(task)
+      expect(task.meta.indeterminate).toEqual({ reason: indeterminateFrom(original)!.reason, at: 'test' })
+    },
+  )
+
+  it('rethrows a no-answer error that fn throws synchronously', async () => {
+    const original = new ThrottlingException({ message: 'Rate exceeded', $metadata: { httpStatusCode: 400 } })
+    const fn = (() => {
+      throw original
+    }) as () => Promise<unknown>
+    const outcome = await outcomeOf(() => expectDynamoError(fn, 'ValidationException'))
+    expect((outcome as { threw: unknown }).threw).toBe(original)
+  })
+
+  it('passes when fn synchronously throws the expected error', async () => {
+    const fn = (() => {
+      throw serviceError('ValidationException', 400)
+    }) as () => Promise<unknown>
+    expect(await outcomeOf(() => expectDynamoError(fn, 'ValidationException'))).toBe('resolved')
+  })
+
+  it('reports an fn that returns a plain value, not a promise, as accepted', async () => {
+    const fn = (() => 42) as unknown as () => Promise<unknown>
+    expect(await failureOf(() => expectDynamoError(fn, 'ValidationException'))).toBe(
+      'expected ValidationException, but the request was accepted',
+    )
+  })
+
+  // An expected error wins: when a test asks for an error that also sits in the
+  // no-answer set, getting it is the answer.
+  it.each([
+    ['LimitExceededException', () => new LimitExceededException({ message: 'Subscriber limit exceeded', $metadata: { httpStatusCode: 400 } })],
+    ['ThrottlingException', () => new ThrottlingException({ message: 'Rate exceeded', $metadata: { httpStatusCode: 400 } })],
+    ['InternalServerError', () => new InternalServerError({ message: 'Internal server error', $metadata: { httpStatusCode: 500 } })],
+  ] as const)('passes when the expected error is %s, which is otherwise no answer', async (name, make) => {
+    expect(
+      await outcomeOf(() => expectDynamoError(() => Promise.reject(make()), name)),
+    ).toBe('resolved')
+  })
+
+  it('fails, not no-answer, when the expected name is in the no-answer set but the message differs', async () => {
+    const err = new LimitExceededException({ message: 'some other limit', $metadata: { httpStatusCode: 400 } })
+    const outcome = await outcomeOf(() =>
+      expectDynamoError(() => Promise.reject(err), 'LimitExceededException', 'Subscriber limit exceeded'),
+    )
+    const thrown = (outcome as { threw: unknown }).threw
+    expect((thrown as Error).message).toBe("expected 'some other limit' to contain 'Subscriber limit exceeded'")
+    expect(indeterminateFrom(thrown)).toBeNull()
+  })
+
+  // A different definite answer fails exactly as it always has. The expected
+  // strings are the old helper's messages, captured before the change.
+  it.each([
+    [
+      'a different error name',
+      () => new ResourceNotFoundException({ message: 'Requested resource not found', $metadata: { httpStatusCode: 400 } }),
+      'ValidationException',
+      undefined,
+      "expected 'ResourceNotFoundException' to be 'ValidationException' // Object.is equality",
+    ],
+    [
+      'the right name with the wrong message',
+      () => serviceError('ValidationException', 400),
+      'ValidationException',
+      'nope',
+      "expected 'ValidationException message' to contain 'nope'",
+    ],
+    [
+      'the right name failing a pattern',
+      () => serviceError('ValidationException', 400),
+      'ValidationException',
+      /^nope$/,
+      "expected 'ValidationException message' to match /^nope$/",
+    ],
+    [
+      'HTTP 501, which is a definite answer about scope',
+      () => serviceError('NotImplemented', 501),
+      'ValidationException',
+      undefined,
+      "expected 'NotImplemented' to be 'ValidationException' // Object.is equality",
+    ],
+    [
+      'a 400 body that fails to deserialise',
+      () => Object.assign(new SyntaxError('Unexpected token'), { $metadata: { httpStatusCode: 400 } }),
+      'ValidationException',
+      undefined,
+      'expected SyntaxError: Unexpected token { …(1) } to be an instance of DynamoDBServiceException',
+    ],
+    [
+      'a TypeError from the test code',
+      () => new TypeError('x is not a function'),
+      'ValidationException',
+      undefined,
+      'expected TypeError: x is not a function to be an instance of DynamoDBServiceException',
+    ],
+    [
+      'a thrown undefined',
+      () => undefined,
+      'ValidationException',
+      undefined,
+      'expected undefined to be defined',
+    ],
+    [
+      'a thrown null',
+      () => null,
+      'ValidationException',
+      undefined,
+      'expected null to be an instance of DynamoDBServiceException',
+    ],
+    [
+      'a thrown string',
+      () => 'a string',
+      'ValidationException',
+      undefined,
+      "expected 'a string' to be an instance of DynamoDBServiceException",
+    ],
+  ] as [string, () => unknown, string, string | RegExp | undefined, string][])('fails on %s with the same message as before', async (_label, make, name, message, expected) => {
+    const err = make()
+    const got = await failureOf(() => expectDynamoError(() => Promise.reject(err), name, message))
+    expect(got).toBe(expected)
+    expect(got).toBe(mismatchOf(err, name, message))
   })
 })

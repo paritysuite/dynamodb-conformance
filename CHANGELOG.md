@@ -163,6 +163,19 @@ over an external store rather than a self-contained emulator. There is no
 release yet, so it is built from `main` with the project's own Docker setup and
 the row records the commit it ran.
 
+A test expecting an error now says so plainly when the request was accepted:
+`expected ValidationException, but the request was accepted`, where it used to
+read `expected AssertionError: expected "should have thrown" ... to be an
+instance of DynamoDBServiceException`. The verdict is the same, a failure. What
+does change is a request that got no answer while a test was waiting for an
+error. A throttle that outlasted the SDK's retries, a transport fault or a 5xx
+other than 501 (not implemented, which stays a real failure) used to be judged
+as the wrong error and recorded as a failure. It is now recorded as no answer,
+the same as anywhere else in the suite, so a run that meets one is not scored
+rather than carrying a failure for it. A test that expects one of those errors
+on purpose still passes when it gets it. This covers tests that use
+`expectDynamoError`. Tests that catch the error by hand are unchanged for now.
+
 ## 2026-11-02 (3.9.0)
 
 Query's XOR ConditionalOperator beside an unknown Select is now pinned to the
