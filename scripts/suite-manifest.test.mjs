@@ -1,9 +1,14 @@
 import { describe, it, expect } from 'vitest'
-import { readFileSync, readdirSync } from 'node:fs'
-import { join } from 'node:path'
+import { execFile } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { createServer } from 'node:http'
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+import { promisify } from 'node:util'
 import { isTargetResultFile } from './lib/score.mjs'
 import { committedGradingInputs } from './lib/measured.mjs'
-import { readManifest, staleReport, suiteIdentities, suiteSizeOf } from './suite-manifest.mjs'
+import { enumerationArgs, enumerationEnv, readManifest, staleReport, suiteIdentities, suiteSizeOf } from './suite-manifest.mjs'
 import { assertMeasuredSuite, assertOneDenominator, readTargets } from './summarise.mjs'
 
 const MANIFEST = readManifest()
@@ -153,4 +158,119 @@ describe('assertOneDenominator against the manifest', () => {
       /beta scored 12.*suite-manifest\.json is stale/s,
     )
   })
+})
+
+describe('the enumeration run', () => {
+  it('names no target and no results directory, and cannot reach a database', () => {
+    const env = enumerationEnv('/scratch', {
+      PATH: '/bin',
+      CONFORMANCE_TARGET: 'dynoxide',
+      CONFORMANCE_RESULTS_DIR: 'results',
+      CONFORMANCE_RETRY: '2',
+      DYNAMODB_ENDPOINT: 'http://localhost:8000',
+      AWS_PROFILE: 'prod',
+      AWS_SESSION_TOKEN: 'token',
+      AWS_ENDPOINT_URL_DYNAMODB: 'https://dynamodb.eu-west-2.amazonaws.com',
+    })
+    expect(env).toEqual({
+      PATH: '/bin',
+      DYNAMODB_ENDPOINT: 'http://127.0.0.1:1',
+      CONFORMANCE_RESULTS_DIR: '/scratch',
+      AWS_REGION: 'us-east-1',
+      AWS_ACCESS_KEY_ID: 'fakeAccessKeyId',
+      AWS_SECRET_ACCESS_KEY: 'fakeSecretAccessKey',
+    })
+  })
+
+  it('keeps its collection run out of the results cache', () => {
+    expect(enumerationArgs('/scratch/out.json')).toContain('--no-cache')
+  })
+
+  // The run executes the suite, so its run-level sidecar (globalSetup clears
+  // it, the dead endpoint rewrites it) lands wherever the caller's environment
+  // says. Each case is one real enumeration, run side by side to keep the
+  // wall time to a single run's.
+  it('leaves results/ and a caller\'s results directory exactly as they were', async () => {
+    const snapshot = (dir) =>
+      Object.fromEntries(
+        readdirSync(dir)
+          .filter((f) => statSync(join(dir, f)).isFile())
+          .sort()
+          .map((f) => [f, createHash('sha256').update(readFileSync(join(dir, f))).digest('hex')]),
+      )
+
+    let requests = 0
+    const server = createServer((req, res) => {
+      requests += 1
+      res.writeHead(500).end()
+    })
+    await new Promise((done) => server.listen(0, '127.0.0.1', done))
+    const live = `http://127.0.0.1:${server.address().port}`
+
+    const callerDir = mkdtempSync(join(tmpdir(), 'suite-manifest-caller-'))
+    writeFileSync(join(callerDir, 'local.indeterminate.json'), '{"real":"local"}\n')
+    writeFileSync(join(callerDir, 'x.indeterminate.json'), '{"real":"x"}\n')
+
+    // The children's own temp dir, so a leftover there can only be theirs.
+    const childTmp = mkdtempSync(join(tmpdir(), 'suite-manifest-children-'))
+
+    const bare = Object.fromEntries(
+      Object.entries(process.env).filter(([name]) => !/^(CONFORMANCE_|AWS_|DYNAMODB_)/.test(name)),
+    )
+    bare.TMPDIR = childTmp
+    const cases = {
+      neither: bare,
+      target: {
+        ...bare,
+        CONFORMANCE_TARGET: 'x',
+        // A caller pointed at a live endpoint, with credentials of its own.
+        DYNAMODB_ENDPOINT: live,
+        AWS_ENDPOINT_URL: live,
+        AWS_ENDPOINT_URL_DYNAMODB: live,
+        AWS_ACCESS_KEY_ID: 'AKIACALLER',
+        AWS_SECRET_ACCESS_KEY: 'caller',
+        AWS_SESSION_TOKEN: 'caller',
+        AWS_PROFILE: 'caller',
+        AWS_REGION: 'eu-west-2',
+      },
+      resultsDir: { ...bare, CONFORMANCE_RESULTS_DIR: callerDir },
+      both: { ...bare, CONFORMANCE_TARGET: 'x', CONFORMANCE_RESULTS_DIR: callerDir },
+    }
+
+    const script = resolve('scripts/suite-manifest.mjs')
+    const enumerate = (env) =>
+      promisify(execFile)(
+        process.execPath,
+        ['--input-type=module', '-e', `const m = await import(${JSON.stringify(script)}); process.stdout.write(JSON.stringify(m.enumerateSuite()))`],
+        { env, maxBuffer: 64 * 1024 * 1024 },
+      ).then(({ stdout }) => JSON.parse(stdout))
+
+    // The only names a regressed enumeration writes under results/: the
+    // sidecar for the scratch slug and for the target the cases name.
+    const strays = ['local.indeterminate.json', 'x.indeterminate.json'].filter(
+      (f) => !existsSync(join('results', f)),
+    )
+    const resultsBefore = snapshot('results')
+    const callerBefore = snapshot(callerDir)
+    try {
+      const names = Object.keys(cases)
+      const runs = await Promise.all(names.map((name) => enumerate(cases[name])))
+      expect(snapshot('results')).toEqual(resultsBefore)
+      expect(snapshot(callerDir)).toEqual(callerBefore)
+      expect(requests).toBe(0)
+      expect(readdirSync(childTmp).filter((f) => f.startsWith('suite-manifest-'))).toEqual([])
+      for (const [i, ids] of runs.entries()) {
+        expect(ids, `${names[i]} enumerated a different suite from neither`).toEqual(runs[0])
+      }
+      expect(runs[0], 'registry/suite-manifest.json is stale. Run: npm run suite:manifest').toEqual(MANIFEST.tests)
+    } finally {
+      server.close()
+      rmSync(callerDir, { recursive: true, force: true })
+      rmSync(childTmp, { recursive: true, force: true })
+      // Undo only what a regressed enumeration would have left, so a red run
+      // here does not go on to mark a target not scored. Anything else new in
+      // results/ belongs to someone else's run.
+      for (const f of strays) rmSync(join('results', f), { force: true })
+    }
+  }, 120_000)
 })
