@@ -66,6 +66,16 @@ test("every scored target resolves at least one link", async () => {
   }
 });
 
+// LocalStack's registry URL is its site: the GitHub repository is archived and
+// its licence file is not the licence of the image measured, so the row offers
+// no source link beside a licence that is not that repository's.
+test("LocalStack resolves to its site and no source", async () => {
+  const { REPO } = await import("./scoring.mjs");
+  const links = targetLinks("localstack", REPO.localstack);
+  assert.equal(links.source, null);
+  assert.equal(links.website.label, "localstack.cloud");
+});
+
 test("targetRunHref sends a run's row to that target's results for that date", () => {
   assert.equal(targetRunHref({ slug: "dynoxide", reTested: true }, "2026-07-20"), "/targets/dynoxide/2026-07-20");
 });

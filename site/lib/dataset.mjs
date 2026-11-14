@@ -24,6 +24,7 @@ import {
   isNotScored,
   isSelfMaintained,
   isVariant,
+  licenceOf,
   projectOf,
 } from "./scoring.mjs";
 
@@ -393,6 +394,11 @@ export function buildIndex(conformance, site, summary = null) {
       collapsedIntoProject:
         "True when the board starts this build's row closed. That takes three things: the build reads the same grade, divergence and coverage as the row standing for its project - the one `standsForProject` names, normally the reference build but a promoted build on a run the reference build did not record; both were measured in this run, on either side, since a carried row's figures are frozen at the run that measured it; and neither is a row the suite declined to score, because two rows publishing null figures are not agreement. It is one answer per project rather than per build - the disclosure holds every build of a project and opens as a whole - so a project whose builds disagree reads false on all of them. Every build has a row and its own figures either way; this says only whether a reader sees it without opening the disclosure. Re-derived every run.",
     },
+    // Not to be confused with the envelope's `license`, which is the data's.
+    targetLicence: {
+      description:
+        "Each target on the latest endpoint carries `licence`: the licence the target itself is offered under. `name` is what the pages show, `url` links to its text or the vendor's terms, and `spdx` is present only when an SPDX identifier or expression exists, in which case it equals `name`. Read from the project's own licence file, or from what the suite runs where that is licensed differently from the source, and named without being classified. Builds of one project carry the project's licence. On the latest endpoint only, because it is a current fact rather than a measurement.",
+    },
     regions: {
       pinned: "eu-west-2",
       description:
@@ -438,6 +444,13 @@ export function buildLatest(conformance, site, summary = null) {
       const pt = perTarget[row.slug] || {};
       return {
         ...targetRow(row),
+        // The licence the target is offered under today, as the pages show it:
+        // `name` as the project gives it, `spdx` only where an SPDX identifier
+        // exists, `url` to the text. On this endpoint only, because it is a
+        // current fact rather than a measurement: a historical row in the runs
+        // endpoint would carry today's licence against a version it may not
+        // have applied to.
+        licence: licenceOf(row.slug),
         capabilities: (pt.capabilities || []).map((c) => ({
           key: c.key, label: c.label, group: groupByCapability[c.key] ?? null, state: c.state,
           passed: c.passed, failed: c.failed, skipped: c.skipped, total: c.total,

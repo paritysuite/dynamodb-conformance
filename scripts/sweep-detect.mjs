@@ -18,6 +18,15 @@
  * observation. This targeted repeat is the flake remedy: re-running one test
  * five times costs less than one extra whole-suite pass, and repeating a whole
  * noisy suite would sample the same noise three times, not denoise it.
+ * Candidates sharing a file and a region share each re-run process, and the
+ * whole step runs inside a wall-clock budget. A candidate that could not be
+ * re-run (its selector picks out no test or several, the test is gone from
+ * the checked-out commit, it did not run, its process timed out, or the
+ * budget ran out first) is not a verdict on the candidate: it is listed in
+ * the report, annotated as an error in the run log, and filed on a
+ * `confirmation-error` issue. Those are the signal. The script still exits 0
+ * for it, because the sweep gates nothing and a red run on main's head would
+ * hold up the release.
  *
  * THE SCRIPT NEVER WRITES registry/splits.json, UNDER ANY CODE PATH. Confirmed
  * candidates, and drift on already-admitted rows (regions that converged, or
@@ -44,23 +53,30 @@
  *     [--date YYYY-MM-DD]         sweep date for --record-health (default: today, UTC)
  *     [--confirm]                 targeted re-runs against real AWS (needs credentials)
  *     [--confirm-runs N]          re-runs per region per candidate (default 5)
+ *     [--confirm-budget-minutes N] wall-clock budget for the whole confirmation
+ *                                 step (default 75, or SWEEP_CONFIRM_BUDGET_MINUTES)
+ *     [--measured-ref <commit>]   the commit the sweep measured, named when a
+ *                                 candidate's test is gone from the checkout
  *     [--out <path>]              write the machine-readable sweep report
  *     [--file-issues]             file/refresh GitHub issues via `gh`; without it,
  *                                 issue bodies are printed (a dry run)
  *     [--run-url <url>]           provenance link for issue bodies
  */
 
-import { spawnSync } from 'node:child_process'
+import { spawn as spawnChild, spawnSync } from 'node:child_process'
+import { randomBytes } from 'node:crypto'
+import { StringDecoder } from 'node:string_decoder'
 import {
   existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
+  rmSync,
   writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { basename, dirname, join, resolve } from 'node:path'
+import { basename, dirname, join, relative, resolve } from 'node:path'
 import { classifyResults } from './lib/classify.mjs'
 import { assessRegion } from './lib/health.mjs'
 import {
@@ -71,6 +87,7 @@ import {
   verdictAgainstPin,
 } from './lib/registry.mjs'
 import { loadRegionHealth, recordSweep, validateRegionHealth } from './lib/observed.mjs'
+import { DEAD_ENDPOINT } from './suite-manifest.mjs'
 
 // The one file this script must never write, whatever it was asked to read.
 const SPLIT_REGISTRY = 'registry/splits.json'
@@ -295,13 +312,52 @@ export function evidenceFor(docs, test) {
 
 // ── Targeted confirmation ────────────────────────────────────────────────────
 
+const testKey = (test) => `${test.file}\n${test.fullName}`
+
+// An error that says which way confirmation broke, so the issue it lands on can
+// say what to do about it. Kinds: not-found, selection, not-run, timeout,
+// budget, runner.
+function confirmationError(kind, message) {
+  const e = new Error(message)
+  e.kind = kind
+  return e
+}
+
 /**
  * Re-run each candidate - only that test, in only the regions on the
  * divergent side - `runs` times each, keeping only candidates where every
- * re-run reproduces the sweep's failure. Anything else (a flipped verdict, an
- * indeterminate, a test that did not run) discards the candidate: it was
+ * re-run reproduces the sweep's failure. A re-run that ran the test and got
+ * something else (a pass, or an indeterminate the test itself recorded: a
+ * timeout, throttle or transport fault) discards the candidate: it was
  * non-determinism, not a split, or it could not be re-observed - and in
  * neither case may it approach the registry.
+ *
+ * A re-run that observed nothing is neither of those, and goes to `errored`
+ * with an `errorKind`, never to `discarded`: nothing was observed, so nothing
+ * was refuted, and an absence must never confirm a candidate nor quietly
+ * discard one. That covers a selector that picks out no test or more than
+ * one, a test no longer present on the checked-out commit, a selected test
+ * that did not run (reported skipped, absent from the results, a run-level
+ * fault, no results file at all), a process that timed out, and candidates
+ * the confirmation budget never reached. The remaining candidates are still
+ * confirmed.
+ *
+ * Candidates sharing a test file and a fail-side region are a group, re-run
+ * together: one process per attempt selects all of them, and each attempt
+ * yields a verdict per test. A candidate is decided as soon as it gives
+ * anything but a fail, in any region, and leaves every group it is in, so
+ * later attempts run only what is still failing. A wide candidate is
+ * confirmed once every one of its fail-side regions has reproduced the
+ * failure on every attempt.
+ *
+ * Groups run narrowest first: the group whose narrowest candidate has the
+ * fewest fail-side regions, then by file, then region. Confirmation runs in
+ * two phases. In the first, every group gets attempt 1, which is where most
+ * candidates that will not reproduce are refuted, and a wide candidate
+ * refuted in its first region costs nothing in the others. In the second,
+ * each group runs its remaining attempts to the end before the next group
+ * starts, so a narrow candidate is confirmed before a wide one can spend the
+ * budget, and a budget that runs short falls on the widest candidates.
  *
  * Only the fail side is re-run. A fail verdict contradicts the committed
  * assertion and must reproduce to be believed; a pass verdict is the steady
@@ -312,12 +368,26 @@ export function evidenceFor(docs, test) {
  * which regions were re-run so downstream provenance never overstates the
  * evidence.
  *
- * `runTest(region, test)` returns a verdict string; the default runner spawns
- * the real suite (makeVitestRunner). Injected so the logic tests without AWS.
+ * `budgetMs` bounds the whole step, measured from its start: no process
+ * starts once it is spent, and each one is told how much is left. Everything
+ * not yet decided is then recorded as could-not-be-re-run, so the step always
+ * finishes and the sweep still files and reports what it has. `onProgress`
+ * gets a checkpoint after every process and once at the end.
+ *
+ * `runTests(region, tests, { remainingMs })` returns a Map from test key
+ * (`file\nfullName`) to `{ verdict }` or `{ error, kind }`, and throws (with a
+ * `kind`) when the attempt as a whole could not be made. The default runner
+ * spawns the real suite (makeVitestRunner). Injected, with `now`, so the logic
+ * tests without AWS or a real clock.
  */
-export async function confirmCandidates(candidates, { runs = 5, runTest, onProgress } = {}) {
-  const confirmed = []
-  const discarded = []
+export async function confirmCandidates(
+  candidates,
+  { runs = 5, runTests, onProgress, budgetMs = Infinity, now = Date.now } = {},
+) {
+  const started = now()
+  const order = new Map(candidates.map((c, i) => [c, i]))
+  const state = new Map()
+  const groups = new Map()
   for (const candidate of candidates) {
     const rerunRegions = Object.keys(candidate.regions)
       .filter((region) => candidate.regions[region] === 'fail')
@@ -332,82 +402,670 @@ export async function confirmCandidates(candidates, { runs = 5, runTest, onProgr
           'detectSplitCandidates guarantees a mixed verdict set',
       )
     }
-    let failure = null
-    let attempts = 0
-    const started = Date.now()
-    outer: for (const region of rerunRegions) {
-      for (let i = 1; i <= runs; i++) {
-        attempts++
-        const verdict = await runTest(region, candidate.test)
-        if (verdict !== 'fail') {
-          failure = `re-run ${i} in ${region} returned ${verdict}; the sweep observed fail`
-          break outer
-        }
+    const own = []
+    state.set(candidate, { regions: rerunRegions, groups: own, decided: false })
+    for (const region of rerunRegions) {
+      const key = `${candidate.test.file}\n${region}`
+      if (!groups.has(key)) groups.set(key, { file: candidate.test.file, region, members: [], attempts: 0 })
+      groups.get(key).members.push(candidate)
+      own.push(groups.get(key))
+    }
+  }
+
+  const confirmed = []
+  const discarded = []
+  const errored = []
+  const byOrder = (a, b) => order.get(a.candidate) - order.get(b.candidate)
+  const strip = (list) => [...list].sort(byOrder).map(({ candidate, ...rest }) => ({ ...candidate, ...rest }))
+  const decide = (list, candidate, extra) => {
+    state.get(candidate).decided = true
+    list.push({ candidate, ...extra })
+  }
+  const snapshot = () => ({ confirmed: strip(confirmed), discarded: strip(discarded), errored: strip(errored) })
+
+  const width = (g) => Math.min(...g.members.map((c) => state.get(c).regions.length))
+  const ordered = [...groups.values()].sort(
+    (a, b) => width(a) - width(b) || a.file.localeCompare(b.file) || a.region.localeCompare(b.region),
+  )
+
+  // Phase 1: attempt 1 for every group. Phase 2: each group's remaining
+  // attempts in turn, so it finishes before the next, wider one starts.
+  function* schedule() {
+    for (const group of ordered) yield [group, 1]
+    for (const group of ordered) for (let i = 2; i <= runs; i++) yield [group, i]
+  }
+
+  let attempts = 0
+  for (const [group, i] of schedule()) {
+    const active = group.members.filter((c) => !state.get(c).decided)
+    if (active.length === 0) continue
+    const remainingMs = budgetMs - (now() - started)
+    if (remainingMs <= 0) break
+    attempts++
+    group.attempts++
+    let results
+    try {
+      results = await runTests(group.region, active.map((c) => c.test), { remainingMs })
+    } catch (e) {
+      for (const c of active) {
+        decide(errored, c, {
+          error: `re-run ${i} in ${group.region} could not be made: ${e.message}`,
+          errorKind: e.kind ?? 'runner',
+        })
+      }
+      onProgress?.(snapshot())
+      continue
+    }
+    for (const c of active) {
+      const r = results.get(testKey(c.test))
+      if (r === undefined) {
+        decide(errored, c, {
+          error: `re-run ${i} in ${group.region} returned no result for this test`,
+          errorKind: 'not-run',
+        })
+      } else if (r.error !== undefined) {
+        decide(errored, c, {
+          error: `re-run ${i} in ${group.region} could not be made: ${r.error}`,
+          errorKind: r.kind ?? 'runner',
+        })
+      } else if (r.verdict === 'skip') {
+        decide(errored, c, {
+          error:
+            `re-run ${i} in ${group.region} selected the test but it did not run (reported skipped), ` +
+            'most likely because the tables it needs could not be provisioned',
+          errorKind: 'not-run',
+        })
+      } else if (r.verdict !== 'fail') {
+        decide(discarded, c, {
+          reason: `re-run ${i} in ${group.region} returned ${r.verdict}; the sweep observed fail`,
+        })
+      } else if (state.get(c).groups.every((g) => g.attempts === runs)) {
+        // Every attempt in every fail-side region reproduced the failure.
+        decide(confirmed, c, { confirmation: { runs, regions: state.get(c).regions } })
       }
     }
-    // The cost data future re-tuning (--confirm-runs, parallelism) needs;
-    // attempts counts what actually ran, which an early discard cuts short.
-    console.log(
-      `confirm: ${candidate.test.fullName}: ${attempts} run(s) across ${rerunRegions.length} region(s), ` +
-        `${Math.round((Date.now() - started) / 1000)}s`,
-    )
-    if (failure === null) {
-      confirmed.push({ ...candidate, confirmation: { runs, regions: rerunRegions } })
-    } else discarded.push({ ...candidate, reason: failure })
-    // Checkpoint after every candidate: a timeout in the tail costs only the
+    // Checkpoint after every process: a timeout in the tail costs only the
     // candidates not yet decided, never the ones already done.
-    onProgress?.({ confirmed: [...confirmed], discarded: [...discarded] })
+    onProgress?.(snapshot())
   }
-  return { confirmed, discarded }
+
+  // A candidate is decided when its last attempt reports, so anything still
+  // undecided is one the budget never let finish.
+  const minutes = Math.round((budgetMs / 60_000) * 10) / 10
+  for (const c of candidates) {
+    if (state.get(c).decided) continue
+    decide(errored, c, {
+      error: `not re-run to the end: the confirmation step's ${minutes}-minute budget ran out after ${attempts} attempt(s)`,
+      errorKind: 'budget',
+    })
+  }
+  // The cost data future re-tuning (--confirm-runs, the budget) needs.
+  for (const group of ordered) {
+    console.log(
+      `confirm: ${group.file} in ${group.region}: ${group.attempts} attempt(s) for ${group.members.length} candidate(s)`,
+    )
+  }
+  console.log(`confirm: ${attempts} attempt(s), ${Math.round((now() - started) / 1000)}s`)
+  onProgress?.(snapshot())
+  return { ...snapshot(), attempts }
 }
+
+// Vitest joins a test's describe names and its own name with this when it
+// matches --testNamePattern (`fullTestName` in its runner). The JSON
+// reporter's `fullName` joins the same parts with a single space instead, so
+// a pattern built from `fullName` matches nothing once a test sits in a
+// describe block.
+const VITEST_NAME_SEPARATOR = ' > '
 
 function escapeRegExp(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
+function checkNames(names) {
+  if (
+    !Array.isArray(names) ||
+    names.length === 0 ||
+    names.some((n) => typeof n !== 'string' || n === '')
+  ) {
+    throw new Error(`cannot build a test name pattern from ${JSON.stringify(names)}`)
+  }
+  return names
+}
+
 /**
- * The real confirmation runner: one test, one region, one fresh suite process
- * against real AWS (so DYNAMODB_ENDPOINT is stripped), classified from its own
- * results file and sidecar. Requires AWS credentials; never invoked by tests.
+ * The --testNamePattern that selects one test and nothing else: its name
+ * parts (describe names, outermost first, then its own) joined the way vitest
+ * joins them, every character literal, anchored at both ends so a test whose
+ * name merely starts or ends the same way is not selected too.
  */
-export function makeVitestRunner({ cwd = process.cwd() } = {}) {
-  return function runTest(region, test) {
-    const dir = mkdtempSync(join(tmpdir(), 'sweep-confirm-'))
-    const slug = `confirm-${region}`
-    const outputFile = join(dir, `${slug}.json`)
+export function testNamePattern(names) {
+  return testNamesPattern([names])
+}
+
+/**
+ * The pattern selecting several tests at once: each one's full name as an
+ * anchored alternative, so the selection is exactly their union.
+ */
+export function testNamesPattern(namesList) {
+  if (!Array.isArray(namesList) || namesList.length === 0) {
+    throw new Error('cannot build a test name pattern from no tests')
+  }
+  const alternatives = namesList.map((names) =>
+    escapeRegExp(checkNames(names).join(VITEST_NAME_SEPARATOR)),
+  )
+  return `^(?:${alternatives.join('|')})$`
+}
+
+/**
+ * A test's name parts as the sweep's own results recorded them:
+ * `[...ancestorTitles, title]`. Taken from the results rather than recovered
+ * from `fullName`, which joins the parts with spaces and so cannot be split
+ * back when a name contains one. Throws when no region recorded the parts, or
+ * when regions recorded different parts for the same file and full name: two
+ * tests the space-joined name cannot tell apart, so no re-run can pick one.
+ */
+export function testNamesFor(docs, test) {
+  const found = new Map()
+  for (const { results } of Object.values(docs)) {
+    for (const tr of results.testResults ?? []) {
+      if (relativeTestFile(tr.name) !== test.file) continue
+      for (const ar of tr.assertionResults ?? []) {
+        if (ar.fullName !== test.fullName || !Array.isArray(ar.ancestorTitles)) continue
+        const names = [...ar.ancestorTitles, ar.title]
+        found.set(JSON.stringify(names), names)
+      }
+    }
+  }
+  if (found.size === 0) {
+    throw new Error(`the sweep's results carry no name parts for "${test.fullName}"`)
+  }
+  if (found.size > 1) {
+    throw new Error(
+      `"${test.fullName}" names ${found.size} different tests in ${test.file}: ` +
+        [...found.values()].map((n) => n.join(VITEST_NAME_SEPARATOR)).join('; '),
+    )
+  }
+  return [...found.values()][0]
+}
+
+// vitest's own entry point, run with this node rather than through npx.
+const vitestBin = (cwd) => join(cwd, 'node_modules', 'vitest', 'vitest.mjs')
+
+// Spawn time limits are whole milliseconds, and at least one.
+const wholeMs = (ms) => Math.max(1, Math.floor(ms))
+
+// How much of a command's output is kept, per stream: the end of it, which is
+// where a hang or a crash shows.
+const OUTPUT_TAIL_CHARS = 64 * 1024
+
+/**
+ * The last `limit` characters of a stream, decoded as UTF-8 across chunk
+ * boundaries so a character split between two chunks is not garbled. Memory
+ * stays within twice the limit however much is written.
+ */
+export function outputTail(limit = OUTPUT_TAIL_CHARS) {
+  const decoder = new StringDecoder('utf8')
+  let text = ''
+  const trim = () => {
+    if (text.length > limit) text = text.slice(-limit)
+  }
+  return {
+    push(chunk) {
+      text += decoder.write(chunk)
+      if (text.length > 2 * limit) trim()
+    },
+    end() {
+      text += decoder.end()
+      trim()
+      return text
+    },
+    get size() {
+      return text.length
+    },
+  }
+}
+
+// Process groups started here and still running. A signal to this script
+// (Ctrl-C on a local run, or a runner stopping it) does not reach them, since
+// each is a group of its own, so it is passed on as a kill.
+const liveGroups = new Set()
+const FORWARDED_SIGNALS = ['SIGINT', 'SIGTERM', 'SIGHUP']
+function onForwardedSignal(signal) {
+  for (const pid of liveGroups) {
+    try {
+      process.kill(-pid, 'SIGKILL')
+    } catch {
+      // Already gone.
+    }
+  }
+  liveGroups.clear()
+  for (const s of FORWARDED_SIGNALS) process.removeListener(s, onForwardedSignal)
+  // With the handler gone the signal's default applies again: raised once
+  // more, it ends this process the conventional way.
+  process.kill(process.pid, signal)
+}
+// Handlers are installed only while a group is running, so importing this
+// module changes nothing about how the process handles signals.
+function trackGroup(pid) {
+  if (liveGroups.size === 0) for (const s of FORWARDED_SIGNALS) process.on(s, onForwardedSignal)
+  liveGroups.add(pid)
+}
+function untrackGroup(pid) {
+  if (!liveGroups.delete(pid)) return
+  if (liveGroups.size === 0) for (const s of FORWARDED_SIGNALS) process.removeListener(s, onForwardedSignal)
+}
+
+/**
+ * Run a command in its own process group and wait for it, killing the whole
+ * group when `timeout` passes. spawnSync's timeout signals only the process
+ * it started; vitest's forks pool leaves its worker behind as an orphan,
+ * still running tests against the region's tables, and the suite's global
+ * teardown never runs. Tables a killed re-run leaves are removed by the next
+ * re-run's prefix sweep in that region, or by the daily orphan cleanup.
+ *
+ * The result is settled by the command's exit, not by its output closing: on
+ * exit the timer stops and the group is killed, so nothing it started
+ * outlives it, and the result resolves once the output closes or `graceMs`
+ * after the exit, whichever is first. A process outside the group still
+ * holding the output cannot hold the result up. Only the tail of each
+ * stream is kept (outputTail).
+ */
+export function spawnGroup(cmd, args, { cwd, env, timeout, graceMs = 1000 } = {}) {
+  return new Promise((resolvePromise) => {
+    const child = spawnChild(cmd, args, { cwd, env, detached: true, stdio: ['ignore', 'pipe', 'pipe'] })
+    const out = outputTail()
+    const err = outputTail()
+    child.stdout.on('data', (d) => out.push(d))
+    child.stderr.on('data', (d) => err.push(d))
+    let timedOutFlag = false
+    let exited = null
+    let settled = false
+    let grace = null
+    const killGroup = () => {
+      try {
+        process.kill(-child.pid, 'SIGKILL')
+      } catch {
+        // Already gone.
+      }
+    }
+    const timer =
+      timeout === undefined
+        ? null
+        : setTimeout(() => {
+            timedOutFlag = true
+            killGroup()
+          }, timeout)
+    const settle = (extra = {}) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      clearTimeout(grace)
+      untrackGroup(child.pid)
+      child.stdout.destroy()
+      child.stderr.destroy()
+      resolvePromise({
+        status: exited?.status ?? null,
+        signal: exited?.signal ?? null,
+        stdout: out.end(),
+        stderr: err.end(),
+        timedOut: timedOutFlag,
+        ...extra,
+      })
+    }
+    child.on('error', (error) => settle({ error }))
+    child.on('exit', (status, signal) => {
+      exited = { status, signal }
+      clearTimeout(timer)
+      killGroup()
+      grace = setTimeout(settle, graceMs)
+    })
+    child.on('close', (status, signal) => {
+      exited ??= { status, signal }
+      settle()
+    })
+    if (child.pid !== undefined) trackGroup(child.pid)
+  })
+}
+
+// A spawn result that ended because its time ran out: it did not finish, and
+// nothing it wrote can be read as complete.
+function timedOut(res) {
+  return Boolean(res?.timedOut || res?.error?.code === 'ETIMEDOUT')
+}
+
+// A spawn result ended by a signal this script did not send: not a timeout,
+// and not a finished run either.
+function killedBy(res) {
+  return res?.signal != null && res?.status == null && !timedOut(res) ? res.signal : null
+}
+
+/**
+ * Print the end of a command's output to the run log, folded into a group,
+ * so a re-run that timed out or produced nothing can be looked into. The
+ * output is the command's own, so workflow commands in it are switched off
+ * while it prints.
+ */
+export function printOutputTail(label, res, { lines = 40, log = console.log } = {}) {
+  const token = randomBytes(8).toString('hex')
+  log(`::group::${oneLine(label)}`)
+  log(`::stop-commands::${token}`)
+  for (const [name, text] of [
+    ['stdout', res?.stdout],
+    ['stderr', res?.stderr],
+  ]) {
+    const tail = String(text ?? '').trimEnd().split('\n').slice(-lines)
+    log(`--- last ${tail.length} line(s) of ${name} ---`)
+    for (const line of tail) log(line)
+  }
+  log(`::${token}::`)
+  log('::endgroup::')
+}
+
+// The time limit for one spawn: its own limit, or what is left of the budget
+// if that is shorter. `binding` says which, so running out is reported as the
+// budget's doing when it was.
+function spawnLimit(ownMs, deadline, now) {
+  const leftMs = deadline - now()
+  if (leftMs <= 0) {
+    throw confirmationError('budget', "the confirmation step's budget ran out before this re-run could start")
+  }
+  return leftMs < ownMs
+    ? { timeoutMs: wholeMs(leftMs), binding: 'budget' }
+    : { timeoutMs: wholeMs(ownMs), binding: 'timeout' }
+}
+
+function ranOut(binding, what, timeoutMs) {
+  return binding === 'budget'
+    ? confirmationError('budget', `${what} was stopped when the confirmation step's budget ran out`)
+    : confirmationError('timeout', `${what} ran past its ${Math.round(timeoutMs / 1000)}s limit and was stopped`)
+}
+
+/**
+ * The tests a re-run would select, asked of vitest itself without running
+ * any: `vitest list` with the same file filter and name pattern the re-run
+ * passes (no pattern lists the whole file). Collection happens at runtime
+ * (--staticParse=false) because the static parser leaves `it.each` names
+ * unexpanded, so its answer can differ from what a run selects. Resolves to
+ * [{ name, file }] with `file` relative to `cwd` (the repo root).
+ *
+ * Runtime collection also runs the suite's global teardown, which sweeps the
+ * table namespace. A listing must never reach AWS for that, so it runs
+ * against a dead endpoint with dummy credentials whatever `env` says. The
+ * teardown then fails and vitest exits non-zero, but only after the listing
+ * is written: the file is the signal, not the exit status.
+ */
+export async function listSelected({
+  cwd = process.cwd(),
+  env = process.env,
+  file,
+  pattern = null,
+  vitestArgs = [],
+  spawn = spawnGroup,
+  tmpRoot = tmpdir(),
+  timeoutMs = 60_000,
+  binding = 'timeout',
+  region = null,
+}) {
+  const dir = mkdtempSync(join(tmpRoot, 'sweep-select-'))
+  try {
+    const listFile = join(dir, 'selected.json')
+    const listEnv = {
+      ...env,
+      DYNAMODB_ENDPOINT: DEAD_ENDPOINT,
+      AWS_ACCESS_KEY_ID: 'listing-only',
+      AWS_SECRET_ACCESS_KEY: 'listing-only',
+    }
+    delete listEnv.AWS_SESSION_TOKEN
+    delete listEnv.AWS_PROFILE
+    const limit = wholeMs(timeoutMs)
+    const res = await spawn(
+      process.execPath,
+      [
+        vitestBin(cwd),
+        'list',
+        file,
+        ...vitestArgs,
+        '--staticParse=false',
+        ...(pattern === null ? [] : [`--testNamePattern=${pattern}`]),
+        `--json=${listFile}`,
+      ],
+      { cwd, env: listEnv, timeout: limit },
+    )
+    const failed = (error) => {
+      printOutputTail(`vitest list ${file}${region ? ` in ${region}` : ''}`, res)
+      return error
+    }
+    if (timedOut(res)) throw failed(ranOut(binding, 'vitest list', limit))
+    const signal = killedBy(res)
+    if (signal) throw failed(confirmationError('runner', `vitest list was ended by ${signal}`))
+    if (!existsSync(listFile)) {
+      const tail = `${res?.stderr ?? ''}\n${res?.stdout ?? ''}`.trim().split('\n').slice(-5).join(' | ')
+      throw failed(confirmationError('runner', `vitest list produced no listing (exit ${res?.status}): ${tail}`))
+    }
+    return JSON.parse(readFileSync(listFile, 'utf8')).map((t) => ({
+      name: t.name,
+      file: relative(cwd, t.file),
+    }))
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+}
+
+/**
+ * The suite's own test and hook timeouts, read from its vitest config so a
+ * re-run's time limit follows the config rather than a copy of it. Throws if
+ * either cannot be found: a guessed limit could kill a healthy re-run.
+ */
+export function readSuiteTimeouts(path = 'vitest.config.ts') {
+  const text = readFileSync(path, 'utf8')
+  const read = (name) => {
+    const m = text.match(new RegExp(`${name}:\\s*([\\d_]+)`))
+    if (!m) throw new Error(`${path} sets no ${name}; cannot bound a confirmation re-run`)
+    return Number(m[1].replace(/_/g, ''))
+  }
+  return { testTimeout: read('testTimeout'), hookTimeout: read('hookTimeout') }
+}
+
+/**
+ * How long one re-run process may take: start-up, the file's beforeAll and
+ * the teardown at the suite's hook timeout each, and every selected test at
+ * the test timeout for each of its attempts, capped by `ceilingMs`.
+ */
+export function rerunTimeoutMs(testCount, { testTimeout, hookTimeout, retry = 0, ceilingMs = 20 * 60_000 }) {
+  return wholeMs(Math.min(ceilingMs, 60_000 + 2 * hookTimeout + testCount * testTimeout * (retry + 1)))
+}
+
+/**
+ * The real confirmation runner: one fresh suite process per attempt against
+ * real AWS (so DYNAMODB_ENDPOINT is stripped), re-running every test it is
+ * given from one file in one region, each classified from the process's own
+ * results file and sidecar. Requires AWS credentials, except when tests point
+ * it at a fixture config through `vitestArgs`.
+ *
+ * Before a test's first re-run, the runner asks vitest which tests the
+ * group's pattern selects (listSelected) and accepts only an exact match:
+ * every test it asked for, once each, in its own file, and nothing else. A
+ * test selected nowhere is looked for in a listing of the whole file, to tell
+ * a test that is gone from the checked-out commit apart from a selector that
+ * cannot find one that is there. The check is cached per test, so a group
+ * that shrinks between attempts is not listed again.
+ *
+ * A result is read back by the test's name parts and file, the identity the
+ * listing checked, not by its space-joined name: a twin added since the
+ * measured commit can share that name, and its skipped result must never be
+ * read as the selected test's. Anything that leaves the selected test without
+ * an observation of its own - no results file, a run-level fault in the
+ * sidecar, the test absent from the results - is `not-run`. A test-level
+ * indeterminate is an observation, and is returned as one.
+ *
+ * Every spawn is limited by its own time limit and by `remainingMs`, the
+ * confirmation budget left when the call began; time spent listing comes off
+ * the budget before the re-run is capped.
+ *
+ * `namesFor(test)` returns the test's name parts (testNamesFor, bound to the
+ * sweep's results). `measuredRef` names the commit the sweep measured, for the
+ * message on a test that is no longer there.
+ */
+export function makeVitestRunner({
+  cwd = process.cwd(),
+  namesFor,
+  measuredRef = null,
+  vitestArgs = [],
+  spawn = spawnGroup,
+  tmpRoot = tmpdir(),
+  timeouts = null,
+  listTimeoutMs = 60_000,
+  ceilingMs = 20 * 60_000,
+  now = Date.now,
+} = {}) {
+  if (typeof namesFor !== 'function') throw new Error('makeVitestRunner needs namesFor')
+  const checked = new Map()
+  return async function runTests(region, tests, { remainingMs = Infinity } = {}) {
+    const deadline = now() + remainingMs
+    const files = new Set(tests.map((t) => t.file))
+    if (files.size !== 1) throw new Error(`runTests takes tests from one file, got ${files.size}`)
+    const [file] = files
     const env = {
       ...process.env,
       AWS_REGION: region,
-      CONFORMANCE_TARGET: slug,
-      CONFORMANCE_RESULTS_DIR: dir,
+      CONFORMANCE_TARGET: `confirm-${region}`,
     }
     delete env.DYNAMODB_ENDPOINT
-    spawnSync(
-      'npx',
-      [
-        'vitest',
-        'run',
-        test.file,
-        '--testNamePattern',
-        escapeRegExp(test.fullName),
-        '--reporter=json',
-        `--outputFile=${outputFile}`,
-      ],
-      { cwd, env, encoding: 'utf8' },
-    )
+    const results = new Map()
+    const list = (pattern) => {
+      const { timeoutMs, binding } = spawnLimit(listTimeoutMs, deadline, now)
+      return listSelected({ cwd, env, file, pattern, vitestArgs, spawn, tmpRoot, timeoutMs, binding, region })
+    }
 
-    // A run that produced no readable observation of the test is an absence,
-    // and an absence can never confirm a candidate.
-    if (!existsSync(outputFile)) return 'indeterminate'
-    const results = JSON.parse(readFileSync(outputFile, 'utf8'))
-    const sidecarFile = join(dir, `${slug}.indeterminate.json`)
-    const sidecar = existsSync(sidecarFile)
-      ? JSON.parse(readFileSync(sidecarFile, 'utf8'))
-      : null
-    const verdict = classifyResults(results, sidecar).find(
-      (v) => v.fullName === test.fullName && relativeTestFile(v.file) === test.file,
-    )
-    return verdict?.verdict ?? 'indeterminate'
+    const fresh = tests.filter((t) => !checked.has(testKey(t)))
+    if (fresh.length > 0) {
+      const wanted = []
+      for (const test of fresh) {
+        try {
+          const names = checkNames(namesFor(test))
+          wanted.push({ test, names, name: names.join(VITEST_NAME_SEPARATOR) })
+        } catch (e) {
+          results.set(testKey(test), { error: e.message, kind: 'selection' })
+        }
+      }
+      if (wanted.length > 0) {
+        const selected = await list(testNamesPattern(wanted.map((w) => w.names)))
+        const unasked = selected.filter((s) => s.file !== file || !wanted.some((w) => w.name === s.name))
+        if (unasked.length > 0) {
+          throw confirmationError(
+            'selection',
+            `the re-run would also select ${unasked.length} test(s) nobody asked for: ` +
+              unasked.slice(0, 3).map((s) => `${s.file}: ${s.name}`).join('; '),
+          )
+        }
+        let whole = null
+        for (const w of wanted) {
+          const count = selected.filter((s) => s.name === w.name).length
+          if (count === 1) {
+            checked.set(testKey(w.test), w.names)
+          } else if (count > 1) {
+            results.set(testKey(w.test), {
+              error: `the re-run would select ${count} tests named "${w.name}" in ${file}, not one`,
+              kind: 'selection',
+            })
+          } else {
+            whole ??= await list(null)
+            results.set(
+              testKey(w.test),
+              whole.some((s) => s.file === file && s.name === w.name)
+                ? {
+                    error: `${file} has a test named "${w.name}", but the re-run's selector does not pick it out`,
+                    kind: 'selection',
+                  }
+                : {
+                    error:
+                      `no test with this name in ${file} on the checked-out commit; it may have been ` +
+                      `renamed or removed since ${measuredRef ?? 'the measured commit'}`,
+                    kind: 'not-found',
+                  },
+            )
+          }
+        }
+      }
+    }
+
+    const toRun = tests.filter((t) => checked.has(testKey(t)) && !results.has(testKey(t)))
+    if (toRun.length === 0) return results
+
+    const dir = mkdtempSync(join(tmpRoot, 'sweep-confirm-'))
+    try {
+      const slug = `confirm-${region}`
+      const outputFile = join(dir, `${slug}.json`)
+      const limits = timeouts ?? readSuiteTimeouts(join(cwd, 'vitest.config.ts'))
+      const own = rerunTimeoutMs(toRun.length, {
+        ...limits,
+        retry: Number(env.CONFORMANCE_RETRY ?? 0),
+        ceilingMs,
+      })
+      const { timeoutMs, binding } = spawnLimit(own, deadline, now)
+      const res = await spawn(
+        process.execPath,
+        [
+          vitestBin(cwd),
+          'run',
+          file,
+          ...vitestArgs,
+          `--testNamePattern=${testNamesPattern(toRun.map((t) => checked.get(testKey(t))))}`,
+          '--reporter=json',
+          `--outputFile=${outputFile}`,
+        ],
+        { cwd, env: { ...env, CONFORMANCE_RESULTS_DIR: dir }, timeout: timeoutMs },
+      )
+      const showOutput = () => printOutputTail(`re-run ${file} in ${region}`, res)
+      if (timedOut(res)) {
+        showOutput()
+        throw ranOut(binding, 'the re-run process', timeoutMs)
+      }
+      const signal = killedBy(res)
+      if (signal) {
+        showOutput()
+        throw confirmationError('runner', `the re-run process was ended by ${signal}`)
+      }
+
+      const notRun = (why) => {
+        for (const t of toRun) results.set(testKey(t), { error: why, kind: 'not-run' })
+        return results
+      }
+      if (!existsSync(outputFile)) {
+        showOutput()
+        return notRun(`the re-run wrote no results file (exit ${res?.status})`)
+      }
+      const doc = JSON.parse(readFileSync(outputFile, 'utf8'))
+      const sidecarFile = join(dir, `${slug}.indeterminate.json`)
+      const sidecar = existsSync(sidecarFile) ? JSON.parse(readFileSync(sidecarFile, 'utf8')) : null
+      // classifyResults yields one verdict per assertion, in document order,
+      // so each verdict lines up with the assertion it came from.
+      const verdicts = classifyResults(doc, sidecar)
+      const runLevel = verdicts.find((v) => v.reason?.at === 'run')
+      if (runLevel) return notRun(`the re-run failed as a whole (${runLevel.reason.reason}), so no test was observed`)
+      const assertions = (doc.testResults ?? []).flatMap((tr) =>
+        (tr.assertionResults ?? []).map((ar) => ({ file: relative(cwd, tr.name), names: [...(ar.ancestorTitles ?? []), ar.title] })),
+      )
+      for (const t of toRun) {
+        const wantedNames = JSON.stringify(checked.get(testKey(t)))
+        const matches = assertions
+          .map((a, i) => ({ ...a, i }))
+          .filter((a) => a.file === t.file && JSON.stringify(a.names) === wantedNames)
+        if (matches.length === 0) {
+          results.set(testKey(t), { error: 'the selected test is absent from the re-run\'s results', kind: 'not-run' })
+        } else if (matches.length > 1) {
+          results.set(testKey(t), {
+            error: `the re-run's results hold ${matches.length} tests with this name in ${t.file}; which one ran cannot be told`,
+            kind: 'selection',
+          })
+        } else {
+          results.set(testKey(t), { verdict: verdicts[matches[0].i].verdict })
+        }
+      }
+      return results
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   }
 }
 
@@ -458,6 +1116,143 @@ export function buildCandidateIssue(candidate, { date, runUrl, evidence = {} }) 
     title: `Split candidate: ${test.fullName}`,
     labels: ['split-candidate'],
     body: lines.join('\n'),
+  }
+}
+
+// What each way of failing to re-run a candidate means, and what to do.
+const ERROR_KINDS = {
+  'not-found': {
+    heading: 'The test is not on the checked-out commit',
+    advice:
+      'The sweep measures a release, but confirmation runs from main, and main no longer has a test under this name. ' +
+      "Check main's history for the rename or removal. A renamed test can be re-run by hand under its new name in " +
+      'the regions that failed it; a removed one needs nothing more than closing this.',
+  },
+  selection: {
+    heading: 'The re-run could not pick out exactly this test',
+    advice:
+      "The re-run's selector matched no test, or more than one, although the test is there. Either two tests share " +
+      'this name and need telling apart, or the selection in `scripts/sweep-detect.mjs` is broken and every ' +
+      'candidate will land here until it is fixed. Re-run the test by hand in the regions that failed it meanwhile.',
+  },
+  'not-run': {
+    heading: 'The test was selected but nothing was observed',
+    advice:
+      'The re-run started but produced no observation of the test: it reported the test as skipped, failed as a ' +
+      'whole, left the test out of its results, or wrote no results at all. Against real DynamoDB that most often ' +
+      'means the tables its file declares could not be provisioned in that region. Re-run it by hand there; if ' +
+      'provisioning fails again, look at the region rather than the test.',
+  },
+  timeout: {
+    heading: 'The re-run timed out',
+    advice:
+      'The re-run process ran past its time limit and was stopped. The end of its output is in the run log, ' +
+      'folded under "re-run <file> in <region>", and shows where it stalled. Re-run the test by hand in the ' +
+      'regions that failed it.',
+  },
+  budget: {
+    heading: "The confirmation step's budget ran out first",
+    advice:
+      'Confirmation has a fixed wall-clock budget so that the job always finishes and files what it has. These ' +
+      'candidates were not reached, or not finished, before it ran out. Nothing is wrong with them: re-run them by ' +
+      'hand, or raise the budget if this keeps happening.',
+  },
+  runner: {
+    heading: 'The re-run could not be started',
+    advice:
+      'The reason is in the table below; where vitest ran and failed, the end of its output is in the run log, ' +
+      'folded under the file and region. Re-run the test by hand in the regions that failed it.',
+  },
+}
+const KIND_ORDER = Object.keys(ERROR_KINDS)
+
+// A kind this file does not know is reported as the generic one, never dropped.
+export const errorKindOf = (c) => (Object.hasOwn(ERROR_KINDS, c.errorKind ?? '') ? c.errorKind : 'runner')
+
+// GitHub refuses an issue or comment body over 65,536 characters.
+const ISSUE_BODY_LIMIT = 65_536
+
+// A workflow command is one line; anything after a newline would be lost.
+const oneLine = (s) => String(s).replace(/\s*\n\s*/g, ' ')
+
+/**
+ * The run log's error annotations for candidates that could not be re-run:
+ * one per kind, with a count and the first few names, so the at most ten a
+ * step shows are always complete.
+ */
+export function confirmationAnnotations(errored) {
+  return KIND_ORDER.flatMap((kind) => {
+    const rows = errored.filter((c) => errorKindOf(c) === kind)
+    if (rows.length === 0) return []
+    const shown = rows.slice(0, 3).map((c) => c.test.fullName)
+    const more = rows.length > shown.length ? `, and ${rows.length - shown.length} more` : ''
+    return [
+      `::error title=Sweep confirmation::${rows.length} candidate(s) could not be re-run - ` +
+        `${ERROR_KINDS[kind].heading.toLowerCase()}: ${oneLine(shown.join('; '))}${more}. ` +
+        'The confirmation-error issue lists them all.',
+    ]
+  })
+}
+
+/**
+ * One issue for every candidate this sweep could not re-run. The title is
+ * stable on purpose: fileIssue deduplicates on it, so a confirmation step that
+ * stays broken comments on the same open issue each week rather than opening
+ * a new one, and the issue stays open until a maintainer closes it.
+ */
+export function buildConfirmationErrorIssue(errored, { date, runUrl, limit = ISSUE_BODY_LIMIT }) {
+  const cell = (s) => {
+    const text = String(s).replace(/\|/g, '\\|').replace(/\n/g, ' ')
+    return text.length > 500 ? `${text.slice(0, 500)}...` : text
+  }
+  const kinds = KIND_ORDER.filter((k) => errored.some((c) => errorKindOf(c) === k))
+  const build = (maxRows) => {
+    const lines = [
+      '## Sweep confirmation could not re-run every candidate',
+      '',
+      provenance({ date, runUrl }),
+      '',
+      `The targeted re-run that confirms a split candidate could not be made for ${errored.length} candidate(s). ` +
+        'This says nothing about DynamoDB: these candidates were neither confirmed nor refuted, they stand ' +
+        'exactly as the sweep observed them, and none may be admitted on this evidence. The sweep run itself ' +
+        'still finishes green, so this issue and the error annotations in the run log are the only signal.',
+    ]
+    for (const kind of kinds) {
+      const { heading, advice } = ERROR_KINDS[kind]
+      const rows = errored.filter((c) => errorKindOf(c) === kind)
+      lines.push('', `### ${heading}`, '', advice, '')
+      lines.push('| Test | Name | Failed in | Why the re-run could not be made |', '| --- | --- | --- | --- |')
+      for (const c of rows.slice(0, maxRows)) {
+        const failedIn = Object.keys(c.regions ?? {})
+          .filter((r) => c.regions[r] === 'fail')
+          .sort()
+          .join(', ')
+        lines.push(`| \`${cell(c.test.file)}\` | ${cell(c.test.fullName)} | ${cell(failedIn)} | ${cell(c.error)} |`)
+      }
+      if (rows.length > maxRows) {
+        lines.push('', `...and ${rows.length - maxRows} more, listed under \`errored\` in the sweep report artefact.`)
+      }
+    }
+    lines.push(
+      '',
+      '### Next step',
+      '',
+      'Nothing here was admitted or discarded, and the sweep never writes `registry/splits.json`. Once each ' +
+        'candidate above has been re-run by hand, or has stopped appearing in later sweeps, this issue can be closed.',
+    )
+    return lines.join('\n')
+  }
+  // Keep every row while it fits; otherwise cut each table back until it does.
+  let maxRows = errored.length
+  let body = build(maxRows)
+  while (body.length > limit && maxRows > 0) {
+    maxRows = Math.floor(maxRows / 2)
+    body = build(maxRows)
+  }
+  return {
+    title: 'Sweep confirmation could not re-run every candidate',
+    labels: ['confirmation-error'],
+    body: body.length > limit ? body.slice(0, limit) : body,
   }
 }
 
@@ -554,6 +1349,7 @@ const LABELS = {
   'split-candidate': 'Sweep-confirmed regional split awaiting a human decision',
   'registry-drift': 'An admitted split no longer matches what regions return',
   'region-dropped': 'A region missed two consecutive sweeps and left the observed set',
+  'confirmation-error': 'The sweep could not re-run a split candidate to confirm it',
 }
 
 /**
@@ -648,6 +1444,10 @@ export function parseArgs(argv) {
     date: new Date().toISOString().slice(0, 10),
     confirm: false,
     confirmRuns: 5,
+    // Inside the detect job's 115 minutes: the rest of the job takes about
+    // 10, so 75 leaves 30 to spare (see the detect step in sweep.yml).
+    confirmBudgetMinutes: Number(process.env.SWEEP_CONFIRM_BUDGET_MINUTES || 75),
+    measuredRef: null,
     out: null,
     fileIssues: false,
     runUrl: null,
@@ -665,6 +1465,8 @@ export function parseArgs(argv) {
     else if (a === '--date') args.date = argv[++i]
     else if (a === '--confirm') args.confirm = true
     else if (a === '--confirm-runs') args.confirmRuns = Number(argv[++i])
+    else if (a === '--confirm-budget-minutes') args.confirmBudgetMinutes = Number(argv[++i])
+    else if (a === '--measured-ref') args.measuredRef = argv[++i]
     else if (a === '--out') args.out = argv[++i]
     else if (a === '--file-issues') args.fileIssues = true
     else if (a === '--run-url') args.runUrl = argv[++i]
@@ -673,6 +1475,12 @@ export function parseArgs(argv) {
     else throw new Error(`unexpected argument ${a}`)
   }
   if (!args.dir) throw new Error('usage: sweep-detect.mjs <ground-truth-dir> [options]')
+  if (!(args.confirmBudgetMinutes > 0)) {
+    throw new Error('the confirmation budget must be a positive number of minutes')
+  }
+  if (!Number.isInteger(args.confirmRuns) || args.confirmRuns < 1) {
+    throw new Error('usage: --confirm-runs takes a whole number of re-runs, at least 1')
+  }
 
   // Belt and braces on the integrity guarantee: no output path this script
   // accepts may ever be the split registry.
@@ -691,10 +1499,11 @@ export function parseArgs(argv) {
 
 /**
  * The whole pipeline for one sweep, exported so the write ordering is
- * testable with an injected runner. `runTest` overrides the confirmation
- * runner; omitted, --confirm spawns the real suite (makeVitestRunner).
+ * testable with an injected runner. `runTests` overrides the confirmation
+ * runner; omitted, --confirm builds the real one (makeVitestRunner), whose
+ * spawns `spawn` overrides. `exec` stands in for `gh`, and `now` for the clock.
  */
-export async function run(args, { runTest } = {}) {
+export async function run(args, { runTests, spawn, now, exec } = {}) {
   const registry = loadRegistry(args.registry)
   const rowFor = (v) => splitFor(registry, v)
   const docs = readSweepDir(args.dir)
@@ -753,7 +1562,7 @@ export async function run(args, { runTest } = {}) {
   const emitIssues = (issues) => {
     for (const issue of issues) {
       if (args.fileIssues) {
-        const outcome = fileIssue(issue)
+        const outcome = fileIssue(issue, exec ? { exec } : {})
         console.log(`${outcome.action}: ${issue.title}`)
       } else {
         console.log(`\n--- would file: ${issue.title} [${issue.labels.join(', ')}] ---\n`)
@@ -776,7 +1585,11 @@ export async function run(args, { runTest } = {}) {
   // for it, in the same pass that files new drift, so the two cannot disagree
   // about the same sweep.
   if (args.fileIssues) {
-    const { noted, failed } = noteMatchesAgain(matching, { date: args.date, runUrl: args.runUrl })
+    const { noted, failed } = noteMatchesAgain(matching, {
+      date: args.date,
+      runUrl: args.runUrl,
+      ...(exec ? { exec } : {}),
+    })
     for (const { id, numbers } of noted) console.log(`noted as matching again on #${numbers.join(', #')}: ${id}`)
     for (const { id, error } of failed) console.log(`::warning::could not note ${id} as matching again: ${error}`)
   } else {
@@ -785,13 +1598,24 @@ export async function run(args, { runTest } = {}) {
     }
   }
 
-  const writeReport = (confirmationState, confirmed = [], discarded = []) => {
+  const writeReport = (confirmationState, confirmed = [], discarded = [], errored = []) => {
     if (!args.out) return
     mkdirSync(dirname(args.out), { recursive: true })
     writeFileSync(
       args.out,
       JSON.stringify(
-        { date: args.date, confirmationState, regions: health, candidates, confirmed, discarded, drift, matching, pages },
+        {
+          date: args.date,
+          confirmationState,
+          regions: health,
+          candidates,
+          confirmed,
+          discarded,
+          errored,
+          drift,
+          matching,
+          pages,
+        },
         null,
         2,
       ) + '\n',
@@ -802,19 +1626,31 @@ export async function run(args, { runTest } = {}) {
   // confirmation loop is the long tail of a wide sweep, and the job timeout
   // killing the process mid-loop must cost only the not-yet-confirmed
   // candidates - never the sweep's health record or its report artefact.
-  // Confirmation then checkpoints the report after every candidate, so the
-  // ones already decided survive too.
+  // Confirmation then checkpoints the report after every re-run process, so
+  // the candidates already decided survive too.
   writeReport(args.confirm ? 'pending' : 'not-requested')
 
   let confirmed = []
   let discarded = []
+  let errored = []
+  let attempts = 0
   if (args.confirm) {
-    ;({ confirmed, discarded } = await confirmCandidates(candidates, {
+    ;({ confirmed, discarded, errored, attempts } = await confirmCandidates(candidates, {
       runs: args.confirmRuns,
-      runTest: runTest ?? makeVitestRunner(),
-      onProgress: (progress) => writeReport('pending', progress.confirmed, progress.discarded),
+      budgetMs: args.confirmBudgetMinutes * 60_000,
+      ...(now ? { now } : {}),
+      runTests:
+        runTests ??
+        makeVitestRunner({
+          namesFor: (test) => testNamesFor(docs, test),
+          measuredRef: args.measuredRef,
+          ...(spawn ? { spawn } : {}),
+          ...(now ? { now } : {}),
+        }),
+      onProgress: (progress) =>
+        writeReport('pending', progress.confirmed, progress.discarded, progress.errored),
     }))
-    writeReport('complete', confirmed, discarded)
+    writeReport('complete', confirmed, discarded, errored)
   }
 
   const unresolved = regions.filter((r) => !health[r].resolved)
@@ -824,9 +1660,15 @@ export async function run(args, { runTest } = {}) {
   )
   console.log(
     `${candidates.length} split candidate(s)` +
-      (args.confirm ? ` (${confirmed.length} confirmed, ${discarded.length} discarded)` : ' (unconfirmed)') +
+      (args.confirm
+        ? ` (${confirmed.length} confirmed, ${discarded.length} discarded, ${errored.length} could not be re-run; ${attempts} re-run attempt(s))`
+        : ' (unconfirmed)') +
       `, ${drift.length} drift finding(s), ${pages.length} region(s) paged`,
   )
+  // One annotation per kind, not per candidate: GitHub shows at most ten
+  // error annotations per step, and a list cut at ten would read as complete.
+  // The issue carries every candidate.
+  for (const line of confirmationAnnotations(errored)) console.log(line)
 
   emitIssues(
     (args.confirm ? confirmed : []).map((c) =>
@@ -837,6 +1679,21 @@ export async function run(args, { runTest } = {}) {
       }),
     ),
   )
+  // Filing this one must not cost the run: the report is already written, and
+  // a gh failure here is reported, not thrown.
+  if (errored.length > 0) {
+    try {
+      emitIssues([buildConfirmationErrorIssue(errored, { date: args.date, runUrl: args.runUrl })])
+    } catch (e) {
+      console.log(`::error title=Sweep confirmation::could not file the confirmation-error issue: ${oneLine(e.message)}`)
+    }
+  }
+
+  // A candidate that could not be re-run does not change the exit status. The
+  // sweep gates nothing, and its run is attributed to main's head, where a
+  // red check would hold up the release. The issue and the annotations above
+  // are the signal.
+  return { errored: errored.length, attempts }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

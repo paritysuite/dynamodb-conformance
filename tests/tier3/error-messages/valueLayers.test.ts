@@ -14,6 +14,7 @@ import {
 import { ddb } from '../../../src/client.js'
 import { skipUnlessSupported } from '../../../src/infra.js'
 import { cleanupItems, declareTables, hashTableDef } from '../../../src/helpers.js'
+import { recordObserved } from '../../../src/observation-sink.js'
 
 declareTables(hashTableDef)
 
@@ -30,12 +31,19 @@ declareTables(hashTableDef)
 //            bare, with expression values inside the
 //            `ExpressionAttributeValues contains invalid value: ` wrapper.
 //
-// eu-west-2 runs the current layer on transactions too, where the other three
-// regions run the older one (a probe of eight regions on 2026-10-09 found
-// eu-north-1 with eu-west-2); those tests accept exactly the two answers. On
-// 2026-10-22 eu-west-2 and eu-north-1 had moved BatchWriteItem to the current
-// layer as well, bare, while us-east-1 still ran the older one, so the
-// BatchWriteItem tests accept either layer as a whole too.
+// That table is the 2026-10-09 state, when eu-west-2 already ran the current
+// layer on transactions. Transactions and BatchWriteItem have moved since, as
+// follows.
+//
+// eu-west-2 runs the current layer on transactions. Of the 33 regions that
+// answered on 2026-11-13, 31 ran the current layer; ap-south-1 had joined them
+// on 2026-11-14, which leaves me-central-1 on the older one. The transaction
+// tests assert the current layer, and each has a registry row recording
+// me-central-1 on the older one.
+//
+// On 2026-10-22 eu-west-2 and eu-north-1 had moved BatchWriteItem to the
+// current layer as well, bare, while us-east-1 still ran the older one, so the
+// BatchWriteItem tests accept either layer as a whole.
 
 const T = hashTableDef.name
 const S = (s: string): AttributeValue => ({ S: s })
@@ -184,22 +192,36 @@ describe('Number values — messages by operation', { tags: ['put-item', 'update
   })
 })
 
+// The transaction tests are split by region, one registry row each. A region
+// on the older layer answers every request a test sends in that layer, so a
+// target is recorded as answering the way it does only when every answer is
+// the older layer's, never on a mix. The record is the older layer's answer to
+// the test's last request as the target gave it, which differs from the
+// current layer's in every one of these tests and is what each row holds for
+// those regions. A pass needs no record, since it already means the pinned
+// eu-west-2 answer.
+function recordOlderLayer(task: Parameters<typeof recordObserved>[0], got: string[], older: string[]): void {
+  if (got.length === older.length && got.every((m, i) => m === older[i])) {
+    recordObserved(task, { outcome: 'rejected', error: { name: 'ValidationException', message: got[got.length - 1] } })
+  }
+}
+
 describe('Number values — transactions by region', { tags: ['transactions', 'data-plane', 'negative-path'] }, () => {
   skipUnlessSupported(() => ddb.send(new TransactWriteItemsCommand({ TransactItems: [] })))
 
-  // us-east-1, eu-west-1 and us-west-2 run the older layer here and eu-west-2
-  // the current one. A region answers every shape in the same layer, so the
-  // answers must match one of exactly those two lists as a whole.
-  function eitherLayer(got: string[], older: string[], current: string[]): void {
-    expect([older, current]).toContainEqual(got)
-  }
+  // eu-west-2 runs the current layer here. On their latest answers, by
+  // 2026-11-14, so did every other region but me-central-1, which ran the older
+  // one for every shape.
 
-  it('TransactWriteItems refuses a malformed number in a Put item up front', async () => {
+  it('TransactWriteItems refuses a malformed number in a Put item up front', async (ctx) => {
+    // Split behaviour (registry row transact-write-items-put-number-layer).
     const got = await eachShape((v) => ddb.send(new TransactWriteItemsCommand({ TransactItems: [{ Put: { TableName: T, Item: { pk: S('layer-n'), n: v } } }] })))
-    eitherLayer(got, OLDER, CURRENT)
+    recordOlderLayer(ctx.task, got, OLDER)
+    expect(got).toEqual(CURRENT)
   })
 
-  it('TransactWriteItems refuses a malformed number in an Update value up front', async () => {
+  it('TransactWriteItems refuses a malformed number in an Update value up front', async (ctx) => {
+    // Split behaviour (registry row transact-write-items-update-number-layer).
     const got = await eachShape((v) =>
       ddb.send(
         new TransactWriteItemsCommand({
@@ -207,12 +229,15 @@ describe('Number values — transactions by region', { tags: ['transactions', 'd
         }),
       ),
     )
-    eitherLayer(got, OLDER.map((m) => forKey(m, ':v')), CURRENT)
+    recordOlderLayer(ctx.task, got, OLDER.map((m) => forKey(m, ':v')))
+    expect(got).toEqual(CURRENT)
   })
 
-  it('TransactGetItems refuses a malformed number in a key up front', async () => {
+  it('TransactGetItems refuses a malformed number in a key up front', async (ctx) => {
+    // Split behaviour (registry row transact-get-items-key-number-layer).
     const got = await eachShape((v) => ddb.send(new TransactGetItemsCommand({ TransactItems: [{ Get: { TableName: T, Key: { pk: v } } }] })))
-    eitherLayer(got, OLDER, CURRENT)
+    recordOlderLayer(ctx.task, got, OLDER)
+    expect(got).toEqual(CURRENT)
   })
 })
 
@@ -351,24 +376,20 @@ describe('Duplicate set members — transactions by region', { tags: ['transacti
 
   // The transaction operations check every action's sets before running any
   // of them, so a duplicate is a top-level ValidationException, never a
-  // cancellation. us-east-1, eu-west-1 and us-west-2 answer in the older
-  // layer and eu-west-2 in the current one, every shape in the same layer, so
-  // the answers must match one of exactly those two lists as a whole.
-  function eitherLayer(got: string[], older: string[]): void {
-    expect([older, DUPE_CURRENT]).toContainEqual(got)
-  }
+  // cancellation. eu-west-2 answers in the current layer. On their latest
+  // answers, by 2026-11-14, so did every other region but me-central-1, which
+  // answered every shape in the older one.
 
-  it('TransactWriteItems refuses a duplicate in a Put item and a Delete key up front', async () => {
+  it('TransactWriteItems refuses a duplicate in a Put item and a Delete key up front', async (ctx) => {
+    // Split behaviour (registry row transact-write-items-put-delete-duplicate-layer).
     const put = await eachSet((d) => ddb.send(new TransactWriteItemsCommand({ TransactItems: [{ Put: { TableName: T, Item: { pk: S('layer-d'), s: d } } }] })))
     const del = await eachSet((d) => ddb.send(new TransactWriteItemsCommand({ TransactItems: [{ Delete: { TableName: T, Key: { pk: d } } }] })))
-    // The same layer for both actions, as one value.
-    expect([
-      { put: DUPE_OLDER, del: DUPE_OLDER },
-      { put: DUPE_CURRENT, del: DUPE_CURRENT },
-    ]).toContainEqual({ put, del })
+    recordOlderLayer(ctx.task, [...put, ...del], [...DUPE_OLDER, ...DUPE_OLDER])
+    expect({ put, del }).toEqual({ put: DUPE_CURRENT, del: DUPE_CURRENT })
   })
 
-  it('TransactWriteItems refuses a duplicate in a condition or update value of every action type up front', async () => {
+  it('TransactWriteItems refuses a duplicate in a condition or update value of every action type up front', async (ctx) => {
+    // Split behaviour (registry row transact-write-items-expression-duplicate-layer).
     const cond = { ConditionExpression: 'attribute_not_exists(pk) OR s = :t' }
     const shapes: ((d: AttributeValue) => any)[] = [
       (d) => ({ Put: { TableName: T, Item: { pk: S('layer-d') }, ...cond, ExpressionAttributeValues: { ':t': d } } }),
@@ -380,13 +401,15 @@ describe('Duplicate set members — transactions by region', { tags: ['transacti
     for (const shape of shapes) {
       got.push(await eachSet((d) => ddb.send(new TransactWriteItemsCommand({ TransactItems: [shape(d)] }))))
     }
-    // Every action type in the same layer, as one value.
     const older = DUPE_OLDER.map((m) => forKey(m, ':t'))
-    expect([shapes.map(() => older), shapes.map(() => DUPE_CURRENT)]).toContainEqual(got)
+    recordOlderLayer(ctx.task, got.flat(), shapes.flatMap(() => older))
+    expect(got).toEqual(shapes.map(() => DUPE_CURRENT))
   })
 
-  it('TransactGetItems refuses a duplicate in a key up front', async () => {
+  it('TransactGetItems refuses a duplicate in a key up front', async (ctx) => {
+    // Split behaviour (registry row transact-get-items-key-duplicate-layer).
     const got = await eachSet((d) => ddb.send(new TransactGetItemsCommand({ TransactItems: [{ Get: { TableName: T, Key: { pk: d } } }] })))
-    eitherLayer(got, DUPE_OLDER)
+    recordOlderLayer(ctx.task, got, DUPE_OLDER)
+    expect(got).toEqual(DUPE_CURRENT)
   })
 })

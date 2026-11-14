@@ -110,6 +110,16 @@ Before opening a PR that adds or modifies a test:
    boundary is incomplete. Put the error-code assertion in the
    operation's own tier (or `tests/tier3/validation-ordering/`) and the
    exact message, where it's stable, in `tests/tier3/error-messages/`.
+   Assert an error with `expectDynamoError`, and never put an assertion
+   inside the `try` that makes the request: the `catch` would judge that
+   assertion as if the target had said it. The helper also rethrows a
+   throttle or transport fault untouched, so it is recorded as no answer
+   rather than a failure. Where the helper can't express the check (the
+   exact messages in `error-messages/`, which it only matches with
+   `toContain`), catch the error, rethrow it if `indeterminateFrom`
+   classifies it, and only then assert on it, as
+   `tests/tier2/vectorSearch/updateLifecycle.test.ts` does. Asserting
+   straight away records a throttle as a failure.
 5. **Required if you added, moved or renamed a test: regenerate both
    manifests in the same commit.** `node scripts/suite-manifest.mjs`
    rewrites `registry/suite-manifest.json`, the list of tests the suite
@@ -269,11 +279,16 @@ a day the board scored a target it could not name.
 Commands, all from the repo root:
 
 ```bash
-npm run site:dev          # Tailwind watch + eleventy --serve, http://localhost:8080
-npm run site:build        # writes site/_site/
-npm run site:test         # the site's unit tests
-npm run site:check-build  # build with the network stubbed, then assert on the HTML
-npm run site:snapshot     # re-fetch upstream history, rewrite the committed fallback
+# Tailwind watch + eleventy --serve, http://localhost:8080
+npm run site:dev
+# Writes site/_site/.
+npm run site:build
+# Unit tests for the site.
+npm run site:test
+# Build with the network stubbed, then assert on the HTML.
+npm run site:check-build
+# Re-fetch upstream history, rewrite the committed fallback.
+npm run site:snapshot
 ```
 
 `site/` depends on the root package as `dynamodb-conformance` (a `file:..`
@@ -341,6 +356,18 @@ the README table and the site with no site-side edit, and `scoreEmulator`
 tallies through the suite's classifier rather than reading
 `assertionResults[].status` itself, so a test the suite counts one way cannot
 be counted another way here. Do not reintroduce a local copy of either.
+
+The same goes for a target's static facts in `scripts/lib/targets.mjs`. A new
+target needs a `licence` there, `{ name, spdx?, url }`, read from the project's
+own licence file, or from what the suite actually runs where that is licensed
+differently from the source. `name` is the SPDX identifier where one exists and
+otherwise the licence's own name; `url` is its text or the vendor's terms. Name
+it and nothing more: never characterise it ("open source", "source-available")
+in the field or in the target's `note`, because every target shows the same
+field in the same place. A build of a project inherits the project's licence
+through `licenceOf` unless its own really differs. `targets.test.mjs` holds
+every slug to this, and widens its SPDX allow-list only for an identifier a
+target actually uses.
 
 What remains site-side is the model the templates consume: `dynamodbRow`,
 `sortRows` and `suiteSizeOf` assemble scored rows into runs, standings and

@@ -22,7 +22,7 @@ npm install
 # Run against a local target
 DYNAMODB_ENDPOINT=http://localhost:8000 npm test
 
-# Quicker run, excludes GSI lifecycle tests (see runtime notes below)
+# Quicker run, excludes GSI lifecycle tests, see runtime notes below
 DYNAMODB_ENDPOINT=http://localhost:8000 npm run test:quick
 
 # Run a specific tier
@@ -69,7 +69,7 @@ _Suite v3.9.0, measured against real DynamoDB on 2026-11-08. Region health as of
 | [Floci](https://github.com/floci-io/floci) | B | 5ee85db604c4 | 9.3% | 99.8% | 156 | 4 | 0.0% | 0.0% | 21.4% | 21 of 32 |
 | [ExtendDB](https://github.com/ExtendDB/extenddb) · PostgreSQL | C | v0.1.14 | 10.1% | 70.0% | 170 | 504 | 0.0% | 2.7% | 21.7% | 11 of 32 |
 | ↳ SQLite | C | v0.1.14 | 10.6% | 73.4% | 178 | 446 | 0.0% | 4.2% | 21.8% | 11 of 32 |
-| [LocalStack](https://github.com/localstack/localstack) | C | 2026.10.6 | 19.5% | 95.6% | 328 | 73 | 0.2% | 13.5% | 36.5% | 11 of 32 |
+| [LocalStack](https://www.localstack.cloud) | C | 2026.10.6 | 19.5% | 95.6% | 328 | 73 | 0.2% | 13.5% | 36.5% | 11 of 32 |
 | [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) | D | 6ada631ec7aa | 24.8% | 95.3% | 416 | 79 | 7.6% | 11.9% | 44.4% | 32 of 32 |
 | [Dynalite](https://github.com/architect/dynalite) | D | 4.0.0 | 12.6% | 57.9% | 211 | 707 | 11.1% | 6.2% | 17.6% | 11 of 32 |
 | [Kumo](https://github.com/sivchari/kumo) | F | 7b15ae8b6e4b | 44.3% | 69.7% | 744 | 508 | 47.1% | 13.1% | 61.9% | 32 of 32 |
@@ -243,7 +243,7 @@ Filter with vitest's `--tags-filter`:
 # Ignore PartiQL
 DYNAMODB_ENDPOINT=http://localhost:8000 npx vitest run --tags-filter='!partiql'
 
-# Ignore the legacy request parameters (AttributeUpdates, QueryFilter, ...)
+# Ignore the legacy request parameters: AttributeUpdates, QueryFilter and the rest
 DYNAMODB_ENDPOINT=http://localhost:8000 npx vitest run --tags-filter='!legacy'
 
 # Only item reads and writes, no table management
@@ -421,7 +421,8 @@ means cloning the repo.
 ```bash
 # in a dynoxide checkout: build the bundle, then serve it
 npm ci && npm run build:wasm
-npm run wasm:serve &        # http://127.0.0.1:8003, installs its own browser
+# http://127.0.0.1:8003, installs its own browser
+npm run wasm:serve &
 
 # back in this repo
 DYNAMODB_ENDPOINT=http://127.0.0.1:8003 CONFORMANCE_TARGET=dynoxide-wasm npm test
@@ -455,17 +456,21 @@ policy plus an access key (ExtendDB getting-started guide, "Post-init
 workflow"), then start it and point the suite at it:
 
 ```bash
-# ExtendDB 0.1.2 defaults to port 18443, so pin the suite's 8000 explicitly.
-# Env vars prefixed EXTENDDB__ layer over the config file (the same mechanism
-# scripts/run-extenddb.sh uses), so this makes serve bind 8000.
+# ExtendDB 0.1.2 defaults to port 18443, so set it to port 8000, which the suite uses.
+# Env vars prefixed EXTENDDB__ layer over the config file, the same mechanism
+# scripts/run-extenddb.sh uses, so this makes serve bind 8000.
 export EXTENDDB__SERVER__PORT=8000
-./target/release/extenddb serve --config extenddb.toml   # https://127.0.0.1:8000
+# https://127.0.0.1:8000
+./target/release/extenddb serve --config extenddb.toml
 
-# The JS SDK ignores AWS_CA_BUNDLE; trust the self-signed cert via NODE_EXTRA_CA_CERTS.
+# The JS SDK ignores AWS_CA_BUNDLE, so trust the self-signed cert via NODE_EXTRA_CA_CERTS.
 export NODE_EXTRA_CA_CERTS=~/.extenddb/tls/cert.pem
-export AWS_ACCESS_KEY_ID=<access-key-id>        # a real key - ExtendDB verifies the signature
+# A real key - ExtendDB verifies the signature.
+export AWS_ACCESS_KEY_ID=<access-key-id>
 export AWS_SECRET_ACCESS_KEY=<secret-access-key>
-export AWS_REGION=us-east-1                      # SigV4 signing region for the local endpoint; ground truth is recorded per region, so no single region needs matching
+# SigV4 signing region for the local endpoint. Ground truth is recorded per
+# region, so no single region needs matching.
+export AWS_REGION=us-east-1
 export DYNAMODB_ENDPOINT=https://127.0.0.1:8000
 # Writes results/extenddb.json.
 CONFORMANCE_TARGET=extenddb npm test
@@ -491,7 +496,8 @@ time. SQLite takes no connection details, so `init` only names the backend:
 
 ```bash
 cargo build --release -p extenddb --no-default-features --features sqlite
-./target/release/extenddb init --backend sqlite   # database at ./extenddb.sqlite
+# Database at ./extenddb.sqlite.
+./target/release/extenddb init --backend sqlite
 ```
 
 The database path comes from the config file. ExtendDB documents
@@ -596,7 +602,7 @@ DYNAMODB_ENDPOINT=http://localhost:8842 CONFORMANCE_TARGET=phoenix-adapters npm 
 ### Real DynamoDB
 
 ```bash
-# Uses the default AWS credential chain (env vars, ~/.aws/credentials, IAM role)
+# Uses the default AWS credential chain: env vars, ~/.aws/credentials, IAM role
 npm test
 ```
 
@@ -607,7 +613,7 @@ npm test
 | Local emulators | ~2-5 seconds | ~2-5 seconds |
 | Real DynamoDB | ~1-3.5 hours | ~20-25 minutes |
 
-The full suite includes slow online-index lifecycle tests: 14 UpdateTable GSI tests that add and remove Global Secondary Indexes from existing tables, plus two UpdateTable vector index tests, which backfill on the same machinery: the lifecycle walk, and a shorter one asserting that the table cannot be deleted while an index is still being created. That second one cancels the index rather than waiting the backfill out, so it costs about a minute. On real DynamoDB, each index creation triggers a backfill that usually takes 5-15 minutes even on small tables, and has been observed taking 25+ on a slow night (a 25-item vector index took ~17). These tests are important for conformance but they dominate runtime against real AWS.
+The full suite includes slow online-index lifecycle tests: the UpdateTable GSI tests that add and remove Global Secondary Indexes from existing tables, plus the UpdateTable vector index tests, which backfill on the same machinery. Among those, the test asserting that the table cannot be deleted while an index is still being created cancels the index rather than waiting the backfill out, so it costs about a minute. On real DynamoDB, each index creation triggers a backfill that usually takes 5-15 minutes even on small tables, and has been observed taking 25+ on a slow night (a 25-item vector index took ~17). These tests are important for conformance but they dominate runtime against real AWS.
 
 `test:quick` excludes the online-index lifecycle tests (GSI and vector) for faster local iteration. CI's gating real-DynamoDB job runs `test:gating`, which drops those *and* the S3 and Kinesis integration suites (see "Operations every emulator skips" above), so a slow async import can't redden the build. Emulator targets run the full `npm test` since index creation is instant locally.
 
@@ -643,37 +649,79 @@ one thing here that is never allowed to be quiet.
 
 ## Test organisation
 
-```
+```text
 tests/
-  tier1/                    # ~489 tests
-    createTable/            # basic, gsi, lsi
-    putItem/                # basic, conditions, validation, expressions, dataTypes, ...
-    getItem/                # basic, validation, projection, consumedCapacity
-    deleteItem/             # basic, validation
-    updateItem/             # basic, conditions, validation, paths
-    query/                  # basic, gsi, lsi, expressions, select, numericKeys, binaryKeys
-    scan/                   # basic, validation, gsi, lsi, parallel, select, filterOperators
-    batchWriteItem/         # basic, validation
-    batchGetItem/           # basic, validation
+  tier1/
+    batchGetItem/           # basic, projection, validation
+    batchWriteItem/         # basic, indexKeyValidation, validation
+    createTable/            # basic, config, gsi, lsi, specValidation
+    deleteItem/             # basic, conditionExpressionParens, validation
     deleteTable/            # basic
-    describeTable/          # basic
+    describeTable/          # basic, indexes
+    getItem/                # basic, consumedCapacity, projection, validation
     listTables/             # basic
-    updateTable/            # basic
-  tier2/                    # ~225 tests
-    transactions/           # transactWrite, transactGet
-    partiql/                # executeStatement, batchExecuteStatement, executeTransaction
-    ttl/                    # basic
+    putItem/                # basic, binaryKeys, conditionExpressionParens,
+                            # conditions, consumedCapacity, dataTypes,
+                            # expressions, indexConsumedCapacity,
+                            # indexKeyValidation, itemCollectionMetrics,
+                            # numberFormat, numericKeys, validation
+    query/                  # basic, binaryKeys, consumedCapacity, expressions,
+                            # filterExpressionParens, gsi,
+                            # gsiHashOnlyPagination, indexConsumedCapacity,
+                            # indexTieOrder, keyConditionParens,
+                            # keyConditionSemantics, lsi, numericKeys,
+                            # projection, select, selectOnIndexes, validation
+    scan/                   # basic, consumedCapacity, filterExpressionParens,
+                            # filterOperandOrder, filterOperators, gsi,
+                            # gsiPagination, lsi, lsiPagination, parallel,
+                            # projection, select, validation
+    updateItem/             # basic, conditions, expressionHygiene, paths,
+                            # validation
+    updateTable/            # basic, config
+  tier2/
+    account/                # limits
+    backups/                # continuous, onDemand
+    contributorInsights/    # basic
+    export/                 # exportImport
+    kinesis/                # streamingDestination
+    multiAttributeKeys/     # query
+    partiql/                # batchExecuteStatement, comparison,
+                            # executeStatement, executeTransaction,
+                            # fromFirstUpdate, grammar, indexQualifier,
+                            # indexTieOrder, multiAttributeIndex, orReads,
+                            # readCapacity, setFunctions, whereFunctions,
+                            # whereOverlap, writeResponses
+    resourcePolicy/         # basic
     streams/                # basic
     tags/                   # basic
+    transactions/           # transactGet, transactWrite, transactWriteIndexKeys
+    ttl/                    # basic
     updateTable/            # gsi
-    vectorSearch/           # lifecycle, updateLifecycle, search, validation,
-                            # writeValidation, consumedCapacity, partiql
-  tier3/                    # ~340 tests
-    validation-ordering/    # per-operation validation error ordering
-    error-messages/         # exact error message strings
-    limits/                 # itemSize, batchLimits, responseSize, transactionLimits,
-                            # numberPrecision, emptyValues, reservedWords
-    legacy-api/             # expected, attributeUpdates, queryFilter, scanFilter, attributesToGet
+    vectorSearch/           # consumedCapacity, lifecycle, partiql, search,
+                            # updateLifecycle, validation, writeValidation
+  tier3/
+    error-messages/         # batchGetItem, batchWriteItem, conditionalCheck,
+                            # controlPlaneNameUnits, createTable, deleteItem,
+                            # getItem, indexKeyValues, indexReads,
+                            # leadingUnderscore, partiql, partiqlFunctions,
+                            # partiqlGrammar, partiqlIndexQualifier,
+                            # partiqlMultiAttributeIndex,
+                            # partiqlParameterNumbers, putItem, query,
+                            # queryKeyConditionOperands, queryMultiAttributeKey,
+                            # scan, searchVectors, tableNameUnits,
+                            # transactGetItems, transactIndexKeys,
+                            # transactWriteItems, updateItem, valueLayers,
+                            # vectorIndexes, vectorWrites
+    legacy-api/             # attributeUpdates, attributesToGet, expected,
+                            # queryFilter, scanFilter
+    limits/                 # batchLimits, emptyValues, expressionSize,
+                            # itemSize, itemSizeBySurface, keyLength,
+                            # leadingUnderscore, nestingDepth, numberByteSize,
+                            # numberExponent, numberPrecision, reservedWords,
+                            # responseSize, transactionLimits
+    validation-ordering/    # batchOperations, createTable, deepRequests,
+                            # deleteItem, index, partiql, putItem, query,
+                            # queryKeyCondition, scan, transactions, updateItem
 ```
 
 ## Shared infrastructure
@@ -689,8 +737,10 @@ tests/
 [paritysuite.org](https://paritysuite.org) is built from `site/`, an npm workspace in this repository. It renders the files in `results/` as current standings, a page per target with its score over time, and a browsable archive of every recorded run. It imports the suite's own target maps and the same divergence, coverage and grading arithmetic, so the board and the table above can't disagree about a target's name, its link, or its score.
 
 ```bash
-npm run site:dev     # http://localhost:8080
-npm run site:build   # writes site/_site/
+# http://localhost:8080
+npm run site:dev
+# Writes site/_site/.
+npm run site:build
 npm run site:test
 ```
 
@@ -743,7 +793,13 @@ You'd need a raw HTTP test layer using `fetch()` with `aws4` signing for those. 
 1. Start the target on a port
 2. Run: `DYNAMODB_ENDPOINT=http://localhost:<port> npx vitest run --reporter=json --outputFile=results/<target>.json`
 3. Generate the table: `npm run results:table`
-4. Submit a PR with the results JSON
+4. Add the target to `scripts/lib/targets.mjs`, including its `licence`: the
+   name, linked to the licence text, read from the project's own licence file
+   (or from what is actually run, where that is licensed differently from the
+   source), with `spdx` only when the licence has an SPDX identifier. Name it as
+   the project does and leave it at that: no "open source" or "not open source"
+   beside it, in the field or in the target's note.
+5. Submit a PR with the results JSON
 
 If the target speaks HTTPS only or verifies request signatures (ExtendDB is
 the first such target), two extra steps apply: trust its certificate with

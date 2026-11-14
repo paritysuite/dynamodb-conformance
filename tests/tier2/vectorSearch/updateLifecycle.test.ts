@@ -5,7 +5,7 @@ import { skipUnlessVectorIndexes, describeVectorIndex } from '../../../src/vecto
 import { isUnsupportedFault } from '../../../src/unsupported.js'
 import { IndeterminateError, indeterminateFrom } from '../../../src/indeterminate.js'
 import { region } from '../../../src/aws-config.js'
-import { ceilingsFor, indexTestTimeoutMs } from '../../../src/regions.js'
+import { ceilingsFor, indexTestTimeoutMs, VECTOR_INDEX_WAITS } from '../../../src/regions.js'
 
 // The UpdateTable path of the vector index lifecycle. Separated from
 // lifecycle.test.ts because index creation here runs on GSI timescales
@@ -17,6 +17,10 @@ import { ceilingsFor, indexTestTimeoutMs } from '../../../src/regions.js'
 // DynamoDB, 2 minutes on an emulator (see indexBackfillMs in src/regions.ts).
 const CEILINGS = ceilingsFor(region)
 const INDEX_WAIT_MS = CEILINGS.indexBackfillMs
+// The other deadlines in this file are the same on every target. Each test's
+// timeout counts every deadline inside it, so an expired one is reported as
+// no answer rather than ended by vitest as a failure.
+const { activeTableBesideCreatingIndexMs, backfillStartMs, indexGoneMs } = VECTOR_INDEX_WAITS
 
 const tablesToCleanup: string[] = []
 
@@ -204,7 +208,7 @@ describe('UpdateTable — vector index lifecycle', { tags: ['update-table', 'del
         VectorIndexUpdates: [{ Delete: { IndexName: 'vix' } }],
       }),
     )
-    const deleteDeadline = Date.now() + 300_000
+    const deleteDeadline = Date.now() + indexGoneMs
     for (;;) {
       const ix = await describeVectorIndex(tableName, 'vix')
       if (!ix) break
@@ -221,10 +225,10 @@ describe('UpdateTable — vector index lifecycle', { tags: ['update-table', 'del
     expect(table.Table?.TableStatus).toBe('ACTIVE')
     expect(table.Table?.VectorIndexes ?? []).toHaveLength(0)
     // Timeout: the table-creation wait, the searchable ceiling (INDEX_WAIT_MS)
-    // and the delete ceiling (300s), plus a minute. The outer bound must exceed
-    // the summed internal deadlines or vitest kills the test as a failure
-    // before either internal ceiling can type the expiry as indeterminate.
-  }, indexTestTimeoutMs(CEILINGS, { otherWaitsMs: 300_000 }))
+    // and the delete ceiling, plus a minute. The outer bound must exceed the
+    // summed internal deadlines or vitest kills the test as a failure before
+    // either internal ceiling can type the expiry as indeterminate.
+  }, indexTestTimeoutMs(CEILINGS, { otherWaitsMs: indexGoneMs }))
 
   // The other half of "wait for the index, not just the table": while a vector
   // index is being created, the table underneath it cannot be deleted. AWS
@@ -304,7 +308,7 @@ describe('UpdateTable — vector index lifecycle', { tags: ['update-table', 'del
 
     // Wait for the state the claim is about: the table back to ACTIVE with the
     // index still CREATING.
-    const reachDeadline = Date.now() + 300_000
+    const reachDeadline = Date.now() + activeTableBesideCreatingIndexMs
     for (;;) {
       const described = await ddb.send(new DescribeTableCommand({ TableName: tableName }))
       const ix = (described.Table?.VectorIndexes ?? []).find((i) => i.IndexName === 'vix')
@@ -336,7 +340,7 @@ describe('UpdateTable — vector index lifecycle', { tags: ['update-table', 'del
         VectorIndexUpdates: [{ Delete: { IndexName: 'vix' } }],
       }),
     )
-    const goneDeadline = Date.now() + 300_000
+    const goneDeadline = Date.now() + indexGoneMs
     for (;;) {
       const ix = await describeVectorIndex(tableName, 'vix')
       if (!ix) break
@@ -351,9 +355,10 @@ describe('UpdateTable — vector index lifecycle', { tags: ['update-table', 'del
     // Once the index is gone the table is deletable again, which is the same
     // claim from the other side.
     await ddb.send(new DeleteTableCommand({ TableName: tableName }))
-    // Timeout: the reach ceiling (300s) plus the cancel ceiling (300s) plus
-    // setup margin, on the same rule as the test above.
-  }, 700_000)
+    // Timeout: the table-creation wait, the reach ceiling and the cancel
+    // ceiling, plus a minute, on the same rule as the test above. Nothing here
+    // waits on the index backfill itself.
+  }, indexTestTimeoutMs(CEILINGS, { indexWaits: 0, otherWaitsMs: activeTableBesideCreatingIndexMs + indexGoneMs }))
 
   // Index creation is not one phase, and only the second of them takes a
   // cancel. Measured in eu-west-2 on 2026-08-23, on the same five-item table
@@ -512,7 +517,7 @@ describe('UpdateTable — vector index lifecycle', { tags: ['update-table', 'del
     // there is no third status value to read the boundary from — so it is what
     // the loop waits on and what the cancel below is timed against.
     let sawActiveTableWhileCreating = false
-    const backfillDeadline = Date.now() + 600_000
+    const backfillDeadline = Date.now() + backfillStartMs
     for (;;) {
       const described = await ddb.send(new DescribeTableCommand({ TableName: tableName }))
       const ix = (described.Table?.VectorIndexes ?? []).find((i) => i.IndexName === 'vix')
@@ -545,7 +550,7 @@ describe('UpdateTable — vector index lifecycle', { tags: ['update-table', 'del
         VectorIndexUpdates: [{ Delete: { IndexName: 'vix' } }],
       }),
     )
-    const goneDeadline = Date.now() + 300_000
+    const goneDeadline = Date.now() + indexGoneMs
     for (;;) {
       const ix = await describeVectorIndex(tableName, 'vix')
       if (!ix) break
@@ -557,9 +562,9 @@ describe('UpdateTable — vector index lifecycle', { tags: ['update-table', 'del
       }
       await new Promise((r) => setTimeout(r, 2000))
     }
-    // Timeout: the backfill-start ceiling (600s) plus the cancel ceiling (300s)
-    // plus setup margin, on the same rule as the tests above — the outer bound
-    // must exceed the summed internal deadlines or vitest kills the test as a
-    // failure before either can type the expiry as indeterminate.
-  }, 1_000_000)
+    // Timeout: the table-creation wait, the backfill-start ceiling and the
+    // cancel ceiling, plus a minute, on the same rule as the tests above. The
+    // outer bound must exceed the summed internal deadlines or vitest kills the
+    // test as a failure before either can type the expiry as indeterminate.
+  }, indexTestTimeoutMs(CEILINGS, { indexWaits: 0, otherWaitsMs: backfillStartMs + indexGoneMs }))
 })

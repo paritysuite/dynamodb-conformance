@@ -34,6 +34,7 @@ import { checkProseLiterals } from "../lib/prose-literals.mjs";
 import notScoredFixture from "../fixtures/board/_data/notScored.js";
 import { partitionProblems } from "../lib/letterless.mjs";
 import { OPERATION_MARKS } from "../lib/matrix.mjs";
+import { directoryEntriesIn, licenceGaps } from "../lib/licence-links.mjs";
 
 const failures = [];
 const check = (ok, label, detail = "") => {
@@ -104,6 +105,15 @@ try {
   check(docs.length > 100, "builds a plausible number of pages", `got ${docs.length}`);
   check(docs.some((d) => d.path === "/index.html"), "builds a home page");
   check(docs.some((d) => /^\/targets\/[^/]+\/\d{4}-\d{2}-\d{2}\//.test(d.path)), "builds per-run target pages");
+
+  // A code block's placeholder survives as text. The highlighter passes a
+  // `text` fence through unescaped, so `<slug>` became a stray tag and the
+  // badge URL lost the one part a reader has to fill in.
+  const agentsDoc = docs.find((d) => d.path === "/for-agents/index.html");
+  check(
+    /results\/&lt;slug&gt;\.badge\.json/.test(agentsDoc?.html ?? ""),
+    "the agents page shows the badge URL with its <slug> placeholder escaped",
+  );
 
   // The board actually has rows on it, and it has all of them. Every other
   // check here passes on an empty board: the home page still builds, its links
@@ -183,6 +193,31 @@ try {
     `${targetPagesRead} page(s) read; ${notScoredMismatch.join(", ")}`,
   );
   console.log(`        ${targetPagesRead} pages, ${expectedNotScored} expected not scored`);
+
+  // Every target page, and every project entry in the directory, names the
+  // licence the endpoint publishes for that target and links to its text. Read
+  // from the marked link itself, so a licence named somewhere else on the page
+  // cannot stand in for it, and compared with latest.json rather than with the
+  // registry, so the page and the endpoint cannot disagree.
+  const latestTargets = JSON.parse(await readFile(join(out, "data", "latest.json"), "utf8")).targets;
+  const publishedLicence = (slug) => latestTargets.find((t) => t.slug === slug)?.licence ?? null;
+  const licencePages = latestTargets
+    .map((t) => ({ slug: t.slug, html: docs.find((d) => d.path === `/targets/${t.slug}/index.html`)?.html }))
+    .filter((p) => p.html);
+  const licencePageGaps = licenceGaps(licencePages, publishedLicence);
+  check(
+    licencePages.length > 0 && licencePageGaps.length === 0,
+    "every target page links the licence its endpoint row publishes",
+    `${licencePages.length} page(s) read; ${licencePageGaps.slice(0, 3).join("; ")}`,
+  );
+  const directoryEntries = directoryEntriesIn(emulatorDirectory?.html);
+  const licenceEntryGaps = licenceGaps(directoryEntries, publishedLicence);
+  check(
+    directoryEntries.length > 0 && licenceEntryGaps.length === 0,
+    "every directory entry links the licence its endpoint row publishes",
+    `${directoryEntries.length} entr(ies) read; ${licenceEntryGaps.slice(0, 3).join("; ")}`,
+  );
+  console.log(`        ${licencePages.length} target pages, ${directoryEntries.length} directory entries`);
 
   // The legend above a target's operations names every mark the list can
   // print, and every mark the list did print. The marks are the hidden glyph

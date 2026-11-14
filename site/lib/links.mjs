@@ -1,14 +1,15 @@
 // Where each engine lives, split into a project site and its source.
 //
 // The suite carries one URL per target (`repoUrl`, ported in scoring.mjs) and
-// it means different things per target: a code repo for the emulators, an AWS
-// product or docs page for the two AWS rows. Rather than restate those URLs
+// it means different things per target: a code repo for most, an AWS product
+// or docs page for DynamoDB and DynamoDB Local. Rather than restate those URLs
 // here and let the two copies drift, the split is derived - the suite's URL is
 // the source when it points at a code host and the project site when it
 // doesn't - and only the sites the suite has no room for are listed below.
 //
-// Values match each repo's own homepage field. A target with no site (dynalite)
-// and a target with no public source (both AWS rows) are both normal.
+// Values match each repo's own homepage field unless noted. A target with no
+// site (dynalite, kumo) and a target with no public source (DynamoDB and
+// DynamoDB Local) are both normal.
 const WEBSITE = {
   dynoxide: "https://dynoxide.dev",
   localstack: "https://localstack.cloud",
@@ -16,7 +17,8 @@ const WEBSITE = {
   floci: "https://floci.io/floci/",
   extenddb: "https://extenddb.org/",
   "aws-emulator": "https://docs.aws.amazon.com/emulator/latest/userguide/what-is-service.html",
-  alternator: "https://www.scylladb.com/",
+  // Not the repo's homepage, which is ScyllaDB's site for the whole database.
+  alternator: "https://docs.scylladb.com/manual/stable/alternator/alternator.html",
   "phoenix-adapters": "https://phoenix.apache.org/",
 };
 

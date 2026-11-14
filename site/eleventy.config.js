@@ -10,7 +10,7 @@ import { controlObservation, controlProvenance, controlSplit, regionCount, regio
 import { renderSplitEvidence, splitCoverageNote } from "./lib/splits.mjs";
 import { regionalSpread, renderCappedExamples, renderCheapestWithdrawal } from "./lib/worked-examples.mjs";
 import { carriedEach, countWord } from "./lib/suite-shape.mjs";
-import { GRADING_CRITERIA_EFFECTIVE, GRADING_VERSION, REGIONAL_CAUSE, TARGETS, capClauseOf, configurationOf, coverageShareSentenceOf, display, distributionOf, fallsShort, gradeForRow, gradeLegendOf, gradeLineOf, gradeOf, gradingCriteriaEffectiveLabel, isNotScored, isSelfMaintained, isVariant, notAttempted, projectOf, regionClauseOf, regionLineOf, regionalClauseForRow, regionalLetterForRow, rowConfigurationOf, scoredOnCorrectness } from "./lib/scoring.mjs";
+import { GRADING_CRITERIA_EFFECTIVE, GRADING_VERSION, REGIONAL_CAUSE, TARGETS, capClauseOf, configurationOf, coverageShareSentenceOf, display, distributionOf, fallsShort, licenceOf, gradeForRow, gradeLegendOf, gradeLineOf, gradeOf, gradingCriteriaEffectiveLabel, isNotScored, isSelfMaintained, isVariant, notAttempted, projectOf, regionClauseOf, regionLineOf, regionalClauseForRow, regionalLetterForRow, rowConfigurationOf, scoredOnCorrectness } from "./lib/scoring.mjs";
 import { channelIcon } from "./lib/channel-icons.mjs";
 import { targetLinks, targetRunHref } from "./lib/links.mjs";
 import { areaFailures, sourceUrl } from "./lib/findings.mjs";
@@ -191,6 +191,9 @@ export default function (eleventyConfig) {
   // What a target needs before it will run, and any caveat about running it.
   eleventyConfig.addFilter("requires", (slug) => TARGETS[slug]?.requires ?? null);
   eleventyConfig.addFilter("runNote", (slug) => TARGETS[slug]?.note ?? null);
+  // The licence it is offered under, named and linked, the same way for every
+  // target. Through licenceOf so a build shows its project's.
+  eleventyConfig.addFilter("licence", (slug) => licenceOf(slug));
 
   // A target's project site and source, split out of the single URL the suite
   // carries. Static per target, like the disclosure above.

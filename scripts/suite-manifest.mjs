@@ -62,7 +62,7 @@ export const MANIFEST_PATH = 'registry/suite-manifest.json'
 
 // Port 1 is reserved and nothing binds it, so every request fails fast rather
 // than hanging on a DNS or connect timeout.
-const DEAD_ENDPOINT = 'http://127.0.0.1:1'
+export const DEAD_ENDPOINT = 'http://127.0.0.1:1'
 
 /**
  * The child environment for the enumeration run: the caller's, less anything

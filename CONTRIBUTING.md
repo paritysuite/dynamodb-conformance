@@ -51,7 +51,13 @@ Before opening a PR that adds or modifies a test:
    is too lenient passes acceptance-only tests while still diverging
    from DynamoDB. Put the error-code check in the operation's own tier
    (or `tests/tier3/validation-ordering/`) and the exact message, where
-   it's stable, in `tests/tier3/error-messages/`.
+   it's stable, in `tests/tier3/error-messages/`. Assert the error with
+   `expectDynamoError`, and never put an assertion inside the `try` that
+   makes the request: the `catch` would judge it as the target's answer.
+   The helper also rethrows a throttle or transport fault untouched, so it
+   is recorded as no answer rather than a failure. Where you catch the
+   error by hand, rethrow it if `indeterminateFrom` classifies it, and only
+   then assert on it.
 5. **Required if you added, moved or renamed a test:** regenerate both
    manifests in the same commit. `node scripts/suite-manifest.mjs`
    rewrites `registry/suite-manifest.json`, the list of tests the suite
@@ -209,7 +215,12 @@ indistinguishable from agreement.
 
 Don't use the `expectDynamoError` helper in `error-messages/` - it always
 routes the message through `toContain`, so it can't express the exact
-rung; use it (or a direct `toContain`) in `validation-ordering/`.
+rung; use it (or a direct `toContain`) in `validation-ordering/`. Without
+the helper, catch the error, rethrow it if `indeterminateFrom` classifies
+it, and only then assert on it, as
+`tests/tier2/vectorSearch/updateLifecycle.test.ts` does. Asserting on the
+caught error straight away turns a throttle into a failure, because the
+assertion's own error is what gets recorded.
 
 For error messages with a stable prefix and a variable reason or
 identifier suffix (`TransactionCanceledException` is the obvious

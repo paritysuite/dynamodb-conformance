@@ -418,6 +418,28 @@ test("targets carry the maintainer disclosure, derived from the slug", () => {
   assert.equal(latest.targets.find((t) => t.slug === "dynalite").maintainedByAuthor, false);
 });
 
+test("every target on the latest endpoint carries its licence, in the one shape", () => {
+  const latest = buildLatest(model, site);
+  assert.ok(latest.targets.length >= 2);
+  for (const t of latest.targets) {
+    assert.ok(t.licence, `${t.slug} has no licence`);
+    assert.equal(typeof t.licence.name, "string", `${t.slug}: licence.name`);
+    assert.ok(t.licence.name.length > 0, `${t.slug}: empty licence.name`);
+    assert.match(t.licence.url, /^https:\/\//, `${t.slug}: licence.url`);
+    // name and url always; spdx only where the licence has an identifier.
+    for (const key of Object.keys(t.licence)) assert.ok(["name", "spdx", "url"].includes(key), `${t.slug}: licence.${key}`);
+  }
+  // A build reads its project's licence.
+  const wasm = latest.targets.find((t) => t.slug === "dynoxide-wasm");
+  const parent = latest.targets.find((t) => t.slug === "dynoxide");
+  if (wasm && parent) assert.deepEqual(wasm.licence, parent.licence);
+});
+
+test("the runs endpoint carries no licence, since today's licence is not a historical fact", () => {
+  const runs = buildRuns(model, site);
+  for (const run of runs.runs) for (const t of run.targets) assert.ok(!("licence" in t), `run ${run.id} ${t.slug}`);
+});
+
 // The baseline row is synthesised at zero divergence across the whole suite,
 // which is only honest while every real-AWS pass has reported. The homepage and
 // /ground-truth disclose when one has not; without the same fact here, an agent

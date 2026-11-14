@@ -19,6 +19,7 @@
 //   configuration  what makes this row distinct, and how a nested row is
 //                  labelled
 //   distribution   how you actually get and run it (see below)
+//   licence        the terms it is offered under (see below)
 //
 // Declaring the relationship replaces sniffing a bracket out of the display
 // name, which is what previously stood in for it.
@@ -37,6 +38,19 @@
 // similarity from the results themselves. A measured relationship is a claim
 // the suite can defend; a typed one is a claim about someone else's product
 // that nothing checks.
+//
+// ── On licence ───────────────────────────────────────────────────────────────
+//
+// Asserted too, and handled the same way: `{ name, spdx?, url }`, where `name`
+// is what a reader sees, `spdx` is present only when the licence has a real
+// SPDX identifier or expression, and `url` is the licence text or the
+// vendor's terms. It is read from the project's own licence file (or, where
+// the thing the suite runs is licensed differently from the repository, from
+// that) and named, never characterised: every target shows the same field in
+// the same place, with no "open source" or "not open source" beside it. It
+// sits on the project's reference entry and the other builds inherit it
+// through licenceOf, so a build declares one only when its licence really
+// differs.
 
 /**
  * Channel labels, so the board renders a controlled vocabulary.
@@ -57,7 +71,7 @@ export const CHANNELS = {
   maven: 'Maven',
   homebrew: 'Homebrew',
   scoop: 'Scoop',
-  package: 'package',
+  package: 'OS package',
   'install-script': 'install script',
   binary: 'binary',
   embedded: 'embedded',
@@ -80,6 +94,7 @@ export const TARGETS = {
     project: 'dynamodb',
     reference: true,
     url: 'https://aws.amazon.com/dynamodb/',
+    licence: { name: 'AWS Customer Agreement', url: 'https://aws.amazon.com/agreement/' },
     // The baseline is the hosted service; there is nothing to install.
     distribution: [{ channel: 'service', url: 'https://aws.amazon.com/dynamodb/' }],
   },
@@ -88,6 +103,7 @@ export const TARGETS = {
     project: 'dynamodb-local',
     reference: true,
     url: 'https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html',
+    licence: { name: 'Amazon DynamoDB Local License Agreement', url: 'https://aws.amazon.com/dynamodb/dynamodblocallicense/' },
     // No `embedded`: a DynamoDBEmbedded class exists in the v3 artefact but AWS
     // documents no such mode, and an undocumented class is not a channel.
     requires: 'JRE 17+ (bundled in the Docker route)',
@@ -109,6 +125,7 @@ export const TARGETS = {
     // name storage, because storage is what distinguishes them.
     configuration: 'self-contained binary',
     url: 'https://github.com/nubo-db/dynoxide',
+    licence: { name: 'MIT OR Apache-2.0', spdx: 'MIT OR Apache-2.0', url: 'https://github.com/nubo-db/dynoxide/blob/main/README.md#license' },
     requires: 'none - a single binary, with no runtime to install',
     distribution: [
       { channel: 'npx', url: 'https://github.com/nubo-db/dynoxide/blob/main/docs/installation.md' },
@@ -139,6 +156,7 @@ export const TARGETS = {
     project: 'dynalite',
     reference: true,
     url: 'https://github.com/architect/dynalite',
+    licence: { name: 'Apache-2.0', spdx: 'Apache-2.0', url: 'https://github.com/architect/dynalite/blob/main/LICENSE' },
     requires: 'Node 20+',
     // `npx` is registry metadata (the package declares a bin), not something
     // the project documents, so it is sourced to the registry rather than the
@@ -160,12 +178,12 @@ export const TARGETS = {
     project: 'alternator',
     reference: true,
     url: 'https://github.com/scylladb/scylladb',
+    licence: { name: 'ScyllaDB Software License Agreement', url: 'https://github.com/scylladb/scylladb/blob/master/LICENSE-ScyllaDB-Source-Available.md' },
     requires: 'Docker or a Linux install; a write-isolation mode must be chosen, there is no default',
     note:
       'ScyllaDB\'s DynamoDB-compatible API, served by the database node rather ' +
       'than a standalone emulator. Run with --alternator-write-isolation=' +
-      'only_rmw_uses_lwt. ScyllaDB is source-available under its own licence, ' +
-      'not open source.',
+      'only_rmw_uses_lwt.',
     distribution: [
       { channel: 'docker', url: 'https://hub.docker.com/r/scylladb/scylla' },
       {
@@ -187,7 +205,17 @@ export const TARGETS = {
     display: 'LocalStack',
     project: 'localstack',
     reference: true,
-    url: 'https://github.com/localstack/localstack',
+    // The project site rather than the GitHub repository: the repository is
+    // archived, and its licence file is not the one the measured image is
+    // offered under, so linking it as the source beside the licence below
+    // would pair two things that do not belong together.
+    url: 'https://www.localstack.cloud',
+    // The image the suite runs ships no LocalStack licence file. Its
+    // localstack-core, localstack-pro-core and localstack-pro-apps packages
+    // each declare `LicenseRef-All-Rights-Reserved`. LocalStack's Terms of
+    // Service are the terms the image is offered under without a
+    // subscription; subscribers are under its Master Services Agreement.
+    licence: { name: 'LocalStack Terms of Service', url: 'https://www.localstack.cloud/legal/terms-of-service' },
     requires: 'Docker, and an auth token since March 2026',
     note:
       'The Community image was sunset in March 2026; the unified image needs a ' +
@@ -204,6 +232,7 @@ export const TARGETS = {
     project: 'ministack',
     reference: true,
     url: 'https://github.com/ministackorg/ministack',
+    licence: { name: 'MIT', spdx: 'MIT', url: 'https://github.com/ministackorg/ministack/blob/main/LICENSE' },
     requires: 'Python 3.10+ for the pip route; DynamoDB runs in-process, so no Docker',
     distribution: [
       { channel: 'pip', url: 'https://pypi.org/project/ministack/' },
@@ -216,6 +245,7 @@ export const TARGETS = {
     project: 'floci',
     reference: true,
     url: 'https://github.com/floci-io/floci',
+    licence: { name: 'MIT', spdx: 'MIT', url: 'https://github.com/floci-io/floci/blob/main/LICENSE' },
     requires: 'Docker',
     // The emulator itself ships only as an image - every GitHub release has
     // zero assets. The other channels install floci-cli, which pulls and runs
@@ -228,7 +258,6 @@ export const TARGETS = {
       { channel: 'docker', url: 'https://hub.docker.com/r/floci/floci' },
       { channel: 'homebrew', url: 'https://github.com/floci-io/floci-cli' },
       { channel: 'install-script', url: 'https://github.com/floci-io/floci-cli' },
-      { channel: 'scoop', url: 'https://github.com/floci-io/scoop-floci' },
       { channel: 'binary', url: 'https://github.com/floci-io/floci-cli/releases/latest' },
       { channel: 'jar', url: 'https://github.com/floci-io/floci-cli' },
     ],
@@ -245,6 +274,7 @@ export const TARGETS = {
     project: 'phoenix-adapters',
     reference: true,
     url: 'https://github.com/apache/phoenix-adapters',
+    licence: { name: 'Apache-2.0', spdx: 'Apache-2.0', url: 'https://github.com/apache/phoenix-adapters/blob/main/LICENSE' },
     requires: 'Docker, and a from-source build; the stack is six containers',
     note:
       'A DynamoDB-compatible REST layer over Apache Phoenix on HBase rather ' +
@@ -259,6 +289,7 @@ export const TARGETS = {
     project: 'kumo',
     reference: true,
     url: 'https://github.com/sivchari/kumo',
+    licence: { name: 'MIT', spdx: 'MIT', url: 'https://github.com/sivchari/kumo/blob/main/LICENSE' },
     requires: 'none - a single Go binary, or Docker for the image',
     distribution: [
       { channel: 'docker', url: 'https://github.com/sivchari/kumo/pkgs/container/kumo' },
@@ -278,6 +309,9 @@ export const TARGETS = {
     project: 'aws-emulator',
     reference: true,
     url: 'https://github.com/aws/aws-emulator',
+    // The project's readme states both: CC0-1.0, except the vendor/ directory,
+    // which is Apache-2.0 and compiled into the same binary.
+    licence: { name: 'CC0-1.0 AND Apache-2.0', spdx: 'CC0-1.0 AND Apache-2.0', url: 'https://github.com/aws/aws-emulator/blob/main/README.md#license' },
     requires: 'Linux for the native package; elsewhere Docker, with an image you build',
     note:
       'DynamoDB is one of the many AWS services it serves. No image is ' +
@@ -302,6 +336,7 @@ export const TARGETS = {
     reference: true,
     configuration: 'PostgreSQL',
     url: 'https://github.com/ExtendDB/extenddb',
+    licence: { name: 'Apache-2.0', spdx: 'Apache-2.0', url: 'https://github.com/ExtendDB/extenddb/blob/main/LICENSE' },
     requires: 'PostgreSQL 14+, and Docker for the image or a Rust toolchain to build it',
     // Docker is the official extenddb-postgres image. No binary is published,
     // so the other route is a source build, which is how the suite runs it, at
@@ -402,6 +437,22 @@ export const rowConfigurationOf = (slug) =>
 export const rowName = (slug, name = display(slug)) => {
   const configuration = rowConfigurationOf(slug)
   return configuration ? `${name} · ${configuration}` : name
+}
+
+/**
+ * The licence a target is offered under: `{ name, spdx?, url }`, or null for an
+ * unregistered slug. A build with none of its own inherits its project's, from
+ * the project's reference entry, so the builds of one project cannot drift
+ * apart by being copied.
+ */
+export const licenceOf = (slug) => {
+  const target = TARGETS[slug]
+  if (!target) return null
+  if (target.licence) return target.licence
+  const reference = Object.entries(TARGETS).find(
+    ([s, t]) => t.reference && projectOf(s) === projectOf(slug),
+  )
+  return reference?.[1].licence ?? null
 }
 
 /**

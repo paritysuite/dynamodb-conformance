@@ -126,8 +126,8 @@ different region.
 A project's own row on the board now names its configuration beside the
 project, as the README table already did, so ExtendDB's row reads "ExtendDB ·
 PostgreSQL" before its other builds are opened. The ways to run a target gain
-one more, `package`, for an operating system package: a .deb or .rpm, or an apt
-or dnf repository.
+one more, `OS package`, for an operating system package: a .deb or .rpm, or an
+apt or dnf repository.
 
 AWS Emulator joins the board, suggested by [@exoego](https://github.com/exoego)
 in [#304](https://github.com/paritysuite/dynamodb-conformance/issues/304). It is
@@ -172,6 +172,67 @@ real local run had left. The listing run now keeps everything in a temporary
 directory and ignores the caller's target, results directory, endpoint and AWS
 settings
 ([#342](https://github.com/paritysuite/dynamodb-conformance/issues/342)).
+
+Five index tests now have a timeout longer than the waits inside them, which
+corrects an earlier note in this section: in these five an expired wait could
+still end as a failure. Two vector index tests could wait up to 20 seconds
+longer than their timeouts allowed, and three GSI validation tests waited up to
+2 minutes for a new table inside the 30-second default. The test runner ended
+them first, so a slow target got a failure where it should have got no answer.
+No published result came near the old limits, so no verdict changes.
+
+Floci's row no longer lists Scoop. Its link pointed at a repository that doesn't
+exist, and Floci's own install instructions don't mention Scoop.
+
+Every target now names its licence. Each target's page shows it in How to run
+it, next to what the target needs, and each project's entry in the emulator
+directory shows it under What you need. In both places it is the licence's name,
+linked to its text or to the vendor's terms. Where a licence has an SPDX
+identifier, that identifier is the name shown. Builds of one project show the
+project's licence. Where the thing the suite runs is licensed differently from
+its source repository, the licence shown is the one for what is run. Each target
+in `/data/latest.json` carries the same fact as `licence`, with `name`, `url`
+and, where one exists, `spdx`. The one licence remark that sat in a target's
+run note has moved into the field, so no target carries a line about its
+licence that the others do not.
+
+LocalStack's name in the results table, and the project links on its pages,
+now point at localstack.cloud rather than its GitHub repository, which is
+archived.
+
+A test expecting an error now says so plainly when the request was accepted:
+`expected ValidationException, but the request was accepted`, where it used to
+read `expected AssertionError: expected "should have thrown" ... to be an
+instance of DynamoDBServiceException`. The verdict is the same, a failure. What
+does change is a request that got no answer while a test was waiting for an
+error. A throttle that outlasted the SDK's retries, a transport fault or a 5xx
+other than 501 (not implemented, which stays a real failure) used to be judged
+as the wrong error and recorded as a failure. It is now recorded as no answer,
+the same as anywhere else in the suite, so a run that meets one is not scored
+rather than carrying a failure for it. A test that expects one of those errors
+on purpose still passes when it gets it. This covers tests that use
+`expectDynamoError`. Tests that catch the error by hand are unchanged for now.
+
+The sweep's confirmation re-runs now run the test they are meant to repeat
+([#332](https://github.com/paritysuite/dynamodb-conformance/issues/332)). On
+the 2026-10-31, 2026-11-07 and 2026-11-14 sweeps every confirmation re-run
+selected no test, so all 16 split candidates were discarded as not reproduced.
+A candidate that cannot be re-run is now reported on a `confirmation-error`
+issue rather than discarded.
+
+The six TransactWriteItems and TransactGetItems tests on malformed numbers and
+duplicate set members now pin eu-west-2's answer, from the current validation
+layer, where they accepted either layer's. us-east-1, eu-west-1 and us-west-2,
+which gave the older layer's answer in October, have moved. On 2026-11-13 every
+region that answered gave the current layer's answer to all of them except
+ap-south-1 and me-central-1, and a run of the six tests on 2026-11-14 found
+ap-south-1 on the current layer as well. Six new rows in `registry/splits.json`
+record me-central-1 on the older layer, which reads 1e2147483647 as an underflow
+and prints set members as sent. An engine that answers these six in the older
+layer now fails them, and is credited only against me-central-1. me-central-1
+has missed the sweeps since 2026-10-17 and is not among the regions the board
+scores against, so for now such an engine fails them everywhere the board shows.
+The answers are in `captures/2026-11-14-transaction-value-layers.json`.
 
 ## 2026-11-02 (3.9.0)
 

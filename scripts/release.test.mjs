@@ -314,6 +314,37 @@ describe('assertNoOpenDraft', () => {
       ]),
     ).toThrow(/v3\.2\.0/)
   })
+
+  it('tells an abandoned cut to keep its tag', () => {
+    // The cut has already committed package.json at the drafted version, and
+    // the next run's plan step diffs against the tag that version names. With
+    // the tag gone, that diff fails and every later run stops at the plan.
+    let message = ''
+    try {
+      assertNoOpenDraft([{ tag_name: 'v3.2.0', draft: true }])
+    } catch (e) {
+      message = e.message
+    }
+    expect(message).toMatch(/delete the draft release but keep its tag/)
+    expect(message).toMatch(/When a release's board is refused/)
+    expect(message).not.toMatch(/delete the (draft and its )?tag/)
+  })
+
+  it('points at a heading AGENTS.md actually has', () => {
+    let message = ''
+    try {
+      assertNoOpenDraft([{ tag_name: 'v3.2.0', draft: true }])
+    } catch (e) {
+      message = e.message
+    }
+    const [, heading] = /see "([^"]+)" in AGENTS\.md/.exec(message) ?? []
+    expect(heading).toBeTruthy()
+    const headings = readFileSync('AGENTS.md', 'utf8')
+      .split('\n')
+      .filter((line) => /^#{1,6} /.test(line))
+      .map((line) => line.replace(/^#+ /, '').trim())
+    expect(headings).toContain(heading)
+  })
 })
 
 describe('measuredVersionOf', () => {
