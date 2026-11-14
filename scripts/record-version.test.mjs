@@ -51,3 +51,24 @@ describe('aws-emulator', () => {
     expect(record('aws-emulator')).toBe('-')
   })
 })
+
+describe('alternator', () => {
+  it('keeps the ScyllaDB release and drops the build, date and commit', () => {
+    const stubs = {
+      docker: '[ "$*" = "exec alternator scylla --version" ] && echo 2025.4.1-0.20251020.abcdef123',
+    }
+    expect(record('alternator', { stubs })).toBe('2025.4.1')
+  })
+
+  it('records no version when the container answers nothing and no image is named', () => {
+    expect(record('alternator', { stubs: { docker: 'exit 1' } })).toBe('-')
+  })
+
+  it('falls back to the image digest when the container answers nothing', () => {
+    const stubs = {
+      docker: '[ "$1" = inspect ] && echo scylladb/scylla@sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08 || exit 1',
+    }
+    const env = { TARGET_IMAGE: 'scylladb/scylla:latest' }
+    expect(record('alternator', { stubs, env })).toBe('9f86d081884c')
+  })
+})

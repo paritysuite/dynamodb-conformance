@@ -18,6 +18,8 @@
 #                         wasm engine publishes for itself on npm
 #   localstack            its /_localstack/info version endpoint
 #   aws-emulator          the installed binary's own `aws-emulator -v`
+#   alternator            `scylla --version` in the running container, else
+#                         the image digest
 #   extenddb              the built release tag; the SQLite row reports the
 #   extenddb-sqlite       same tag, being the same release built with a
 #                         different storage feature rather than its own build
@@ -56,6 +58,13 @@ case "$target" in
     # moves several times a day.
     ver=$(aws-emulator -v 2>/dev/null |
       awk 'NR == 1 { if (match($0, /[0-9]+(\.[0-9]+)+/)) print substr($0, RSTART, RLENGTH); exit }')
+    ;;
+  alternator)
+    # The ScyllaDB release, asked of the container named `alternator` that the
+    # CI job and the README start. Of <version>-<build>.<date>.<commit>, only
+    # the version is kept.
+    ver=$(docker exec alternator scylla --version 2>/dev/null | head -n 1)
+    ver=${ver%%-*}
     ;;
 esac
 

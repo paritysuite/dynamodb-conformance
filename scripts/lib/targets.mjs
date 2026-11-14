@@ -149,6 +149,40 @@ export const TARGETS = {
       { channel: 'embedded', url: 'https://github.com/architect/dynalite/blob/main/readme.md' },
     ],
   },
+  // ScyllaDB's own DynamoDB-compatible API, served by the database node rather
+  // than a separate emulator, so the channels are ScyllaDB's. A write-isolation
+  // mode must be chosen at start-up and has no default. The modes differ only
+  // under concurrent writers to one item, or by refusing conditional writes
+  // outright, and the suite drives one client serially, so the mode is a
+  // start-up flag rather than a configuration with rows of its own.
+  alternator: {
+    display: 'Alternator',
+    project: 'alternator',
+    reference: true,
+    url: 'https://github.com/scylladb/scylladb',
+    requires: 'Docker or a Linux install; a write-isolation mode must be chosen, there is no default',
+    note:
+      'ScyllaDB\'s DynamoDB-compatible API, served by the database node rather ' +
+      'than a standalone emulator. Run with --alternator-write-isolation=' +
+      'only_rmw_uses_lwt. ScyllaDB is source-available under its own licence, ' +
+      'not open source.',
+    distribution: [
+      { channel: 'docker', url: 'https://hub.docker.com/r/scylladb/scylla' },
+      {
+        channel: 'package',
+        url: 'https://docs.scylladb.com/manual/stable/getting-started/install-scylla/install-on-linux.html',
+      },
+      {
+        channel: 'install-script',
+        url: 'https://docs.scylladb.com/manual/stable/getting-started/installation-common/scylla-web-installer.html',
+      },
+      {
+        channel: 'binary',
+        url: 'https://docs.scylladb.com/manual/stable/getting-started/installation-common/unified-installer.html',
+      },
+      { channel: 'source', url: 'https://github.com/scylladb/scylladb' },
+    ],
+  },
   localstack: {
     display: 'LocalStack',
     project: 'localstack',

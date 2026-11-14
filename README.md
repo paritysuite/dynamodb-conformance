@@ -4,7 +4,7 @@
 [![Licence: Apache 2.0](https://img.shields.io/badge/licence-Apache%202.0-blue.svg)](LICENSE)
 [![Live results](https://img.shields.io/badge/live%20results-paritysuite.org-brightgreen)](https://paritysuite.org)
 
-An independent test suite that validates any DynamoDB-compatible endpoint against real DynamoDB behaviour. It works against DynamoDB, DynamoDB Local, Dynoxide, Dynoxide (wasm), Dynalite, LocalStack, ExtendDB, Floci, Ministack, Kumo, AWS Emulator, or anything else that implements the DynamoDB HTTP API.
+An independent test suite that validates any DynamoDB-compatible endpoint against real DynamoDB behaviour. It works against DynamoDB, DynamoDB Local, Dynoxide, Dynoxide (wasm), Dynalite, LocalStack, ExtendDB, Floci, Ministack, Kumo, AWS Emulator, Alternator, or anything else that implements the DynamoDB HTTP API.
 
 ## Why this exists
 
@@ -315,6 +315,21 @@ The shared indexed table carries both kinds together, so any test using it is ta
 <!-- tags:end -->
 
 ## Running against targets
+
+### Alternator
+
+ScyllaDB serves the DynamoDB API only when given a port, and refuses to start
+without a write-isolation mode, which has no default. Wait for the node to
+answer before starting the run.
+
+```bash
+docker run -d --name alternator -p 8000:8000 scylladb/scylla:latest \
+  --alternator-port=8000 --alternator-write-isolation=only_rmw_uses_lwt \
+  --smp 1 --memory 1G --overprovisioned 1 --developer-mode 1
+until curl -sf http://localhost:8000/ >/dev/null; do sleep 2; done
+DYNAMODB_ENDPOINT=http://localhost:8000 CONFORMANCE_TARGET=alternator npm test
+docker stop alternator && docker rm alternator
+```
 
 ### AWS Emulator
 

@@ -1068,6 +1068,76 @@ jobs:
           name: results-kumo
           path: results/
 
+  test-alternator:
+    name: Alternator
+    needs: changes
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    # Started by hand rather than under `services:`, which cannot pass the
+    # command-line flags the image needs: Alternator is off until given a port,
+    # and a write-isolation mode is mandatory with no default.
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.changes.outputs.ref }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # A single shard with a fixed memory budget is the image's documented
+      # single-node shape, and needs no aio-max-nr tuning on the runner. The
+      # node takes a few seconds to bootstrap after the container starts, so
+      # wait for a real DynamoDB answer rather than a TCP connect.
+      - name: Start Alternator
+        run: |
+          docker run -d --name alternator -p 8000:8000 \
+            scylladb/scylla:latest \
+            --alternator-port=8000 \
+            --alternator-write-isolation=only_rmw_uses_lwt \
+            --smp 1 --memory 1G --overprovisioned 1 --developer-mode 1
+          for i in $(seq 1 60); do
+            if curl -sf --max-time 5 -X POST http://localhost:8000/ \
+                -H 'Content-Type: application/x-amz-json-1.0' \
+                -H 'X-Amz-Target: DynamoDB_20120810.ListTables' \
+                -d '{}' >/dev/null; then
+              echo "Alternator ready after ~$((i * 5))s"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::Alternator did not answer ListTables within 5 minutes"
+          docker logs --tail 100 alternator
+          exit 1
+
+      - name: Run conformance suite
+        continue-on-error: true
+        env:
+          CONFORMANCE_TARGET: alternator
+          DYNAMODB_ENDPOINT: http://localhost:8000
+          AWS_ACCESS_KEY_ID: fakeAccessKeyId
+          AWS_SECRET_ACCESS_KEY: fakeSecretAccessKey
+          AWS_REGION: us-east-1
+        run: npm test
+
+      # The ScyllaDB release is asked of the container started above, by name;
+      # the image digest is the fallback if that answers nothing.
+      - name: Record target version
+        continue-on-error: true
+        env:
+          TARGET_IMAGE: scylladb/scylla:latest
+        run: scripts/record-version.sh alternator
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: results-alternator
+          path: results/
+
   test-dynalite:
     name: Dynalite
     needs: changes

@@ -137,6 +137,12 @@ other systems runs in Docker from an image built with the Dockerfile in its user
 guide. It serves HTTPS and checks SigV4 signatures by default, with a
 certificate and key it generates on each start, and it is measured that way.
 
+Alternator joins the board. It is ScyllaDB's DynamoDB-compatible API, built
+into the database node itself rather than run as a separate emulator, with
+global secondary indexes on materialised views and Streams on change data
+capture. It runs from the official ScyllaDB container image, and its version
+column shows the ScyllaDB release the node reports.
+
 ## 2026-11-02 (3.9.0)
 
 Query's XOR ConditionalOperator beside an unknown Select is now pinned to the
