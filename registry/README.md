@@ -58,7 +58,20 @@ row needs at least two regions whose definite answers differ.
 
 Nothing writes `splits.json` automatically. The weekly sweep detects
 candidate splits, re-confirms them, and opens an issue with the evidence; a
-maintainer reviews it and commits the row by hand.
+maintainer reviews it and commits the row by hand. Re-confirming means
+re-running just that test, several times, in the regions that failed it. Every
+candidate gets one re-run first; then the candidates failing in the fewest
+regions are re-run to the end before wider ones, so if confirmation runs out of
+time it is the widest candidates that go unconfirmed. A candidate that could
+not be re-run - the re-run could not pick out exactly that test, the test is no
+longer on main under that name, it was selected but nothing was observed of it,
+the re-run ran past its own time limit, or confirmation as a whole ran out of
+time - never counts for or against it. Tables left
+behind by a re-run stopped on its time limit are removed by the next re-run's
+prefix sweep in that region, or by the daily cleanup. The sweep lists the
+candidate on a `confirmation-error` issue, which says what to do in each case,
+and marks it as an error in the run log. The sweep run itself stays green, so
+that issue is where to look.
 
 That gate is what keeps "real DynamoDB is ground truth" true. An automated
 writer would launder whatever a region happened to do - including a regional

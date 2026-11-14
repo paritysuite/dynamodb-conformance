@@ -163,6 +163,13 @@ over an external store rather than a self-contained emulator. There is no
 release yet, so it is built from `main` with the project's own Docker setup and
 the row records the commit it ran.
 
+The sweep's confirmation re-runs now run the test they are meant to repeat
+([#332](https://github.com/paritysuite/dynamodb-conformance/issues/332)). On
+the 2026-10-31, 2026-11-07 and 2026-11-14 sweeps every confirmation re-run
+selected no test, so all 16 split candidates were discarded as not reproduced.
+A candidate that cannot be re-run is now reported on a `confirmation-error`
+issue rather than discarded.
+
 ## 2026-11-02 (3.9.0)
 
 Query's XOR ConditionalOperator beside an unknown Select is now pinned to the
