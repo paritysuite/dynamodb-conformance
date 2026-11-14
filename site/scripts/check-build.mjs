@@ -34,6 +34,7 @@ import { checkProseLiterals } from "../lib/prose-literals.mjs";
 import notScoredFixture from "../fixtures/board/_data/notScored.js";
 import { partitionProblems } from "../lib/letterless.mjs";
 import { OPERATION_MARKS } from "../lib/matrix.mjs";
+import { directoryEntriesIn, licenceGaps } from "../lib/licence-links.mjs";
 
 const failures = [];
 const check = (ok, label, detail = "") => {
@@ -183,6 +184,31 @@ try {
     `${targetPagesRead} page(s) read; ${notScoredMismatch.join(", ")}`,
   );
   console.log(`        ${targetPagesRead} pages, ${expectedNotScored} expected not scored`);
+
+  // Every target page, and every project entry in the directory, names the
+  // licence the endpoint publishes for that target and links to its text. Read
+  // from the marked link itself, so a licence named somewhere else on the page
+  // cannot stand in for it, and compared with latest.json rather than with the
+  // registry, so the page and the endpoint cannot disagree.
+  const latestTargets = JSON.parse(await readFile(join(out, "data", "latest.json"), "utf8")).targets;
+  const publishedLicence = (slug) => latestTargets.find((t) => t.slug === slug)?.licence ?? null;
+  const licencePages = latestTargets
+    .map((t) => ({ slug: t.slug, html: docs.find((d) => d.path === `/targets/${t.slug}/index.html`)?.html }))
+    .filter((p) => p.html);
+  const licencePageGaps = licenceGaps(licencePages, publishedLicence);
+  check(
+    licencePages.length > 0 && licencePageGaps.length === 0,
+    "every target page links the licence its endpoint row publishes",
+    `${licencePages.length} page(s) read; ${licencePageGaps.slice(0, 3).join("; ")}`,
+  );
+  const directoryEntries = directoryEntriesIn(emulatorDirectory?.html);
+  const licenceEntryGaps = licenceGaps(directoryEntries, publishedLicence);
+  check(
+    directoryEntries.length > 0 && licenceEntryGaps.length === 0,
+    "every directory entry links the licence its endpoint row publishes",
+    `${directoryEntries.length} entr(ies) read; ${licenceEntryGaps.slice(0, 3).join("; ")}`,
+  );
+  console.log(`        ${licencePages.length} target pages, ${directoryEntries.length} directory entries`);
 
   // The legend above a target's operations names every mark the list can
   // print, and every mark the list did print. The marks are the hidden glyph

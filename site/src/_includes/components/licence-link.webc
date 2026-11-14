@@ -1,0 +1,15 @@
+<!--
+  The licence a target is offered under, named as the project names it and
+  linked to its text. One component for the target page and the directory, so
+  the two cannot word or mark it differently, and the same for every target:
+  the name alone, with nothing beside it that sorts licences into kinds.
+
+  `data-licence` and `data-licence-name` are what check-build reads to compare
+  the rendered name and link with the endpoint's `licence`.
+-->
+<a webc:if="licence(slug)"
+  :href="licence(slug).url"
+  data-licence
+  target="_blank"
+  rel="noopener noreferrer nofollow"
+  class="underline decoration-dotted underline-offset-2 hover:text-brand-700 dark:hover:text-brand-300"><span data-licence-name @text="licence(slug).name"></span><span class="sr-only" @text="', licence of ' + name + ' (opens in a new tab)'"></span></a>

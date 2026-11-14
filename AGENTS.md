@@ -342,6 +342,18 @@ tallies through the suite's classifier rather than reading
 `assertionResults[].status` itself, so a test the suite counts one way cannot
 be counted another way here. Do not reintroduce a local copy of either.
 
+The same goes for a target's static facts in `scripts/lib/targets.mjs`. A new
+target needs a `licence` there, `{ name, spdx?, url }`, read from the project's
+own licence file, or from what the suite actually runs where that is licensed
+differently from the source. `name` is the SPDX identifier where one exists and
+otherwise the licence's own name; `url` is its text or the vendor's terms. Name
+it and nothing more: never characterise it ("open source", "source-available")
+in the field or in the target's `note`, because every target shows the same
+field in the same place. A build of a project inherits the project's licence
+through `licenceOf` unless its own really differs. `targets.test.mjs` holds
+every slug to this, and widens its SPDX allow-list only for an identifier a
+target actually uses.
+
 What remains site-side is the model the templates consume: `dynamodbRow`,
 `sortRows` and `suiteSizeOf` assemble scored rows into runs, standings and
 movement, which the suite has no equivalent of and no use for.

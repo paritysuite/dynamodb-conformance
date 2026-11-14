@@ -94,6 +94,7 @@ export {
   distributionOf,
   isVariant,
   label,
+  licenceOf,
   projectOf,
   repoUrl,
   rowConfigurationOf,

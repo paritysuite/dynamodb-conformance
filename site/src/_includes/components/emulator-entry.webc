@@ -6,6 +6,7 @@
     <p webc:if="isSelfMaintained(row.slug)" class="project-note">Disclosure: maintained by this board's author.</p>
     <h3>What you need</h3>
     <p class="project-requires" @text="requires(row.slug) || 'See project documentation.'"></p>
+    <p webc:if="licence(row.slug)" class="project-licence">Licence: <licence-link :slug="row.slug" :name="row.display"></licence-link></p>
     <p webc:if="runNote(row.slug)" class="project-note" @text="runNote(row.slug)"></p>
     <h3>Installation routes</h3>
     <ul class="project-channels"><li webc:for="c of channels(row.slug)"><a :href="c.url" target="_blank" rel="noopener noreferrer" :aria-label="row.display + ': ' + c.label + ' documentation (opens in a new tab)'"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path :d="c.path"></path></svg><span @text="c.label"></span><span aria-hidden="true">↗</span></a></li></ul>
