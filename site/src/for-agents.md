@@ -36,7 +36,7 @@ Every endpoint also carries a `metrics` block naming each published figure, its 
 
 Each target also has a shields.io endpoint badge, served from the suite repo so a target's own README can show its live grade without copying a figure that goes stale:
 
-```
+```plaintext
 https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/paritysuite/dynamodb-conformance/main/results/<slug>.badge.json
 ```
 

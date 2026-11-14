@@ -105,6 +105,15 @@ try {
   check(docs.some((d) => d.path === "/index.html"), "builds a home page");
   check(docs.some((d) => /^\/targets\/[^/]+\/\d{4}-\d{2}-\d{2}\//.test(d.path)), "builds per-run target pages");
 
+  // A code block's placeholder survives as text. The highlighter passes a
+  // `text` fence through unescaped, so `<slug>` became a stray tag and the
+  // badge URL lost the one part a reader has to fill in.
+  const agentsDoc = docs.find((d) => d.path === "/for-agents/index.html");
+  check(
+    /results\/&lt;slug&gt;\.badge\.json/.test(agentsDoc?.html ?? ""),
+    "the agents page shows the badge URL with its <slug> placeholder escaped",
+  );
+
   // The board actually has rows on it, and it has all of them. Every other
   // check here passes on an empty board: the home page still builds, its links
   // still resolve, and the per-target pages are paginated from a different list

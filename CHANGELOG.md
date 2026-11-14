@@ -126,8 +126,8 @@ different region.
 A project's own row on the board now names its configuration beside the
 project, as the README table already did, so ExtendDB's row reads "ExtendDB ·
 PostgreSQL" before its other builds are opened. The ways to run a target gain
-one more, `package`, for an operating system package: a .deb or .rpm, or an apt
-or dnf repository.
+one more, `OS package`, for an operating system package: a .deb or .rpm, or an
+apt or dnf repository.
 
 AWS Emulator joins the board, suggested by [@exoego](https://github.com/exoego)
 in [#304](https://github.com/paritysuite/dynamodb-conformance/issues/304). It is
@@ -162,6 +162,9 @@ API as a REST layer over Apache Phoenix on HBase, so the row measures an adapter
 over an external store rather than a self-contained emulator. There is no
 release yet, so it is built from `main` with the project's own Docker setup and
 the row records the commit it ran.
+
+Floci's row no longer lists Scoop. Its link pointed at a repository that doesn't
+exist, and Floci's own install instructions don't mention Scoop.
 
 ## 2026-11-02 (3.9.0)
 

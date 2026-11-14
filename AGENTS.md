@@ -269,11 +269,16 @@ a day the board scored a target it could not name.
 Commands, all from the repo root:
 
 ```bash
-npm run site:dev          # Tailwind watch + eleventy --serve, http://localhost:8080
-npm run site:build        # writes site/_site/
-npm run site:test         # the site's unit tests
-npm run site:check-build  # build with the network stubbed, then assert on the HTML
-npm run site:snapshot     # re-fetch upstream history, rewrite the committed fallback
+# Tailwind watch + eleventy --serve, http://localhost:8080
+npm run site:dev
+# Writes site/_site/.
+npm run site:build
+# Unit tests for the site.
+npm run site:test
+# Build with the network stubbed, then assert on the HTML.
+npm run site:check-build
+# Re-fetch upstream history, rewrite the committed fallback.
+npm run site:snapshot
 ```
 
 `site/` depends on the root package as `dynamodb-conformance` (a `file:..`
