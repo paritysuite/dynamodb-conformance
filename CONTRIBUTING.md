@@ -54,17 +54,20 @@ Before opening a PR that adds or modifies a test:
    it's stable, in `tests/tier3/error-messages/`.
 5. **Required if you added, moved or renamed a test:** regenerate both
    manifests in the same commit. `node scripts/suite-manifest.mjs`
-   rewrites `registry/suite-manifest.json`, the count every published
-   figure divides by, and CI fails the PR if it is stale. `npm run
+   rewrites `registry/suite-manifest.json`, the list of tests the suite
+   defines, and CI fails the PR if it doesn't match the tests on the
+   branch. The next release measures every target against main's
+   manifest, and every published figure divides by it. `npm run
    results:tags` rewrites `results/tag-manifest.json`, which groups the
    published results by capability; its guard reports a stale manifest
    as a failing test in `npm run test:tooling`, so it looks like a
    broken test rather than a missing step.
 
-   Renaming a test also invalidates every committed results file, which
-   names its tests in full, so a rename needs those targets re-run
-   before the manifest will publish. Land one with a results refresh
-   rather than alongside a coverage change.
+   A rename lands like any other test change. The committed results are
+   graded against the suite at the release they were measured at, so the
+   board picks the rename up at the next release. At that release every
+   target has to be re-run, because each results file names its tests in
+   full, or the board is refused.
 
 Regenerating the published results table across every tracked target
 is a maintainer task and does not block your PR.

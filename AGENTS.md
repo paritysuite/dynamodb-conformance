@@ -112,19 +112,20 @@ Before opening a PR that adds or modifies a test:
    exact message, where it's stable, in `tests/tier3/error-messages/`.
 5. **Required if you added, moved or renamed a test: regenerate both
    manifests in the same commit.** `node scripts/suite-manifest.mjs`
-   rewrites `registry/suite-manifest.json`, which is what every published
-   figure divides by. CI fails the PR if it is stale, because a board
-   grading against a suite it no longer has is worse than a red build.
+   rewrites `registry/suite-manifest.json`, the list of tests the suite
+   defines. CI fails the PR if it doesn't match the tests on the branch,
+   because the next release measures every target against main's manifest
+   and every published figure divides by it.
    `npm run results:tags` rewrites `results/tag-manifest.json`, which
    groups the published results by capability. Its guard runs in
    `npm run test:tooling` and reports a stale manifest as a failing test,
    so it reads as a broken test rather than a missing step. Run both.
 
-   Renaming a test is the expensive one. Every committed results file
-   names its tests in full, so a rename leaves them measuring a
-   population the suite no longer has, and the publishing gate refuses
-   the manifest until each target is re-run. Land a rename with a
-   results refresh, not with a coverage change.
+   A rename lands like any other test change. The committed results are
+   graded against the suite as it stood at the release they were measured
+   at, so a rename on main leaves them alone and the board picks it up at
+   the next release. At that release every target has to be re-run, since
+   each results file names its tests in full, or the board is refused.
 
 Regenerating the published results table across all tracked targets
 (DynamoDB, Dynoxide, Dynoxide (wasm), DynamoDB Local, Dynalite,
@@ -217,6 +218,12 @@ splits at that block's commit. Health is the only input a rebuild is allowed
 to move. Restamping the timestamp would have the board claim a measurement it
 never performed.
 
+Publishing fresh results also refuses a board whose ground-truth run, in its
+own region, fails a test or passes one on a split row with an answer recorded
+for a different region. A rebuild skips this check, because it re-derives a
+board that already passed it. What to do next is under "When a release's board
+is refused" below.
+
 `release.yml` cuts a version and leaves a draft release; `publish-release.yml`
 flips that draft when a board carrying its version is committed. The flip is
 keyed to the board changing rather than to a named upstream workflow, because
@@ -224,6 +231,28 @@ keyed to the board changing rather than to a named upstream workflow, because
 one that lands a given board. `scripts/release.mjs` holds the mechanics for
 both, so the changelog rewrite is pinned by unit tests rather than discovered
 from a bad release.
+
+### When a release's board is refused
+
+The refusal lists the ground-truth tests that disagreed. There are two ways out,
+depending on why.
+
+If the failure is not a recorded answer at all - a lane test that timed out, or
+a region mid-rollout answering both ways - re-run the measurement. Dispatch
+Conformance Tests from `main` with `ref` set to the tag. That run publishes the
+board and completes the release.
+
+If the region's answer really has changed:
+
+1. Merge a change on `main` that re-records it: the row in
+   `registry/splits.json`, or the test itself where there is no row, with a
+   note under `## Unreleased`.
+2. Delete the refused version's draft release, but keep its tag. The release
+   workflow refuses to cut while a draft is open, and its plan step diffs
+   against the tag named by `package.json`'s version, which is the refused one.
+3. Wait for `main`'s checks to go green, since a release is not cut from a red
+   head.
+4. Cut the next version.
 
 ## The site workspace (`site/`)
 
