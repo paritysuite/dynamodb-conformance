@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { loadRegistry } from './lib/registry.mjs'
+import { loadRegistry, sameObservation } from './lib/registry.mjs'
 import { PROVISIONAL_ACCEPTED_DETAIL } from '../src/observation-sink.js'
 
 // Per-region scoring joins three hand-maintained artefacts on prose
@@ -364,4 +364,74 @@ describe('recordersReached and stampedDetails', () => {
     const found = stampedDetails(recordersReached('c(ctx.task)', commented), commented)
     expect([...found]).toEqual(['real'])
   })
+})
+
+// The transaction value-layer tests (tests/tier3/error-messages/valueLayers.test.ts)
+// send several requests each, and a row holds one answer per region: the older
+// layer's answer to the test's last request. recordOlderLayer stamps that answer
+// as the target gave it, once every answer matched the older layer's list. Nothing
+// else ties the two, so a row recording a different member of the list, or a
+// recorder stamping a different element, would leave every region on the older
+// layer unmatched with nothing going red. These assertions make that drift loud.
+describe('rows recorded by recordOlderLayer hold the end of the older-layer list', () => {
+  const file = 'tests/tier3/error-messages/valueLayers.test.ts'
+  const source = readFileSync(file, 'utf8')
+  const code = withoutComments(source)
+
+  // The file's own older-layer lists and wrapper, evaluated from its source so a
+  // change to either reaches this check.
+  const literal = (name) => new RegExp(`^const ${name} = ('(?:[^'\\\\]|\\\\.)*')$`, 'm').exec(code)?.[1]
+  const list = (name) => {
+    const m = new RegExp(`^const ${name} = \\[`, 'm').exec(code)
+    return m ? bracketed(code, m.index + m[0].length - 1) : null
+  }
+  const wrapper = /^const forKey = \((\w+): string, (\w+): string\) => (`[^`]*`)$/m.exec(code)
+  const consts = ['NOT_NUMERIC', 'OVERFLOW', 'UNDERFLOW', 'INVALID']
+  const values = consts.map((name) => Function(`return ${literal(name)}`)())
+  const evalList = (name) => Function(...consts, `return [${list(name)}]`)(...values)
+  const forKey = wrapper ? Function(wrapper[1], wrapper[2], `return ${wrapper[3]}`) : null
+  const lists = { OLDER: evalList('OLDER'), DUPE_OLDER: evalList('DUPE_OLDER') }
+  const keys = [...code.matchAll(/forKey\(\w+, '([^']+)'\)/g)].map((m) => m[1])
+
+  // Every (list, key) pair whose last answer a row could legitimately record.
+  const endings = Object.entries(lists).flatMap(([name, l]) => [
+    { name, key: null, message: l.at(-1) },
+    ...keys.map((key) => ({ name, key, message: forKey(l.at(-1), key) })),
+  ])
+
+  const rows = registry.splits.filter((row) => {
+    if (row.test.file !== file) return false
+    const block = testBlock(source, row.test.fullName)?.text ?? ''
+    return /\brecordOlderLayer\s*\(/.test(withoutComments(block))
+  })
+
+  it('reads the lists and the wrapper from the test file, and finds the rows', () => {
+    expect(values.every((v) => typeof v === 'string')).toBe(true)
+    expect(lists.OLDER).toHaveLength(4)
+    expect(lists.DUPE_OLDER).toHaveLength(3)
+    expect(forKey).not.toBeNull()
+    expect(rows).toHaveLength(6)
+  })
+
+  it('stamps the last answer of the list it compared', () => {
+    const fn = functionIn(source, 'recordOlderLayer')
+    const [, got] = fn.params
+    expect(fn.body).toMatch(new RegExp(`message:\\s*${got}\\[${got}\\.length - 1\\]`))
+  })
+
+  for (const row of rows) {
+    it(`${row.id} records, off the pin, the end of the list its test compares`, () => {
+      const block = withoutComments(testBlock(source, row.test.fullName).text)
+      const pinned = row.regions[row.pinned]
+      const others = Object.values(row.regions).filter((answer) => !sameObservation(answer, pinned))
+      expect(others.length).toBeGreaterThan(0)
+      for (const answer of others) {
+        const ending = endings.find((e) => e.message === answer.error?.message)
+        expect(ending, `${answer.error?.message} ends no older-layer list in ${file}`).toBeDefined()
+        expect(block).toMatch(new RegExp(`(?<![\\w])${ending.name}\\b`))
+        if (ending.key) expect(block).toContain(`forKey(m, '${ending.key}')`)
+        else expect(block).not.toMatch(/forKey\(/)
+      }
+    })
+  }
 })

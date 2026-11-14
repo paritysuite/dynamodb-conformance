@@ -163,6 +163,20 @@ over an external store rather than a self-contained emulator. There is no
 release yet, so it is built from `main` with the project's own Docker setup and
 the row records the commit it ran.
 
+The six TransactWriteItems and TransactGetItems tests on malformed numbers and
+duplicate set members now pin eu-west-2's answer, from the current validation
+layer, where they accepted either layer's. us-east-1, eu-west-1 and us-west-2,
+which gave the older layer's answer in October, have moved. On 2026-11-13 every
+region that answered gave the current layer's answer to all of them except
+ap-south-1 and me-central-1, and a run of the six tests on 2026-11-14 found
+ap-south-1 on the current layer as well. Six new rows in `registry/splits.json`
+record me-central-1 on the older layer, which reads 1e2147483647 as an underflow
+and prints set members as sent. An engine that answers these six in the older
+layer now fails them, and is credited only against me-central-1. me-central-1
+has missed the sweeps since 2026-10-17 and is not among the regions the board
+scores against, so for now such an engine fails them everywhere the board shows.
+The answers are in `captures/2026-11-14-transaction-value-layers.json`.
+
 ## 2026-11-02 (3.9.0)
 
 Query's XOR ConditionalOperator beside an unknown Select is now pinned to the
