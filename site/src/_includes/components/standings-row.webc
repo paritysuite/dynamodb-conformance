@@ -88,7 +88,7 @@
              labelled pair above carries the number for anyone who wants it.
              Same phrase as the nested build rows below and the target page,
              so a build cannot read differently from the board. -->
-        <p webc:if="regionClause(row)" class="standing-regions text-xs text-zinc-500 dark:text-zinc-400 mb-1.5" @text="gradeLine(row) + ' ' + regionClause(row)"></p>
+        <p webc:if="regionLine(row)" class="standing-regions text-xs text-zinc-500 dark:text-zinc-400 mb-1.5" @text="regionLine(row)"></p>
         <!-- Where the letter does not hold in every region (#271), with the
              cause on the regions' answers rather than on the target. The
              attribute is what the build check finds the note by. A run page's

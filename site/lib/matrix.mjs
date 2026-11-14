@@ -21,6 +21,14 @@ const STATE = {
   unsupported: { glyph: "–", cls: "text-zinc-500 dark:text-zinc-400", label: "unsupported" },
 };
 const STATE_FALLBACK = { glyph: "·", cls: "text-zinc-300 dark:text-zinc-700", label: "not tested" };
+// An area with an unanswered test. Its state is read from the answered tests
+// alone, so a tick or a dash there would contradict "not scored" beside it.
+const NOT_SCORED = { glyph: "?", cls: "text-zinc-500 dark:text-zinc-400", label: null };
+
+// Every mark the operations list prints for a state areaState gives, or for an
+// unanswered test. The target page's legend has to name each one, and the
+// build check holds it to that.
+export const OPERATION_MARKS = [...Object.values(STATE), NOT_SCORED].map((s) => s.glyph);
 
 function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -56,18 +64,27 @@ export function renderTargetOperations(areas) {
         .slice()
         .sort((a, b) => a.group.localeCompare(b.group))
         .map((a) => {
-          const s = STATE[a.state] || STATE_FALLBACK;
-                  // `divergence`, not `rate`. It held a divergence figure under a name
+          // An area holding an indeterminate is not scored, like a run holding
+          // one, so it prints "-" rather than reading as one implemented nowhere.
+          const unanswered = a.indeterminate ?? 0;
+          const s = unanswered > 0 ? NOT_SCORED : STATE[a.state] || STATE_FALLBACK;
+          // `divergence`, not `rate`. It held a divergence figure under a name
           // the board used for the retired pass rate, so the one variable read
           // as the opposite direction to the number in it.
           const axes = axesOf({ passed: a.passed, failed: a.failed, count: a.total, indeterminate: a.indeterminate ?? 0 });
-          const divergence = axes.divergence == null ? "n/a" : `${axes.divergence.toFixed(1)}%`;
-          const cover = axes.coverage == null ? "n/a" : `${axes.coverage.toFixed(1)}%`;
+          const blank = unanswered > 0 ? "-" : "n/a";
+          const divergence = axes.divergence == null ? blank : `${axes.divergence.toFixed(1)}%`;
+          const cover = axes.coverage == null ? blank : `${axes.coverage.toFixed(1)}%`;
           const counts = cellCounts(a);
           // An area a target implements none of has no divergence to read out,
           // so the description says that rather than "diverges on n/a".
-          const figures = divergence === "n/a" ? `implements none of it` : `diverges on ${divergence} of it, covers ${cover}`;
-          const describe = `${a.group}: ${s.label}, ${figures}${counts ? ` (${counts})` : ""}`;
+          const figures =
+            unanswered > 0
+              ? `not scored, because ${formatNumber(unanswered)} ${unanswered === 1 ? "test" : "tests"} got no answer`
+              : divergence === "n/a"
+                ? `implements none of it`
+                : `diverges on ${divergence} of it, covers ${cover}`;
+          const describe = `${a.group}: ${s.label ? `${s.label}, ` : ""}${figures}${counts ? ` (${counts})` : ""}`;
           return `
           <li class="flex items-center justify-between gap-3 py-1.5">
             <span class="flex items-center gap-2 min-w-0">

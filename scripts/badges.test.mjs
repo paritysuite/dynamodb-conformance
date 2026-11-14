@@ -73,12 +73,15 @@ describe('gradeFor', () => {
     expect(gradeFor('dynoxide', result(3, 0), CONTEXT)).toMatchObject({ letter: 'A+' })
   })
 
-  it('a target that implemented nothing gets no badge, not a letter', () => {
+  it('a target that implemented nothing is not scored, not given a letter', () => {
     // All skips: coverage exists as a denominator but divergence is null, so
-    // there is no grade to badge. gradeFor returns null rather than an
-    // unscored shape, and buildBadge follows.
-    expect(gradeFor('dynoxide', result(0, 0, 5), CONTEXT)).toBeNull()
-    expect(buildBadge('dynoxide', result(0, 0, 5), CONTEXT)).toBeNull()
+    // there is no letter to badge. The grade is the unscored shape the
+    // summary carries for the same row, and the badge says so.
+    expect(gradeFor('dynoxide', result(0, 0, 5), CONTEXT)).toMatchObject({
+      letter: null,
+      qualifier: 'not scored',
+    })
+    expect(buildBadge('dynoxide', result(0, 0, 5), CONTEXT)).toMatchObject({ message: 'not scored' })
   })
 
   it('lowers the grade on a narrow surface', () => {
@@ -135,14 +138,17 @@ describe('gradeFor', () => {
       status: 'failed',
       meta: { indeterminate: { reason: 'gsi-consistency-timeout', at: 'test' } },
     })
-    // Same answer as the run-level sidecar below: no badge rather than a
+    // Same answer as the run-level sidecar below: not scored, rather than a
     // letter derived from a run that did not observe the whole suite.
-    expect(gradeFor('dynoxide', raw, CONTEXT)).toBeNull()
+    expect(gradeFor('dynoxide', raw, CONTEXT)).toMatchObject({ letter: null, qualifier: 'not scored' })
   })
 
   it('a run-level sidecar empties the grade rather than failing the target', () => {
     const sidecar = { runLevel: [{ reason: 'table-active-timeout', phase: 'provisioning' }] }
-    expect(gradeFor('dynoxide', result(5, 0), { ...CONTEXT, sidecar })).toBeNull()
+    expect(gradeFor('dynoxide', result(5, 0), { ...CONTEXT, sidecar })).toMatchObject({
+      letter: null,
+      qualifier: 'not scored',
+    })
   })
 })
 
@@ -166,6 +172,27 @@ describe('buildBadge', () => {
       message: 'baseline',
       color: 'lightgrey',
     })
+  })
+
+  it('badges a run that is not scored as not scored, in the neutral colour', () => {
+    // One indeterminate and the run is not scored. The badge still publishes,
+    // because a results file exists and the URL may already sit in someone's
+    // README, but it says what the row says rather than keeping a letter the
+    // latest run does not support.
+    const raw = result(30, 0)
+    raw.testResults[0].assertionResults.push({
+      status: 'failed',
+      meta: { indeterminate: { reason: 'transport', at: 'test' } },
+    })
+    const notScored = {
+      schemaVersion: 1,
+      label: 'parity',
+      message: 'not scored',
+      color: 'lightgrey',
+    }
+    expect(buildBadge('alpha', raw, CONTEXT)).toEqual(notScored)
+    const sidecar = { runLevel: [{ reason: 'table-active-timeout', phase: 'provisioning' }] }
+    expect(buildBadge('alpha', result(5, 0), { ...CONTEXT, sidecar })).toEqual(notScored)
   })
 
   it('badges the letter, coloured by its band', () => {
@@ -206,11 +233,8 @@ describe('committed badges are fresh', () => {
     const expected = buildBadge(slug, raw, { ...context, sidecar })
     const badgePath = join(RESULTS_DIR, `${slug}.badge.json`)
 
-    if (expected === null) {
-      expect(existsSync(badgePath), `${slug} should not have a badge`).toBe(false)
-      return
-    }
-
+    // Every target result file has a target to badge, scored or not.
+    expect(expected, `${slug} produced no badge`).not.toBeNull()
     expect(
       existsSync(badgePath),
       `${slug}.badge.json missing — run \`npm run results:badges\``,

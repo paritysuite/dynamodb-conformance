@@ -125,7 +125,9 @@ A skipped test is deliberate: each test file probes for feature support in
 so a skip records scope rather than a gap in correctness. An indeterminate test
 is a failed observation - a timeout, an exhausted throttle, a transport fault -
 and counts neither for nor against a target, because nobody knows what the
-answer was.
+answer was. A run with any indeterminate test is not scored: its row reads
+`not scored`, with no divergence, coverage or region count, and so does its
+badge, until a run gets an answer to every test.
 
 DynamoDB is the ground truth, recorded per region. Real DynamoDB disagrees with
 itself in a handful of places (the admitted cases are in `registry/splits.json`),

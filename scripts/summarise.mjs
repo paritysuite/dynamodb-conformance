@@ -776,6 +776,7 @@ export function tableRows(summary) {
     // quietly wrong is discovered in production, so they are never summed into
     // a single figure. The maths lives in axesOf, shared with the badges.
     const { divergence: divergenceRate, coverage: coverageRate } = axesOf(best)
+    const grade = gradeOf(divergenceRate, coverageRate)
 
     // The regional range lives on the site's target page, beside that target's
     // headline, where there is room to say what it means. The README carries the
@@ -784,7 +785,9 @@ export function tableRows(summary) {
     return {
       slug,
       target: label(slug),
-      grade: gradeOf(divergenceRate, coverageRate).letter ?? '-',
+      // A row with no letter prints the qualifier, `not scored`, which is what
+      // its badge says too.
+      grade: grade.letter ?? grade.qualifier,
       regionalGap: regionalGapOf(
         divergenceRate,
         coverageRate,
@@ -798,8 +801,10 @@ export function tableRows(summary) {
       divergenceValue: divergenceRate,
       coverageValue: coverageRate,
       total: pct(t.headline.rate),
-      cohort: cohortCount(cohort.regions.length, summary, t.headline.rate),
-      cohortLabel: t.headline.rate === null ? '-' : regionLabel(cohort),
+      // A cohort is the regions a scored headline matched. A row that is not
+      // scored still has a pass rate to rank regions by, but no headline.
+      cohort: grade.letter === null ? '-' : cohortCount(cohort.regions.length, summary, t.headline.rate),
+      cohortLabel: grade.letter === null || t.headline.rate === null ? '-' : regionLabel(cohort),
       passed: best.passed,
       failed: best.failed,
       skipped: best.skipped,

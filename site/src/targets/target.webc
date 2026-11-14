@@ -192,9 +192,7 @@
        grouped by rate. Hidden when the per-region overlay isn't available. -->
   <div webc:if="$data.target.hasRegions" class="mb-12">
     <h2 id="regions" class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Per-region divergence</h2>
-    <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-4 max-w-2xl">
-      The headline is <span class="font-medium text-zinc-600 dark:text-zinc-300" @text="regionLabel($data.target.regionLabel)"></span>, measured against <span class="font-medium text-zinc-600 dark:text-zinc-300" @text="regionCount($data.target.regionLabel)"></span> observed regions<span webc:if="$data.target.current.headlineRegion">, and scored in <span class="font-mono font-medium text-zinc-600 dark:text-zinc-300" @text="$data.target.current.headlineRegion"></span></span>. Real DynamoDB doesn't behave identically in every region, so a target can match some regions more closely than others. Each figure below is divergence in those regions, best first. eu-west-2 is marked as the historical baseline, and a region that couldn't be resolved this sweep is flagged rather than counted as a disagreement.
-    </p>
+    <region-intro :target="$data.target"></region-intro>
     <div class="space-y-3" @html="regionGroups($data.target.regions)"></div>
   </div>
 
@@ -245,7 +243,8 @@
       <span class="whitespace-nowrap"><span class="text-pass-700 dark:text-pass-400 font-bold" aria-hidden="true">✓</span> full</span>,
       <span class="whitespace-nowrap"><span class="text-partial-700 dark:text-partial-400 font-bold" aria-hidden="true">◑</span> partial</span>,
       <span class="whitespace-nowrap"><span class="text-fail-700 dark:text-fail-400 font-bold" aria-hidden="true">✗</span> failing</span>,
-      <span class="whitespace-nowrap"><span class="text-zinc-500 dark:text-zinc-400 font-bold" aria-hidden="true">–</span> unsupported</span>.
+      <span class="whitespace-nowrap"><span class="text-zinc-500 dark:text-zinc-400 font-bold" aria-hidden="true">–</span> unsupported</span>,
+      <span class="whitespace-nowrap"><span class="text-zinc-500 dark:text-zinc-400 font-bold" aria-hidden="true">?</span> not scored</span>.
       The <a href="/targets" class="text-brand-700 dark:text-brand-300 underline">emulator directory</a> lists support across targets.
     </p>
     <div class="space-y-6" @html="targetOperations($data.target.areas)"></div>

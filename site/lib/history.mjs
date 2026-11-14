@@ -187,22 +187,29 @@ function headlineRegionOf(sm) {
 // entry names this exact run, newest sweep first so the freshest statement
 // of the same run wins.
 function overlayEntryFor(s, summary) {
+  return sweepFor(s, summary)?.targets?.[s.slug] ?? null;
+}
+
+// The sweep that entry was found in, which also says which regions that sweep
+// observed.
+function sweepFor(s, summary) {
   // Run-date agreement is required on both sides, with no escape for an
   // undated entry: every committed sweep stamps runDate, so an entry without
   // one is not a legacy shape to accommodate but a malformed record, and
   // accepting it would re-admit the exact cross-run graft this join removes.
   if (!s.runDate) return null;
-  const keyed = summary?.byRunDate?.[s.runDate]?.targets?.[s.slug];
-  if (keyed?.runDate === s.runDate) return keyed;
+  const keyed = summary?.byRunDate?.[s.runDate];
+  if (keyed?.targets?.[s.slug]?.runDate === s.runDate) return keyed;
   for (const date of Object.keys(summary?.byRunDate ?? {}).sort().reverse()) {
-    const entry = summary.byRunDate[date]?.targets?.[s.slug];
-    if (entry?.runDate === s.runDate) return entry;
+    const sweep = summary.byRunDate[date];
+    if (sweep?.targets?.[s.slug]?.runDate === s.runDate) return sweep;
   }
   return null;
 }
 
 function enrichSnapshot(s, summary) {
-  const sm = overlayEntryFor(s, summary);
+  const sweep = sweepFor(s, summary);
+  const sm = sweep?.targets?.[s.slug] ?? null;
   if (!sm) return s;
 
   const best = headlineRegionOf(sm);
@@ -227,12 +234,17 @@ function enrichSnapshot(s, summary) {
     portTotalValue: s.totalValue,
     portTotal: s.total,
     headlineRegion: best.region,
-    regionLabel: sm.label,
+    // A run-level fault rates no region, so its label counts none observed;
+    // the sweep it was measured in says how many were.
+    regionLabel: sm.label?.observed === 0 ? { ...sm.label, observed: sweep.regions?.observed?.length || null } : sm.label,
     tiers: best.tiers ?? s.tiers,
     passed: best.passed,
     failed: best.failed,
     skipped: best.skipped,
     count: best.count,
+    // Carried with the counts it qualifies, so anything rederiving a figure
+    // from them through axesOf withholds it as the headline does.
+    indeterminate: best.indeterminate ?? 0,
     implemented,
     unsupported: best.skipped,
     divergenceValue,

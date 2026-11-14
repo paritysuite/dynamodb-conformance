@@ -1,0 +1,10 @@
+<!-- The sentence opening a target's per-region drilldown. A run the suite did
+     not score still carries per-region pass rates, so a cohort and a headline
+     region can be read off it, but neither was scored. A component so the
+     build check can render both branches from a fixture. -->
+<p webc:if="isNotScored(target.current)" class="text-sm text-zinc-500 dark:text-zinc-400 mb-4 max-w-2xl">
+  This run is not scored, so no region has a divergence figure to show.
+</p>
+<p webc:else class="text-sm text-zinc-500 dark:text-zinc-400 mb-4 max-w-2xl">
+  The headline is <span class="font-medium text-zinc-600 dark:text-zinc-300" @text="regionLabel(target.regionLabel)"></span>, measured against <span class="font-medium text-zinc-600 dark:text-zinc-300" @text="regionCount(target.regionLabel)"></span> observed regions<span webc:if="target.current.headlineRegion">, and scored in <span class="font-mono font-medium text-zinc-600 dark:text-zinc-300" @text="target.current.headlineRegion"></span></span>. Real DynamoDB doesn't behave identically in every region, so a target can match some regions more closely than others. Each figure below is divergence in those regions, best first. eu-west-2 is marked as the historical baseline, and a region that couldn't be resolved this sweep is flagged rather than counted as a disagreement.
+</p>

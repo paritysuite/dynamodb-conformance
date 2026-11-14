@@ -373,8 +373,12 @@ test("withdrawing the last fail leaves no divergence, not zero", () => {
 // board - "no divergence in 6 regions" - and the count it pairs with the
 // figure is the thing that read backwards before.
 
+// The cohort is stated for a scored row; these figures are any that grade.
+const SCORED = { divergenceValue: 1.0, coverageValue: 100 };
+
 test("regionClauseOf pairs the cohort with its worst-region figure", () => {
   const row = {
+    ...SCORED,
     regionLabel: { regions: ["a", "b", "c", "d", "e", "f"], observed: 32 },
     divergenceWorstLabel: "0.3%",
   };
@@ -386,30 +390,31 @@ test("regionClauseOf pairs the cohort with its worst-region figure", () => {
 test("regionClauseOf pluralises the region count", () => {
   assert.equal(
     regionClauseOf({
+      ...SCORED,
       regionLabel: { regions: ["a"], observed: 33 },
       divergenceWorstLabel: "2.0%",
     }),
     "in 1 region · up to 2.0% in the other 32",
   );
   assert.equal(
-    regionClauseOf({ regionLabel: { regions: ["a"], observed: 1 } }),
+    regionClauseOf({ ...SCORED, regionLabel: { regions: ["a"], observed: 1 } }),
     "in all 1 region",
   );
   // The plural stays plural: this is a singular special case, not a rewrite.
   assert.equal(
-    regionClauseOf({ regionLabel: { regions: ["a", "b"], observed: 2 } }),
+    regionClauseOf({ ...SCORED, regionLabel: { regions: ["a", "b"], observed: 2 } }),
     "in all 2 regions",
   );
 });
 
 test("regionClauseOf says all regions only when the cohort is every one", () => {
   assert.equal(
-    regionClauseOf({ regionLabel: { regions: Array(32).fill("r"), observed: 32 } }),
+    regionClauseOf({ ...SCORED, regionLabel: { regions: Array(32).fill("r"), observed: 32 } }),
     "in all 32 regions",
   );
   // One short is not all, and must not round up to it.
   assert.match(
-    regionClauseOf({ regionLabel: { regions: Array(31).fill("r"), observed: 32 }, divergenceWorstLabel: "1.0%" }),
+    regionClauseOf({ ...SCORED, regionLabel: { regions: Array(31).fill("r"), observed: 32 }, divergenceWorstLabel: "1.0%" }),
     /^in 31 regions/,
   );
 });
@@ -417,10 +422,18 @@ test("regionClauseOf says all regions only when the cohort is every one", () => 
 test("regionClauseOf drops the remainder clause when no worst figure is known", () => {
   // Rather than claiming a range it cannot evidence.
   assert.equal(
-    regionClauseOf({ regionLabel: { regions: ["a"], observed: 32 } }),
+    regionClauseOf({ ...SCORED, regionLabel: { regions: ["a"], observed: 32 } }),
     "in 1 of 32 regions",
   );
   assert.equal(regionClauseOf({}), "");
+});
+
+test("regionClauseOf states no cohort for a row the suite did not score", () => {
+  // Its regions still carry pass rates, so a cohort can be built from them,
+  // but "not scored in all 2 regions" reads as a measurement.
+  const label = { regions: ["a", "b"], observed: 2 };
+  assert.equal(regionClauseOf({ divergenceValue: null, coverageValue: null, regionLabel: label }), "");
+  assert.equal(regionClauseOf({ ...SCORED, regionLabel: label }), "in all 2 regions");
 });
 
 test("gradeLineOf names the qualifier and only prints a figure when there is one", () => {

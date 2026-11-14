@@ -75,6 +75,22 @@ export function gradeLineOf(row) {
   return grade.qualifier + div;
 }
 
+// Whether a row has figures nobody can grade, so it carries no letter. Read
+// from the figures alone: the baseline has figures and grades on them, and is
+// exempted from its letter elsewhere (gradeForRow) for a different reason.
+export function isNotScored(row) {
+  return gradeOf(row?.divergenceValue, row?.coverageValue).letter === null;
+}
+
+// The grade line with the region cohort after it, or "" for a scored row that
+// has no cohort to state. A not-scored row has no cohort but still says it is
+// not scored, since its chip shows only a dash.
+export function regionLineOf(row) {
+  const clause = regionClauseOf(row);
+  if (clause) return `${gradeLineOf(row)} ${clause}`;
+  return isNotScored(row) ? gradeLineOf(row) : "";
+}
+
 // The grade for a row, and the call every rendering surface should make: the
 // baseline's exemption travels with the data rather than being a rule each
 // template has to remember. `gradeOf` stays exported for callers that hold only
@@ -127,6 +143,10 @@ export function capClauseOf(row, slug) {
 // means. "Up to", because the remainder need not be uniform. Empty when the
 // row carries no regional data (runs before the per-region overlay).
 export function regionClauseOf(row) {
+  // A cohort is the regions a scored headline matched. A row the suite did not
+  // score still carries per-region pass rates, but "not scored in all 33
+  // regions" reads as a measurement, so it states none.
+  if (isNotScored(row)) return "";
   const cohort = row.regionLabel?.regions?.length;
   const observed = row.regionLabel?.observed;
   if (!cohort || !observed) return "";
