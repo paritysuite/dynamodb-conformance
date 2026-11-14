@@ -4,7 +4,7 @@
 [![Licence: Apache 2.0](https://img.shields.io/badge/licence-Apache%202.0-blue.svg)](LICENSE)
 [![Live results](https://img.shields.io/badge/live%20results-paritysuite.org-brightgreen)](https://paritysuite.org)
 
-An independent test suite that validates any DynamoDB-compatible endpoint against real DynamoDB behaviour. It works against DynamoDB, DynamoDB Local, Dynoxide, Dynoxide (wasm), Dynalite, LocalStack, ExtendDB, Floci, Ministack, Kumo, or anything else that implements the DynamoDB HTTP API.
+An independent test suite that validates any DynamoDB-compatible endpoint against real DynamoDB behaviour. It works against DynamoDB, DynamoDB Local, Dynoxide, Dynoxide (wasm), Dynalite, LocalStack, ExtendDB, Floci, Ministack, Kumo, AWS Emulator, or anything else that implements the DynamoDB HTTP API.
 
 ## Why this exists
 
@@ -315,6 +315,52 @@ The shared indexed table carries both kinds together, so any test using it is ta
 <!-- tags:end -->
 
 ## Running against targets
+
+### AWS Emulator
+
+AWS Emulator serves DynamoDB, DynamoDB Streams and many other AWS services on
+one HTTPS port, 9297. Each time it starts it generates a certificate and an
+access key, writes them to `~/.aws/emulator/<port>/`, and checks every request
+is signed with that key. The suite runs it with those defaults left on, and
+with telemetry (on by default) turned off.
+
+On Linux, install the package from its
+[user guide](https://docs.aws.amazon.com/emulator/latest/userguide/getting-started-linux.html)
+and start it:
+
+```bash
+aws-emulator --telemetry off &
+DIR=~/.aws/emulator/9297
+until curl -sf --cacert $DIR/ca.pem https://127.0.0.1:9297/__admin/health; do sleep 1; done
+
+# The JS SDK ignores AWS_CA_BUNDLE, and the suite takes its credentials from
+# the environment rather than the shared credentials file, so both go in here.
+export NODE_EXTRA_CA_CERTS=$DIR/ca.pem
+cred() { sed -n "/^$1 *=/{s/^[^=]*= *//p;q;}" $DIR/emulator_credentials; }
+export AWS_ACCESS_KEY_ID=$(cred aws_access_key_id)
+export AWS_SECRET_ACCESS_KEY=$(cred aws_secret_access_key)
+[ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ] || echo "no credentials in $DIR" >&2
+export AWS_REGION=us-east-1
+DYNAMODB_ENDPOINT=https://127.0.0.1:9297 CONFORMANCE_TARGET=aws-emulator npm test
+```
+
+On macOS and Windows it runs in Docker. No image is published, so build one
+from the Dockerfile in the
+[Docker guide](https://docs.aws.amazon.com/emulator/latest/userguide/getting-started-docker.html)
+(use the `aarch64` package on Apple silicon), then run it with the port the
+same on both sides and the key directory shared at the same path:
+
+```bash
+mkdir -p ~/.aws/emulator
+docker run -d --rm --name aws-emulator --memory=2g --memory-swap=2g \
+  -p 127.0.0.1:9297:9297 -e HOME="$HOME" -e EMULATOR_TELEMETRY=off \
+  -v "$HOME/.aws/emulator:$HOME/.aws/emulator" \
+  aws-emulator -p 9297 --telemetry off
+```
+
+The same exports then apply. Stop it with `docker stop aws-emulator`, which
+lets it delete its key and certificate on the way out. Its state lives in
+memory, so every start is a clean one.
 
 ### Dynalite
 

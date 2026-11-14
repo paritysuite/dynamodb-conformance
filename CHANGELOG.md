@@ -129,6 +129,14 @@ PostgreSQL" before its other builds are opened. The ways to run a target gain
 one more, `package`, for an operating system package: a .deb or .rpm, or an apt
 or dnf repository.
 
+AWS Emulator joins the board, suggested by [@exoego](https://github.com/exoego)
+in [#304](https://github.com/paritysuite/dynamodb-conformance/issues/304). It is
+AWS's own multi-service emulator, written in Rust, with DynamoDB and DynamoDB
+Streams among the services it serves. It installs from a Linux package, or on
+other systems runs in Docker from an image built with the Dockerfile in its user
+guide. It serves HTTPS and checks SigV4 signatures by default, with a
+certificate and key it generates on each start, and it is measured that way.
+
 ## 2026-11-02 (3.9.0)
 
 Query's XOR ConditionalOperator beside an unknown Select is now pinned to the

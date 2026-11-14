@@ -211,6 +211,30 @@ export const TARGETS = {
       { channel: 'source', url: 'https://github.com/sivchari/kumo' },
     ],
   },
+  // A multi-service emulator, of which DynamoDB and DynamoDB Streams are two
+  // services. It runs natively only on Linux, from an RPM or Debian package.
+  // No image is published: the Docker route builds one from the Dockerfile in
+  // its user guide, which installs the same package, so the channel is sourced
+  // to that page rather than to a registry. Its own security defaults stay on
+  // when measured (HTTPS with a per-run certificate, SigV4 with a per-run key),
+  // as ExtendDB's do.
+  'aws-emulator': {
+    display: 'AWS Emulator',
+    project: 'aws-emulator',
+    reference: true,
+    url: 'https://github.com/aws/aws-emulator',
+    requires: 'Linux for the native package; elsewhere Docker, with an image you build',
+    note:
+      'DynamoDB is one of the many AWS services it serves. No image is ' +
+      'published; the Docker route builds one from a Dockerfile in its user ' +
+      'guide. HTTPS and SigV4 are on by default, and it listens on 9297.',
+    distribution: [
+      { channel: 'package', url: 'https://docs.aws.amazon.com/emulator/latest/userguide/getting-started-linux.html' },
+      { channel: 'docker', url: 'https://docs.aws.amazon.com/emulator/latest/userguide/getting-started-docker.html' },
+      { channel: 'embedded', url: 'https://docs.aws.amazon.com/emulator/latest/userguide/getting-started-embedded.html' },
+      { channel: 'source', url: 'https://github.com/aws/aws-emulator' },
+    ],
+  },
   // ExtendDB's storage backend is pluggable, chosen at build time by Cargo
   // feature, and exactly one is compiled into a given binary. A backend is
   // therefore a different engine under one wire protocol, which is a variant of

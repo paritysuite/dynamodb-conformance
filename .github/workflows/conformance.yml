@@ -41,6 +41,10 @@ on:
         description: "Dynoxide git ref to build the wasm engine from (blank = latest release)"
         required: false
         default: ""
+      aws_emulator_version:
+        description: "AWS Emulator package version to install, in the four-part form its versions.json lists, such as 1.0.343.1 (blank = latest published)"
+        required: false
+        default: ""
       weekly:
         description: "The week's run, started by release.yml: a deterministic red files the scheduled-red issue"
         type: boolean
@@ -1105,6 +1109,142 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: results-dynalite
+          path: results/
+
+  test-aws-emulator:
+    name: AWS Emulator
+    needs: changes
+    # No image is published, but the runner is Linux, where the emulator's own
+    # package is the documented way to run it, so this installs that package on
+    # the runner rather than building an image from it. Like ExtendDB, the run
+    # follows the latest release unless a version is given: the package index
+    # (versions.json), not the GitHub release list, because a release is tagged
+    # hours before its package is published and the tag alone installs nothing.
+    continue-on-error: true
+    runs-on: ubuntu-latest
+
+    steps:
+      # No git credential left in the workspace: a third-party binary runs
+      # beside it. Nothing below needs one.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.changes.outputs.ref }}
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Resolve, verify and install AWS Emulator
+        env:
+          # Through the environment, not spliced into the script, for the same
+          # reason as the wasm engine's ref above.
+          REQUESTED_VERSION: ${{ github.event.inputs.aws_emulator_version }}
+        run: |
+          set -euo pipefail
+          BASE=https://downloads.aws.com/aws-emulator/packages/aws-emulator/LTS
+          VERSION="$REQUESTED_VERSION"
+          if [ -z "$VERSION" ]; then
+            VERSION=$(curl -fsSL "$BASE/versions.json" \
+              | jq -r '.versions | map(.version) | sort_by(split(".") | map(tonumber)) | last')
+          fi
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Not a package version: '$VERSION'"
+            exit 1
+          fi
+          # The index lists 1.0.343.1, and the package is named 1.0.343-1.
+          PKG="aws-emulator_${VERSION%.*}-${VERSION##*.}_amd64.deb"
+          echo "Installing AWS Emulator $VERSION ($PKG)"
+          curl -fsSLO "$BASE/$PKG"
+          curl -fsSLO "$BASE/$PKG.sig"
+          curl -fsSLo aws-publishing.asc https://downloads.aws.com/keys/gpg/current.asc
+          # The user guide's check before installing: the key's fingerprint,
+          # then the signature. The signature has to be good, made by the key
+          # with that fingerprint, and from a key and signature that have not
+          # expired or been revoked. gpg reports an expired or revoked one in
+          # place of GOODSIG, so that is checked first, and gpg's own exit
+          # status is left to the checks so each failure says which it was.
+          GNUPGHOME=$(mktemp -d)
+          export GNUPGHOME
+          FPR=98BCF336A3BE53B734E967C52E5BF49BD940F624
+          gpg --quiet --import aws-publishing.asc
+          if ! gpg --with-colons --fingerprint ssm-publishing@amazon.com | grep "^fpr:::::::::$FPR:\$" >/dev/null; then
+            echo "::error::The downloaded publishing key does not have the fingerprint $FPR"
+            exit 1
+          fi
+          STATUS=$(gpg --status-fd 1 --verify "$PKG.sig" "$PKG" 2>/dev/null) || true
+          if grep -E '^\[GNUPG:\] (EXPKEYSIG|REVKEYSIG|EXPSIG) ' <<<"$STATUS"; then
+            echo "::error::The package signature is from an expired or revoked key, or has expired"
+            exit 1
+          fi
+          if ! grep '^\[GNUPG:\] GOODSIG ' <<<"$STATUS" >/dev/null; then
+            echo "::error::The package signature is not good"
+            exit 1
+          fi
+          if ! grep "^\[GNUPG:\] VALIDSIG .* $FPR\$" <<<"$STATUS" >/dev/null; then
+            echo "::error::The package is not signed by the key with fingerprint $FPR"
+            exit 1
+          fi
+          sudo apt-get install -y "./$PKG"
+          aws-emulator -v
+
+      - name: Start AWS Emulator, read its credentials
+        env:
+          EMULATOR_TELEMETRY: "off"
+        run: |
+          set -euo pipefail
+          # Its defaults are kept: HTTPS with a certificate it generates per
+          # run, and SigV4 checked against a key it generates per run. Both are
+          # written under ~/.aws/emulator/<port>/. Telemetry, on by default, is
+          # off by flag as well as by the environment above.
+          nohup aws-emulator -p 9297 --telemetry off >aws-emulator.log 2>&1 &
+          DIR="$HOME/.aws/emulator/9297"
+          for _ in $(seq 30); do
+            curl -sf --cacert "$DIR/ca.pem" https://127.0.0.1:9297/__admin/health && break
+            sleep 1
+          done
+          if ! curl -sf --cacert "$DIR/ca.pem" https://127.0.0.1:9297/__admin/health >/dev/null; then
+            tail -n 100 aws-emulator.log || true
+            echo "::error::AWS Emulator did not pass its health check within 30 seconds"
+            exit 1
+          fi
+          # For the log only: the startup notice says whether telemetry is on.
+          grep -i telemetry aws-emulator.log || true
+          # Everything after the first `=`, since a generated secret may hold one.
+          cred() { sed -n "/^$1 *=/{s/^[^=]*= *//p;q;}" "$DIR/emulator_credentials"; }
+          akid=$(cred aws_access_key_id)
+          secret=$(cred aws_secret_access_key)
+          if [ -z "$akid" ] || [ -z "$secret" ]; then
+            echo "::error::Could not read the emulator's credentials from $DIR/emulator_credentials"
+            exit 1
+          fi
+          echo "::add-mask::$secret"
+          {
+            echo "DYNAMODB_ENDPOINT=https://127.0.0.1:9297"
+            # The JS SDK ignores AWS_CA_BUNDLE, as with ExtendDB.
+            echo "NODE_EXTRA_CA_CERTS=$DIR/ca.pem"
+            echo "AWS_ACCESS_KEY_ID=$akid"
+            echo "AWS_SECRET_ACCESS_KEY=$secret"
+            echo "AWS_REGION=us-east-1"
+          } >>"$GITHUB_ENV"
+
+      - name: Run conformance suite
+        continue-on-error: true
+        env:
+          CONFORMANCE_TARGET: aws-emulator
+        run: npm test
+
+      - name: Record target version
+        continue-on-error: true
+        run: scripts/record-version.sh aws-emulator
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: results-aws-emulator
           path: results/
 
   test-extenddb:

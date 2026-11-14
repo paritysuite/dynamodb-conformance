@@ -17,6 +17,7 @@
 #   dynoxide-wasm         the triggering dynoxide release, else the version the
 #                         wasm engine publishes for itself on npm
 #   localstack            its /_localstack/info version endpoint
+#   aws-emulator          the installed binary's own `aws-emulator -v`
 #   extenddb              the built release tag; the SQLite row reports the
 #   extenddb-sqlite       same tag, being the same release built with a
 #                         different storage feature rather than its own build
@@ -48,6 +49,13 @@ case "$target" in
   localstack)
     ver=$(curl -fsS http://localhost:4566/_localstack/info 2>/dev/null | jq -r '.version // empty')
     ver=${ver%%:*} # drop any :git-hash suffix
+    ;;
+  aws-emulator)
+    # The first version-shaped token on the first line of `aws-emulator -v`,
+    # asked of the installed binary rather than of the package index, which
+    # moves several times a day.
+    ver=$(aws-emulator -v 2>/dev/null |
+      awk 'NR == 1 { if (match($0, /[0-9]+(\.[0-9]+)+/)) print substr($0, RSTART, RLENGTH); exit }')
     ;;
 esac
 
