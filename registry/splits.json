@@ -1045,10 +1045,10 @@
         "file": "tests/tier3/error-messages/scan.test.ts",
         "fullName": "Scan — exact error messages Segment >= TotalSegments: full out-of-range error"
       },
-      "behaviour": "Scan with Segment equal to TotalSegments: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions answer the out-of-range sentence alone; old-cohort regions append ': Segment: 5 is not less than TotalSegments: 5'. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. ap-east-2 crossed by the 2026-10-03 sweep, which three runs from separate processes on 2026-10-07 confirmed. af-south-1, ap-east-1, ap-northeast-3, ap-south-1, ap-southeast-1 to ap-southeast-5, ca-west-1, eu-north-1, eu-west-3, il-central-1, mx-central-1 and sa-east-1 crossed by the 2026-10-17 sweep, which three runs from separate processes on 2026-10-22 confirmed. us-east-1 gave the old wording on that sweep and the new wording on all three 2026-10-22 runs, and the 2026-10-24 sweep agreed with the runs, so it is now recorded on the new wording. ap-northeast-1, ap-south-2, ap-southeast-6, ap-southeast-7, eu-central-2, eu-south-1, eu-south-2, eu-west-1, us-east-2 and us-west-2 gave the new wording on the 2026-11-07 sweep and at least one sweep before it, and on all three runs from separate processes on 2026-11-13, so they are now recorded on it. ca-central-1 gave the new wording on the 2026-11-07 sweep and all three runs, but the old wording on the two sweeps before, so it stays recorded as old until a second sweep agrees. me-central-1 gave the old wording on every sweep and every run, which leaves it and ca-central-1 the only regions recorded on it. eu-north-1 stays recorded on the new wording, which it gave on the last two sweeps and on two of the three runs, but it gave the old wording on the third run to all four Scan requests that run sent, so it answers these requests both ways. The two Segment/TotalSegments pairing checks beside these rows have not moved anywhere.",
+      "behaviour": "Scan with Segment equal to TotalSegments: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions answer the out-of-range sentence alone; old-cohort regions append ': Segment: 5 is not less than TotalSegments: 5'. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. ap-east-2 crossed by the 2026-10-03 sweep, which three runs from separate processes on 2026-10-07 confirmed. af-south-1, ap-east-1, ap-northeast-3, ap-south-1, ap-southeast-1 to ap-southeast-5, ca-west-1, eu-north-1, eu-west-3, il-central-1, mx-central-1 and sa-east-1 crossed by the 2026-10-17 sweep, which three runs from separate processes on 2026-10-22 confirmed. us-east-1 gave the old wording on that sweep and the new wording on all three 2026-10-22 runs, and the 2026-10-24 sweep agreed with the runs, so it is now recorded on the new wording. ap-northeast-1, ap-south-2, ap-southeast-6, ap-southeast-7, eu-central-2, eu-south-1, eu-south-2, eu-west-1, us-east-2 and us-west-2 gave the new wording on the 2026-11-07 sweep and at least one sweep before it, and on all three runs from separate processes on 2026-11-13, so they are now recorded on it. ca-central-1 gave the new wording on the 2026-11-07 sweep and all three runs after the old wording on the two sweeps before, and the 2026-11-14 sweep agreed, so it is now recorded on the new wording. me-central-1 gave the old wording on every sweep and every run, the 2026-11-14 sweep included, which leaves it the only region recorded on it. eu-north-1 stays recorded on the new wording, which it gave on the last three sweeps and on two of the three runs, but it gave the old wording on the third run to all four Scan requests that run sent, so it answers these requests both ways. The two Segment/TotalSegments pairing checks beside these rows have not moved anywhere.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-19",
-      "lastRefreshed": "2026-11-13",
+      "lastRefreshed": "2026-11-14",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -1159,7 +1159,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "The Segment parameter is zero-based and must be less than parameter TotalSegments: Segment: 5 is not less than TotalSegments: 5"
+            "message": "The Segment parameter is zero-based and must be less than parameter TotalSegments"
           }
         },
         "ca-west-1": {
@@ -1294,7 +1294,8 @@
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/40074998860",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/41186801355",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/42359294432",
-        "captures/2026-11-13-sweep-follow-up.json"
+        "captures/2026-11-13-sweep-follow-up.json",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/43581126924"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -1308,10 +1309,10 @@
         "file": "tests/tier3/error-messages/scan.test.ts",
         "fullName": "Scan — exact error messages Limit of 0: full minimum-value error"
       },
-      "behaviour": "Scan with Limit 0: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions name the member as 'Limit' without echoing the value; old-cohort regions answer Value '0' at 'limit'. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. ap-east-2 crossed by the 2026-10-03 sweep, which three runs from separate processes on 2026-10-07 confirmed. af-south-1, ap-east-1, ap-northeast-3, ap-south-1, ap-southeast-1 to ap-southeast-5, ca-west-1, eu-north-1, eu-west-3, il-central-1, mx-central-1 and sa-east-1 crossed by the 2026-10-17 sweep, which three runs from separate processes on 2026-10-22 confirmed. us-east-1 gave the old wording on that sweep and the new wording on all three 2026-10-22 runs, and the 2026-10-24 sweep agreed with the runs, so it is now recorded on the new wording. ap-northeast-1, ap-south-2, ap-southeast-6, ap-southeast-7, eu-central-2, eu-south-1, eu-south-2, eu-west-1, us-east-2 and us-west-2 gave the new wording on the 2026-11-07 sweep and at least one sweep before it, and on all three runs from separate processes on 2026-11-13, so they are now recorded on it. ca-central-1 gave the new wording on the 2026-11-07 sweep and all three runs, but the old wording on the two sweeps before, so it stays recorded as old until a second sweep agrees. me-central-1 gave the old wording on every sweep and every run, which leaves it and ca-central-1 the only regions recorded on it. eu-north-1 stays recorded on the new wording, which it gave on the last two sweeps and on two of the three runs, but it gave the old wording on the third run to all four Scan requests that run sent, so it answers these requests both ways. The two Segment/TotalSegments pairing checks beside these rows have not moved anywhere.",
+      "behaviour": "Scan with Limit 0: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions name the member as 'Limit' without echoing the value; old-cohort regions answer Value '0' at 'limit'. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. ap-east-2 crossed by the 2026-10-03 sweep, which three runs from separate processes on 2026-10-07 confirmed. af-south-1, ap-east-1, ap-northeast-3, ap-south-1, ap-southeast-1 to ap-southeast-5, ca-west-1, eu-north-1, eu-west-3, il-central-1, mx-central-1 and sa-east-1 crossed by the 2026-10-17 sweep, which three runs from separate processes on 2026-10-22 confirmed. us-east-1 gave the old wording on that sweep and the new wording on all three 2026-10-22 runs, and the 2026-10-24 sweep agreed with the runs, so it is now recorded on the new wording. ap-northeast-1, ap-south-2, ap-southeast-6, ap-southeast-7, eu-central-2, eu-south-1, eu-south-2, eu-west-1, us-east-2 and us-west-2 gave the new wording on the 2026-11-07 sweep and at least one sweep before it, and on all three runs from separate processes on 2026-11-13, so they are now recorded on it. ca-central-1 gave the new wording on the 2026-11-07 sweep and all three runs after the old wording on the two sweeps before, and the 2026-11-14 sweep agreed, so it is now recorded on the new wording. me-central-1 gave the old wording on every sweep and every run, the 2026-11-14 sweep included, which leaves it the only region recorded on it. eu-north-1 stays recorded on the new wording, which it gave on the last three sweeps and on two of the three runs, but it gave the old wording on the third run to all four Scan requests that run sent, so it answers these requests both ways. The two Segment/TotalSegments pairing checks beside these rows have not moved anywhere.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-19",
-      "lastRefreshed": "2026-11-13",
+      "lastRefreshed": "2026-11-14",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -1422,7 +1423,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "1 validation error detected: Value '0' at 'limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
+            "message": "1 validation error detected: Value at 'Limit' failed to satisfy constraint: Member must have value greater than or equal to 1"
           }
         },
         "ca-west-1": {
@@ -1557,7 +1558,8 @@
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/40074998860",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/41186801355",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/42359294432",
-        "captures/2026-11-13-sweep-follow-up.json"
+        "captures/2026-11-13-sweep-follow-up.json",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/43581126924"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -1571,10 +1573,10 @@
         "file": "tests/tier3/error-messages/scan.test.ts",
         "fullName": "Scan — exact error messages negative Segment: full minimum-value error"
       },
-      "behaviour": "Scan with a negative Segment: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions name the member as 'Segment' without echoing the value; old-cohort regions answer Value '-1' at 'segment'. The validation-ordering test for the same request matches both wordings, so this row is where the per-region answers are pinned. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. ap-east-2 crossed by the 2026-10-03 sweep, which three runs from separate processes on 2026-10-07 confirmed. af-south-1, ap-east-1, ap-northeast-3, ap-south-1, ap-southeast-1 to ap-southeast-5, ca-west-1, eu-north-1, eu-west-3, il-central-1, mx-central-1 and sa-east-1 crossed by the 2026-10-17 sweep, which three runs from separate processes on 2026-10-22 confirmed. us-east-1 gave the old wording on that sweep and the new wording on all three 2026-10-22 runs, and the 2026-10-24 sweep agreed with the runs, so it is now recorded on the new wording. ap-northeast-1, ap-south-2, ap-southeast-6, ap-southeast-7, eu-central-2, eu-south-1, eu-south-2, eu-west-1, us-east-2 and us-west-2 gave the new wording on the 2026-11-07 sweep and at least one sweep before it, and on all three runs from separate processes on 2026-11-13, so they are now recorded on it. ca-central-1 gave the new wording on the 2026-11-07 sweep and all three runs, but the old wording on the two sweeps before, so it stays recorded as old until a second sweep agrees. me-central-1 gave the old wording on every sweep and every run, which leaves it and ca-central-1 the only regions recorded on it. eu-north-1 stays recorded on the new wording, which it gave on the last two sweeps and on two of the three runs, but it gave the old wording on the third run to all four Scan requests that run sent, so it answers these requests both ways. The two Segment/TotalSegments pairing checks beside these rows have not moved anywhere.",
+      "behaviour": "Scan with a negative Segment: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions name the member as 'Segment' without echoing the value; old-cohort regions answer Value '-1' at 'segment'. The validation-ordering test for the same request matches both wordings, so this row is where the per-region answers are pinned. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. ap-east-2 crossed by the 2026-10-03 sweep, which three runs from separate processes on 2026-10-07 confirmed. af-south-1, ap-east-1, ap-northeast-3, ap-south-1, ap-southeast-1 to ap-southeast-5, ca-west-1, eu-north-1, eu-west-3, il-central-1, mx-central-1 and sa-east-1 crossed by the 2026-10-17 sweep, which three runs from separate processes on 2026-10-22 confirmed. us-east-1 gave the old wording on that sweep and the new wording on all three 2026-10-22 runs, and the 2026-10-24 sweep agreed with the runs, so it is now recorded on the new wording. ap-northeast-1, ap-south-2, ap-southeast-6, ap-southeast-7, eu-central-2, eu-south-1, eu-south-2, eu-west-1, us-east-2 and us-west-2 gave the new wording on the 2026-11-07 sweep and at least one sweep before it, and on all three runs from separate processes on 2026-11-13, so they are now recorded on it. ca-central-1 gave the new wording on the 2026-11-07 sweep and all three runs after the old wording on the two sweeps before, and the 2026-11-14 sweep agreed, so it is now recorded on the new wording. me-central-1 gave the old wording on every sweep and every run, the 2026-11-14 sweep included, which leaves it the only region recorded on it. eu-north-1 stays recorded on the new wording, which it gave on the last three sweeps and on two of the three runs, but it gave the old wording on the third run to all four Scan requests that run sent, so it answers these requests both ways. The two Segment/TotalSegments pairing checks beside these rows have not moved anywhere.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-19",
-      "lastRefreshed": "2026-11-13",
+      "lastRefreshed": "2026-11-14",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -1685,7 +1687,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "1 validation error detected: Value '-1' at 'segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
+            "message": "1 validation error detected: Value at 'Segment' failed to satisfy constraint: Member must have value greater than or equal to 0"
           }
         },
         "ca-west-1": {
@@ -1820,7 +1822,8 @@
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/40074998860",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/41186801355",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/42359294432",
-        "captures/2026-11-13-sweep-follow-up.json"
+        "captures/2026-11-13-sweep-follow-up.json",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/43581126924"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -1834,10 +1837,10 @@
         "file": "tests/tier3/error-messages/scan.test.ts",
         "fullName": "Scan — exact error messages malformed ExclusiveStartKey: long schema-mismatch error"
       },
-      "behaviour": "Scan with an ExclusiveStartKey that does not match the table's key schema: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions answer the short form Query already gives; old-cohort regions append ': The provided key element does not match the schema'. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. ap-east-2 crossed by the 2026-10-03 sweep, which three runs from separate processes on 2026-10-07 confirmed. af-south-1, ap-east-1, ap-northeast-3, ap-south-1, ap-southeast-1 to ap-southeast-5, ca-west-1, eu-north-1, eu-west-3, il-central-1, mx-central-1 and sa-east-1 crossed by the 2026-10-17 sweep, which three runs from separate processes on 2026-10-22 confirmed. us-east-1 gave the old wording on that sweep and the new wording on all three 2026-10-22 runs, and the 2026-10-24 sweep agreed with the runs, so it is now recorded on the new wording. ap-northeast-1, ap-south-2, ap-southeast-6, ap-southeast-7, eu-central-2, eu-south-1, eu-south-2, eu-west-1, us-east-2 and us-west-2 gave the new wording on the 2026-11-07 sweep and at least one sweep before it, and on one run on 2026-11-13 that created its own table, so they are now recorded on it, as they are on the other four Scan rows, where three separate runs agreed. ca-central-1 gave the new wording on the 2026-11-07 sweep and on that run, but the old wording on the two sweeps before, so it stays recorded as old until a second sweep agrees. me-central-1 gave the old wording on every sweep and on that run, which leaves it and ca-central-1 the only regions recorded on it. eu-north-1 stays recorded on the new wording, which it gave on the last two sweeps, but on 2026-11-13 it gave the old wording on the first of three runs that created a table and the new wording on the two after, so it answers this request both ways, as it does the other four. The two Segment/TotalSegments pairing checks beside these rows have not moved anywhere.",
+      "behaviour": "Scan with an ExclusiveStartKey that does not match the table's key schema: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions answer the short form Query already gives; old-cohort regions append ': The provided key element does not match the schema'. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. ap-east-2 crossed by the 2026-10-03 sweep, which three runs from separate processes on 2026-10-07 confirmed. af-south-1, ap-east-1, ap-northeast-3, ap-south-1, ap-southeast-1 to ap-southeast-5, ca-west-1, eu-north-1, eu-west-3, il-central-1, mx-central-1 and sa-east-1 crossed by the 2026-10-17 sweep, which three runs from separate processes on 2026-10-22 confirmed. us-east-1 gave the old wording on that sweep and the new wording on all three 2026-10-22 runs, and the 2026-10-24 sweep agreed with the runs, so it is now recorded on the new wording. ap-northeast-1, ap-south-2, ap-southeast-6, ap-southeast-7, eu-central-2, eu-south-1, eu-south-2, eu-west-1, us-east-2 and us-west-2 gave the new wording on the 2026-11-07 sweep and at least one sweep before it, and on one run on 2026-11-13 that created its own table, so they are now recorded on it, as they are on the other four Scan rows, where three separate runs agreed. ca-central-1 gave the new wording on the 2026-11-07 sweep and on that run after the old wording on the two sweeps before, and the 2026-11-14 sweep agreed, so it is now recorded on the new wording, as it is on the other four Scan rows. me-central-1 gave the old wording on every sweep and on that run, the 2026-11-14 sweep included, which leaves it the only region recorded on it. eu-north-1 stays recorded on the new wording, which it gave on the last three sweeps, but on 2026-11-13 it gave the old wording on the first of three runs that created a table and the new wording on the two after, so it answers this request both ways, as it does the other four. The two Segment/TotalSegments pairing checks beside these rows have not moved anywhere.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-19",
-      "lastRefreshed": "2026-11-13",
+      "lastRefreshed": "2026-11-14",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -1948,7 +1951,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "The provided starting key is invalid: The provided key element does not match the schema"
+            "message": "The provided starting key is invalid"
           }
         },
         "ca-west-1": {
@@ -2083,7 +2086,8 @@
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/40074998860",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/41186801355",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/42359294432",
-        "captures/2026-11-13-sweep-follow-up.json"
+        "captures/2026-11-13-sweep-follow-up.json",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/43581126924"
       ],
       "admitted": {
         "by": "Martin Hicks",
@@ -2097,10 +2101,10 @@
         "file": "tests/tier3/error-messages/scan.test.ts",
         "fullName": "Scan — exact error messages Select SPECIFIC_ATTRIBUTES without ProjectionExpression: full required-projection message"
       },
-      "behaviour": "Scan with Select SPECIFIC_ATTRIBUTES and no projection: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions wrap the required-projection sentence in the '1 validation error detected: ' envelope; old-cohort regions answer it bare. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. ap-east-2 crossed by the 2026-10-03 sweep, which three runs from separate processes on 2026-10-07 confirmed. af-south-1, ap-east-1, ap-northeast-3, ap-south-1, ap-southeast-1 to ap-southeast-5, ca-west-1, eu-north-1, eu-west-3, il-central-1, mx-central-1 and sa-east-1 crossed by the 2026-10-17 sweep, which three runs from separate processes on 2026-10-22 confirmed. us-east-1 gave the old wording on that sweep and the new wording on all three 2026-10-22 runs, and the 2026-10-24 sweep agreed with the runs, so it is now recorded on the new wording. ap-northeast-1, ap-south-2, ap-southeast-6, ap-southeast-7, eu-central-2, eu-south-1, eu-south-2, eu-west-1, us-east-2 and us-west-2 gave the new wording on the 2026-11-07 sweep and at least one sweep before it, and on all three runs from separate processes on 2026-11-13, so they are now recorded on it. ca-central-1 gave the new wording on the 2026-11-07 sweep and all three runs, but the old wording on the two sweeps before, so it stays recorded as old until a second sweep agrees. me-central-1 gave the old wording on every sweep and every run, which leaves it and ca-central-1 the only regions recorded on it. eu-north-1 stays recorded on the new wording, which it gave on the last two sweeps and on two of the three runs, but it gave the old wording on the third run to all four Scan requests that run sent, so it answers these requests both ways. The two Segment/TotalSegments pairing checks beside these rows have not moved anywhere.",
+      "behaviour": "Scan with Select SPECIFIC_ATTRIBUTES and no projection: the 2026-06 validation-framework rollout reaching Scan's parameter checks. New-cohort regions wrap the required-projection sentence in the '1 validation error detected: ' envelope; old-cohort regions answer it bare. eu-central-1 and us-west-1 crossed before the 2026-09-19 sweep; ap-northeast-2 and the pinned eu-west-2 crossed between that sweep and the 2026-09-26 one (eu-west-2 still gave the old wording on the 2026-09-20 conformance run), so the pinned answer is now the new wording. ap-east-2 crossed by the 2026-10-03 sweep, which three runs from separate processes on 2026-10-07 confirmed. af-south-1, ap-east-1, ap-northeast-3, ap-south-1, ap-southeast-1 to ap-southeast-5, ca-west-1, eu-north-1, eu-west-3, il-central-1, mx-central-1 and sa-east-1 crossed by the 2026-10-17 sweep, which three runs from separate processes on 2026-10-22 confirmed. us-east-1 gave the old wording on that sweep and the new wording on all three 2026-10-22 runs, and the 2026-10-24 sweep agreed with the runs, so it is now recorded on the new wording. ap-northeast-1, ap-south-2, ap-southeast-6, ap-southeast-7, eu-central-2, eu-south-1, eu-south-2, eu-west-1, us-east-2 and us-west-2 gave the new wording on the 2026-11-07 sweep and at least one sweep before it, and on all three runs from separate processes on 2026-11-13, so they are now recorded on it. ca-central-1 gave the new wording on the 2026-11-07 sweep and all three runs after the old wording on the two sweeps before, and the 2026-11-14 sweep agreed, so it is now recorded on the new wording. me-central-1 gave the old wording on every sweep and every run, the 2026-11-14 sweep included, which leaves it the only region recorded on it. eu-north-1 stays recorded on the new wording, which it gave on the last three sweeps and on two of the three runs, but it gave the old wording on the third run to all four Scan requests that run sent, so it answers these requests both ways. The two Segment/TotalSegments pairing checks beside these rows have not moved anywhere.",
       "pinned": "eu-west-2",
       "firstObserved": "2026-09-19",
-      "lastRefreshed": "2026-11-13",
+      "lastRefreshed": "2026-11-14",
       "regions": {
         "af-south-1": {
           "outcome": "rejected",
@@ -2211,7 +2215,7 @@
           "outcome": "rejected",
           "error": {
             "name": "ValidationException",
-            "message": "Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
+            "message": "1 validation error detected: Must specify the AttributesToGet or ProjectionExpression when choosing to get SPECIFIC_ATTRIBUTES"
           }
         },
         "ca-west-1": {
@@ -2346,7 +2350,8 @@
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/40074998860",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/41186801355",
         "https://github.com/paritysuite/dynamodb-conformance/actions/runs/42359294432",
-        "captures/2026-11-13-sweep-follow-up.json"
+        "captures/2026-11-13-sweep-follow-up.json",
+        "https://github.com/paritysuite/dynamodb-conformance/actions/runs/43581126924"
       ],
       "admitted": {
         "by": "Martin Hicks",
