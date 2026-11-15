@@ -58,23 +58,25 @@ Rows are sorted by grade, and rows sharing a grade by the figure the letter is r
 
 `me-central-1`, `me-south-1` have been dropped from the observed set and are not scored against.
 
-_Suite v3.9.0, measured against real DynamoDB on 2026-11-08. Region health as of 2026-11-14._
+_Suite v3.10.0, measured against real DynamoDB on 2026-11-15. Region health as of 2026-11-14._
 
 | Target | Grade | Version | Divergence | Coverage | Fail | Skip | Tier 1 | Tier 2 | Tier 3 | Regions |
 |--------|-------|---------|-----------|----------|------|------|--------|--------|--------|---------|
 | [DynamoDB](https://aws.amazon.com/dynamodb/) | baseline | live (AWS) | 0.0% | 100.0% | 0 | 0 | 0.0% | 0.0% | 0.0% | 32 of 32 |
-| [Ministack](https://github.com/ministackorg/ministack) | A | c2f82812bec8 | 0.1% | 100.0% | 2 | 0 | 0.0% | 0.2% | 0.1% | 11 of 32 |
-| [Dynoxide](https://github.com/nubo-db/dynoxide) · self-contained binary | A | 1.6.0 | 1.5% | 99.2% | 26 | 14 | 0.0% | 0.0% | 3.6% | 21 of 32 |
-| ↳ WebAssembly / OPFS | A[^regions-dynoxide-wasm] | 1.6.0 | 0.8% | 87.8% | 13 | 204 | 0.0% | 0.0% | 1.8% | 21 of 32 |
-| [Floci](https://github.com/floci-io/floci) | B | 5ee85db604c4 | 9.3% | 99.8% | 156 | 4 | 0.0% | 0.0% | 21.4% | 21 of 32 |
-| [ExtendDB](https://github.com/ExtendDB/extenddb) · PostgreSQL | C | v0.1.14 | 10.1% | 70.0% | 170 | 504 | 0.0% | 2.7% | 21.7% | 11 of 32 |
-| ↳ SQLite | C | v0.1.14 | 10.6% | 73.4% | 178 | 446 | 0.0% | 4.2% | 21.8% | 11 of 32 |
-| [LocalStack](https://www.localstack.cloud) | C | 2026.10.6 | 19.5% | 95.6% | 328 | 73 | 0.2% | 13.5% | 36.5% | 11 of 32 |
-| [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) | D | 6ada631ec7aa | 24.8% | 95.3% | 416 | 79 | 7.6% | 11.9% | 44.4% | 32 of 32 |
-| [Dynalite](https://github.com/architect/dynalite) | D | 4.0.0 | 12.6% | 57.9% | 211 | 707 | 11.1% | 6.2% | 17.6% | 11 of 32 |
-| [Kumo](https://github.com/sivchari/kumo) | F | 7b15ae8b6e4b | 44.3% | 69.7% | 744 | 508 | 47.1% | 13.1% | 61.9% | 32 of 32 |
-
-[^regions-dynoxide-wasm]: B against 11 regions, where real DynamoDB answers some tests differently. Per-region figures are on its [target page](https://paritysuite.org/targets/dynoxide-wasm#regions).
+| [Dynoxide](https://github.com/nubo-db/dynoxide) · self-contained binary | A | 1.6.0 | 3.1% | 99.3% | 59 | 14 | 0.8% | 1.9% | 5.1% | 9 of 32 |
+| ↳ WebAssembly / OPFS | B | 1.6.0 | 2.1% | 89.4% | 40 | 204 | 0.8% | 1.9% | 3.0% | 9 of 32 |
+| [Floci](https://github.com/floci-io/floci) | A | a0fbf944d7f3 | 4.4% | 100.0% | 85 | 0 | 0.8% | 11.1% | 2.5% | 31 of 32 |
+| [Ministack](https://github.com/ministackorg/ministack) | B | aef90fec1a45 | 8.4% | 100.0% | 161 | 0 | 0.8% | 9.9% | 11.8% | 32 of 32 |
+| [AWS Emulator](https://github.com/aws/aws-emulator) | D | 1.0.385 | 26.0% | 100.0% | 499 | 0 | 3.9% | 24.8% | 39.4% | 31 of 32 |
+| [LocalStack](https://www.localstack.cloud) | D | 2026.10.7 | 26.8% | 96.2% | 515 | 73 | 1.0% | 23.5% | 43.8% | 1 of 32 |
+| [Dynalite](https://github.com/architect/dynalite) | D | 4.0.0 | 15.9% | 57.2% | 305 | 822 | 11.2% | 5.3% | 25.0% | 1 of 32 |
+| [Alternator](https://github.com/scylladb/scylladb) | F | 2026.3.5 | 28.5% | 58.3% | 547 | 801 | 20.1% | 4.5% | 47.8% | 23 of 32 |
+| [Kumo](https://github.com/sivchari/kumo) | F | 7b15ae8b6e4b | 44.7% | 67.6% | 858 | 623 | 46.9% | 11.1% | 63.7% | 32 of 32 |
+| [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) | not scored | 6ada631ec7aa | - | - | 601 | 79 | 8.3% | - | 50.0% | - |
+| [ExtendDB](https://github.com/ExtendDB/extenddb) · PostgreSQL | not scored | v0.1.14 | - | - | 286 | 619 | 0.8% | 2.3% | - | - |
+| ↳ SQLite | D | v0.1.14 | 15.4% | 70.8% | 295 | 561 | 0.8% | 3.6% | 30.9% | 9 of 32 |
+| ↳ MongoDB | not scored | v0.1.14 | - | - | 302 | 619 | - | 2.6% | 32.0% | - |
+| [Phoenix-Adapters](https://github.com/apache/phoenix-adapters) | not scored | 04d5cbd9d541 | - | - | 743 | 119 | - | - | - | - |
 <!-- results:end -->
 
 **Divergence** is `Fail / Total` and **Coverage** is `(Pass + Fail) / Total`,
