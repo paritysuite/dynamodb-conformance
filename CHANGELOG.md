@@ -8,6 +8,8 @@ section its date and version, so several branches can write ahead of one.
 
 ## Unreleased
 
+## 2026-11-15 (3.10.0)
+
 ca-central-1 joins eu-west-2 on the five Scan rows. It gave the new wording on
 the 2026-11-07 and 2026-11-14 sweeps and on the three runs on 2026-11-13, which
 leaves me-central-1 the only region recorded on the old wording. On the
