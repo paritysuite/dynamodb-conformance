@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-11-08T11:24:22.331Z",
+  "capturedAt": "2026-11-15T12:17:21.448Z",
   "regions": {
     "eu-west-2": {
       "region": "eu-west-2",
@@ -75,10 +75,10 @@
           "note": "BatchWrite 26 requests",
           "threw": true,
           "name": "ValidationException",
-          "message": "1 validation error detected: Value at 'RequestItems._conformance_capdrift_h_179413706233525688.member' failed to satisfy constraint: Member must have length less than or equal to 25",
+          "message": "1 validation error detected: Value at 'RequestItems._conformance_capdrift_h_1794745041452715674.member' failed to satisfy constraint: Member must have length less than or equal to 25",
           "n": 1,
           "fields": [
-            "RequestItems._conformance_capdrift_h_179413706233525688.member"
+            "RequestItems._conformance_capdrift_h_1794745041452715674.member"
           ],
           "cancellationReasons": null
         },
@@ -292,7 +292,7 @@
           "note": "PutItem 3 invalid enums",
           "threw": true,
           "name": "ValidationException",
-          "message": "3 validation errors detected: Value 'INVALID' at 'returnConsumedCapacity' failed to satisfy constraint: Member must satisfy enum value set: [INDEXES, TOTAL, NONE]; Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]; Value 'INVALID' at 'returnItemCollectionMetrics' failed to satisfy constraint: Member must satisfy enum value set: [SIZE, NONE]",
+          "message": "3 validation errors detected: Value 'INVALID' at 'returnConsumedCapacity' failed to satisfy constraint: Member must satisfy enum value set: [INDEXES, TOTAL, NONE]; Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]; Value 'INVALID' at 'returnItemCollectionMetrics' failed to satisfy constraint: Member must satisfy enum value set: [SIZE, NONE]",
           "n": 3,
           "fields": [
             "returnConsumedCapacity",
@@ -319,7 +319,7 @@
           "note": "DeleteItem 2 invalid enums",
           "threw": true,
           "name": "ValidationException",
-          "message": "2 validation errors detected: Value 'INVALID' at 'returnConsumedCapacity' failed to satisfy constraint: Member must satisfy enum value set: [INDEXES, TOTAL, NONE]; Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]",
+          "message": "2 validation errors detected: Value 'INVALID' at 'returnConsumedCapacity' failed to satisfy constraint: Member must satisfy enum value set: [INDEXES, TOTAL, NONE]; Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]",
           "n": 2,
           "fields": [
             "returnConsumedCapacity"
@@ -345,7 +345,7 @@
           "note": "UpdateItem 2 invalid enums",
           "threw": true,
           "name": "ValidationException",
-          "message": "1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]",
+          "message": "1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]",
           "n": 1,
           "fields": [],
           "cancellationReasons": null
@@ -381,9 +381,9 @@
           "family": "ordering",
           "note": "UpdateItem 32-level ExpressionAttributeValue",
           "threw": true,
-          "name": "ValidationException",
-          "message": "1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit",
-          "n": 1,
+          "name": "ConditionalCheckFailedException",
+          "message": "The conditional request failed",
+          "n": null,
           "fields": [],
           "cancellationReasons": null
         },
@@ -1260,7 +1260,7 @@
           "fields": [],
           "response": {
             "Responses": {
-              "_conformance_capdrift_h_179413706233525688": [
+              "_conformance_capdrift_h_1794745041452715674": [
                 {
                   "a": {
                     "M": {
@@ -1381,7 +1381,7 @@
           "fields": [],
           "response": {
             "Responses": {
-              "_conformance_capdrift_h_179413706233525688": [
+              "_conformance_capdrift_h_1794745041452715674": [
                 {
                   "l": {
                     "L": [
@@ -1536,7 +1536,7 @@
           "fields": [],
           "response": {
             "Responses": {
-              "_conformance_capdrift_h_179413706233525688": [
+              "_conformance_capdrift_h_1794745041452715674": [
                 {
                   "l": {
                     "L": [
@@ -1752,7 +1752,7 @@
           "fields": [],
           "response": {
             "Responses": {
-              "_conformance_capdrift_h_179413706233525688": [
+              "_conformance_capdrift_h_1794745041452715674": [
                 {
                   "a": {
                     "M": {
@@ -2323,13 +2323,13 @@
           "fields": [],
           "response": {
             "Item": {
+              "pk": {
+                "S": "esm-twi-put"
+              },
               "attr": {
                 "SS": [
                   ""
                 ]
-              },
-              "pk": {
-                "S": "esm-twi-put"
               }
             }
           }
@@ -2515,10 +2515,10 @@
           "note": "BatchWrite 26 requests",
           "threw": true,
           "name": "ValidationException",
-          "message": "1 validation error detected: Value at 'RequestItems._conformance_capdrift_h_1794137106305761901.member' failed to satisfy constraint: Member must have length less than or equal to 25",
+          "message": "1 validation error detected: Value at 'RequestItems._conformance_capdrift_h_1794745077248642745.member' failed to satisfy constraint: Member must have length less than or equal to 25",
           "n": 1,
           "fields": [
-            "RequestItems._conformance_capdrift_h_1794137106305761901.member"
+            "RequestItems._conformance_capdrift_h_1794745077248642745.member"
           ],
           "cancellationReasons": null
         },
@@ -3700,7 +3700,7 @@
           "fields": [],
           "response": {
             "Responses": {
-              "_conformance_capdrift_h_1794137106305761901": [
+              "_conformance_capdrift_h_1794745077248642745": [
                 {
                   "a": {
                     "M": {
@@ -3821,7 +3821,7 @@
           "fields": [],
           "response": {
             "Responses": {
-              "_conformance_capdrift_h_1794137106305761901": [
+              "_conformance_capdrift_h_1794745077248642745": [
                 {
                   "l": {
                     "L": [
@@ -3976,7 +3976,7 @@
           "fields": [],
           "response": {
             "Responses": {
-              "_conformance_capdrift_h_1794137106305761901": [
+              "_conformance_capdrift_h_1794745077248642745": [
                 {
                   "l": {
                     "L": [
@@ -4192,7 +4192,7 @@
           "fields": [],
           "response": {
             "Responses": {
-              "_conformance_capdrift_h_1794137106305761901": [
+              "_conformance_capdrift_h_1794745077248642745": [
                 {
                   "a": {
                     "M": {
@@ -4955,7 +4955,7 @@
           "note": "BatchWrite 26 requests",
           "threw": true,
           "name": "ValidationException",
-          "message": "1 validation error detected: Value '{_conformance_capdrift_h_1794137142359682442=[WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-0, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-1, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-2, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-3, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-4, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-5, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-6, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-7, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-8, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-9, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-10, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-11, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-12, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-13, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-14, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-15, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-16, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-17, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-18, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-19, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-20, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-21, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-22, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-23, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-24, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-25, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null)]}' at 'requestItems' failed to satisfy constraint: Map value must satisfy constraint: [Member must have length less than or equal to 25, Member must have length greater than or equal to 1]",
+          "message": "1 validation error detected: Value '{_conformance_capdrift_h_1794745098522557888=[WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-0, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-1, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-2, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-3, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-4, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-5, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-6, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-7, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-8, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-9, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-10, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-11, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-12, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-13, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-14, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-15, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-16, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-17, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-18, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-19, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-20, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-21, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-22, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-23, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-24, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null), WriteRequest(putRequest=PutRequest(item={pk=AttributeValue(s=bw-25, n=null, b=null, iNT=null, dECIMAL=null, dOUBLE=null, sS=null, nS=null, bS=null, iNTSET=null, dECIMALSET=null, dOUBLESET=null, m=null, l=null, nULL=null, bOOL=null)}, workloadProfileName=null), deleteRequest=null)]}' at 'requestItems' failed to satisfy constraint: Map value must satisfy constraint: [Member must have length less than or equal to 25, Member must have length greater than or equal to 1]",
           "n": 1,
           "fields": [
             "requestItems"
@@ -6138,7 +6138,7 @@
           "fields": [],
           "response": {
             "Responses": {
-              "_conformance_capdrift_h_1794137142359682442": [
+              "_conformance_capdrift_h_1794745098522557888": [
                 {
                   "a": {
                     "M": {
@@ -6259,7 +6259,7 @@
           "fields": [],
           "response": {
             "Responses": {
-              "_conformance_capdrift_h_1794137142359682442": [
+              "_conformance_capdrift_h_1794745098522557888": [
                 {
                   "l": {
                     "L": [
@@ -6414,7 +6414,7 @@
           "fields": [],
           "response": {
             "Responses": {
-              "_conformance_capdrift_h_1794137142359682442": [
+              "_conformance_capdrift_h_1794745098522557888": [
                 {
                   "l": {
                     "L": [
@@ -6630,7 +6630,7 @@
           "fields": [],
           "response": {
             "Responses": {
-              "_conformance_capdrift_h_1794137142359682442": [
+              "_conformance_capdrift_h_1794745098522557888": [
                 {
                   "a": {
                     "M": {
@@ -7201,13 +7201,13 @@
           "fields": [],
           "response": {
             "Item": {
-              "pk": {
-                "S": "esm-twi-put"
-              },
               "attr": {
                 "SS": [
                   ""
                 ]
+              },
+              "pk": {
+                "S": "esm-twi-put"
               }
             }
           }
@@ -7393,10 +7393,10 @@
           "note": "BatchWrite 26 requests",
           "threw": true,
           "name": "ValidationException",
-          "message": "1 validation error detected: Value at 'RequestItems._conformance_capdrift_h_1794137184943690651.member' failed to satisfy constraint: Member must have length less than or equal to 25",
+          "message": "1 validation error detected: Value at 'RequestItems._conformance_capdrift_h_1794745148303991669.member' failed to satisfy constraint: Member must have length less than or equal to 25",
           "n": 1,
           "fields": [
-            "RequestItems._conformance_capdrift_h_1794137184943690651.member"
+            "RequestItems._conformance_capdrift_h_1794745148303991669.member"
           ],
           "cancellationReasons": null
         },
@@ -7610,7 +7610,7 @@
           "note": "PutItem 3 invalid enums",
           "threw": true,
           "name": "ValidationException",
-          "message": "3 validation errors detected: Value 'INVALID' at 'returnConsumedCapacity' failed to satisfy constraint: Member must satisfy enum value set: [INDEXES, TOTAL, NONE]; Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]; Value 'INVALID' at 'returnItemCollectionMetrics' failed to satisfy constraint: Member must satisfy enum value set: [SIZE, NONE]",
+          "message": "3 validation errors detected: Value 'INVALID' at 'returnConsumedCapacity' failed to satisfy constraint: Member must satisfy enum value set: [INDEXES, TOTAL, NONE]; Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]; Value 'INVALID' at 'returnItemCollectionMetrics' failed to satisfy constraint: Member must satisfy enum value set: [SIZE, NONE]",
           "n": 3,
           "fields": [
             "returnConsumedCapacity",
@@ -7637,7 +7637,7 @@
           "note": "DeleteItem 2 invalid enums",
           "threw": true,
           "name": "ValidationException",
-          "message": "2 validation errors detected: Value 'INVALID' at 'returnConsumedCapacity' failed to satisfy constraint: Member must satisfy enum value set: [INDEXES, TOTAL, NONE]; Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]",
+          "message": "2 validation errors detected: Value 'INVALID' at 'returnConsumedCapacity' failed to satisfy constraint: Member must satisfy enum value set: [INDEXES, TOTAL, NONE]; Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]",
           "n": 2,
           "fields": [
             "returnConsumedCapacity"
@@ -7663,7 +7663,7 @@
           "note": "UpdateItem 2 invalid enums",
           "threw": true,
           "name": "ValidationException",
-          "message": "1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATE_NEW, NONE]",
+          "message": "1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]",
           "n": 1,
           "fields": [],
           "cancellationReasons": null
@@ -7699,9 +7699,9 @@
           "family": "ordering",
           "note": "UpdateItem 32-level ExpressionAttributeValue",
           "threw": true,
-          "name": "ValidationException",
-          "message": "1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit",
-          "n": 1,
+          "name": "ConditionalCheckFailedException",
+          "message": "The conditional request failed",
+          "n": null,
           "fields": [],
           "cancellationReasons": null
         },
@@ -8578,7 +8578,7 @@
           "fields": [],
           "response": {
             "Responses": {
-              "_conformance_capdrift_h_1794137184943690651": [
+              "_conformance_capdrift_h_1794745148303991669": [
                 {
                   "a": {
                     "M": {
@@ -8699,7 +8699,7 @@
           "fields": [],
           "response": {
             "Responses": {
-              "_conformance_capdrift_h_1794137184943690651": [
+              "_conformance_capdrift_h_1794745148303991669": [
                 {
                   "l": {
                     "L": [
@@ -8854,7 +8854,7 @@
           "fields": [],
           "response": {
             "Responses": {
-              "_conformance_capdrift_h_1794137184943690651": [
+              "_conformance_capdrift_h_1794745148303991669": [
                 {
                   "l": {
                     "L": [
@@ -9070,7 +9070,7 @@
           "fields": [],
           "response": {
             "Responses": {
-              "_conformance_capdrift_h_1794137184943690651": [
+              "_conformance_capdrift_h_1794745148303991669": [
                 {
                   "a": {
                     "M": {
