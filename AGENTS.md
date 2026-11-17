@@ -39,7 +39,7 @@ headline score is its best-matching region.
 ## TypeScript conventions
 
 - Language: TypeScript, ESM (`"type": "module"` in `package.json`).
-- Runtime: Node (see `package.json` engines if set) and vitest.
+- Runtime: Node 24 or later (`engines` in `package.json`) and vitest.
 - Tests live under `tests/tier1/`, `tests/tier2/`, `tests/tier3/`.
 - No linter or formatter is currently configured, so match the style
   of nearby code.
@@ -198,11 +198,11 @@ resolved rather than re-deriving the rule:
 | `schedule` or `workflow_dispatch` | the highest release tag |
 | anything else | the sha that triggered it, which is never publishable |
 
-`conformance.yml` has no schedule of its own any more. The Sunday run comes from
+`conformance.yml` has no schedule of its own. The Sunday run comes from
 `release.yml`, which either cuts a release and dispatches conformance at the new
 tag, or dispatches it with a blank `ref`; both pass `weekly=true`, which is what
-the weekly-only steps key on. The resolver still handles `schedule`, but
-nothing sends it one now.
+the weekly-only steps key on. The resolver handles `schedule` too, though
+nothing sends it one.
 
 "Highest" is by version number, not by when the tag object was written and
 not by commit topology: `v2.0.0` and `v2.1.0` were backfilled after `v3.0.0`
