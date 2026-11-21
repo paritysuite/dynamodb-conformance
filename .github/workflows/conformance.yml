@@ -1434,10 +1434,11 @@ jobs:
   test-extenddb:
     name: ExtendDB
     needs: changes
-    # ExtendDB ships no binaries and `main` is a moving target, so CI builds its
-    # latest tagged *release* from source (override via the workflow_dispatch
-    # input). The Rust build makes this the heaviest job, so it skips PRs and
-    # runs on push, the weekly schedule, manual dispatch, and ExtendDB releases.
+    # ExtendDB publishes no production binary outside its container images (its
+    # npm binaries are dev-mode builds) and `main` is a moving target, so CI
+    # builds its latest tagged *release* from source (override via the
+    # workflow_dispatch input). The Rust build makes this the heaviest job, so it
+    # skips PRs and runs on push, the weekly run and manual dispatch.
     if: github.event_name != 'pull_request'
     continue-on-error: true
     runs-on: ubuntu-latest
@@ -1507,7 +1508,7 @@ jobs:
         run: ./scripts/run-extenddb.sh
 
       - name: Run conformance suite
-        continue-on-error: true # ExtendDB has known gaps (e.g. PartiQL)
+        continue-on-error: true # ExtendDB has known gaps
         env:
           CONFORMANCE_TARGET: extenddb
         run: npm test
@@ -1598,7 +1599,7 @@ jobs:
         run: ./scripts/run-extenddb.sh
 
       - name: Run conformance suite
-        continue-on-error: true # ExtendDB has known gaps (e.g. PartiQL)
+        continue-on-error: true # ExtendDB has known gaps
         env:
           CONFORMANCE_TARGET: extenddb-sqlite
         run: npm test
@@ -1714,7 +1715,7 @@ jobs:
         run: ./scripts/run-extenddb.sh
 
       - name: Run conformance suite
-        continue-on-error: true # ExtendDB has known gaps (e.g. PartiQL)
+        continue-on-error: true # ExtendDB has known gaps
         env:
           CONFORMANCE_TARGET: extenddb-mongodb
         run: npm test

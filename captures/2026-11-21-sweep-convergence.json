@@ -1,0 +1,585 @@
+{
+ "capturedAt": "2026-11-21T11:57:00Z",
+ "note": "Per-region answers from the 2026-11-21 weekly sweep for the four rows whose drift issues it opened (#355, #356, #357, #358). Each region ran the committed test against real tables; answer is the observation the test recorded, and status is the Vitest result. A pass means the region gave the pinned eu-west-2 answer. ap-southeast-4 and me-central-1 were marked unresolved for the sweep as a whole, but both ran these tests: ap-southeast-4 passed all four. me-central-1 gave its recorded answer on three, and on the UpdateItem ReturnValues row went back to reporting both errors, now listing UPDATED_NEW. me-south-1 never provisioned, so it has no answer here.",
+ "sources": {
+  "sweep1121": "https://github.com/paritysuite/dynamodb-conformance/actions/runs/44893907171"
+ },
+ "subjects": {
+  "update-item-validation-error-aggregation": {
+   "pinned": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]",
+   "moved": [
+    "ap-east-1",
+    "ap-southeast-2",
+    "ca-west-1",
+    "eu-south-2",
+    "eu-west-3",
+    "mx-central-1",
+    "us-east-1",
+    "us-west-1",
+    "us-west-2"
+   ],
+   "regions": {
+    "af-south-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "ap-east-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "ap-east-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "ap-northeast-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "ap-northeast-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "ap-northeast-3": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "ap-south-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "ap-south-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "ap-southeast-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "ap-southeast-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "ap-southeast-3": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "ap-southeast-4": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "ap-southeast-5": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "ap-southeast-6": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "ap-southeast-7": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "ca-central-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "ca-west-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "eu-central-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "eu-central-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "eu-north-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "eu-south-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "eu-south-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "eu-west-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "eu-west-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "eu-west-3": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "il-central-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "me-central-1": {
+     "status": "failed",
+     "answer": "rejected ValidationException: 2 validation errors detected: Value 'INVALID' at 'returnConsumedCapacity' failed to satisfy constraint: Member must satisfy enum value set: [INDEXES, TOTAL, NONE]; Value 'INVALID' at 'returnValues' failed to satisfy constraint: Member must satisfy enum value set: [ALL_NEW, UPDATED_OLD, ALL_OLD, NONE, UPDATED_NEW]"
+    },
+    "mx-central-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "sa-east-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "us-east-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "us-east-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "us-west-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    },
+    "us-west-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Failed to satisfy constraint: Member must satisfy enum value set: [ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW, NONE]"
+    }
+   }
+  },
+  "update-item-nesting-depth-expression-value": {
+   "pinned": "rejected ConditionalCheckFailedException: The conditional request failed",
+   "moved": [
+    "ap-east-1",
+    "ap-southeast-2",
+    "ca-west-1",
+    "eu-south-2",
+    "eu-west-3",
+    "mx-central-1",
+    "us-east-1",
+    "us-west-1",
+    "us-west-2"
+   ],
+   "regions": {
+    "af-south-1": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "ap-east-1": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "ap-east-2": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "ap-northeast-1": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "ap-northeast-2": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "ap-northeast-3": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "ap-south-1": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "ap-south-2": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "ap-southeast-1": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "ap-southeast-2": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "ap-southeast-3": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "ap-southeast-4": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "ap-southeast-5": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "ap-southeast-6": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "ap-southeast-7": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "ca-central-1": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "ca-west-1": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "eu-central-1": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "eu-central-2": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "eu-north-1": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "eu-south-1": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "eu-south-2": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "eu-west-1": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "eu-west-2": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "eu-west-3": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "il-central-1": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "me-central-1": {
+     "status": "failed",
+     "answer": "rejected ValidationException: 1 validation error detected: Nesting Levels have exceeded supported limits: Attributes in the item have nested levels beyond supported limit"
+    },
+    "mx-central-1": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "sa-east-1": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "us-east-1": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "us-east-2": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "us-west-1": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    },
+    "us-west-2": {
+     "status": "passed",
+     "answer": "rejected ConditionalCheckFailedException: The conditional request failed"
+    }
+   }
+  },
+  "scan-two-emoji-table-name": {
+   "pinned": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3",
+   "moved": [
+    "eu-north-1"
+   ],
+   "regions": {
+    "af-south-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "ap-east-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "ap-east-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "ap-northeast-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "ap-northeast-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "ap-northeast-3": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "ap-south-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "ap-south-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "ap-southeast-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "ap-southeast-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "ap-southeast-3": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "ap-southeast-4": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "ap-southeast-5": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "ap-southeast-6": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "ap-southeast-7": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "ca-central-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "ca-west-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "eu-central-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "eu-central-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "eu-north-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "eu-south-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "eu-south-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "eu-west-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "eu-west-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "eu-west-3": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "il-central-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "me-central-1": {
+     "status": "failed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "mx-central-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "sa-east-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "us-east-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "us-east-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "us-west-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    },
+    "us-west-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3"
+    }
+   }
+  },
+  "scan-128-emoji-table-name": {
+   "pinned": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+",
+   "moved": [
+    "eu-north-1"
+   ],
+   "regions": {
+    "af-south-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "ap-east-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "ap-east-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "ap-northeast-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "ap-northeast-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "ap-northeast-3": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "ap-south-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "ap-south-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "ap-southeast-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "ap-southeast-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "ap-southeast-3": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "ap-southeast-4": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "ap-southeast-5": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "ap-southeast-6": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "ap-southeast-7": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "ca-central-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "ca-west-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "eu-central-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "eu-central-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "eu-north-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "eu-south-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "eu-south-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "eu-west-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "eu-west-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "eu-west-3": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "il-central-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "me-central-1": {
+     "status": "failed",
+     "answer": "rejected ValidationException: 2 validation errors detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must have length less than or equal to 255; Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "mx-central-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "sa-east-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "us-east-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "us-east-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "us-west-1": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    },
+    "us-west-2": {
+     "status": "passed",
+     "answer": "rejected ValidationException: 1 validation error detected: Value '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    }
+   }
+  }
+ }
+}

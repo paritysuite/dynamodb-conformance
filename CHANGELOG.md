@@ -8,6 +8,41 @@ section its date and version, so several branches can write ahead of one.
 
 ## Unreleased
 
+UpdateItem now caps the finished item at exactly 409,600 bytes, key included,
+like every other write. The 2026-11-21 sweep found all 33 regions that ran the
+tests storing the updates the old rule refused, and a re-measurement in eu-west-2 the same day
+confirmed it. Until then UpdateItem left the key out of its figure and charged a
+fixed cost per clause, so at a short key it refused items below 409,600. The
+tests that pinned that rule are gone, and so are the 11 registry rows that
+tracked regions moving off it. In their place, the finished-item cap is asserted
+at short and long keys, a long key name, a sort key, an untouched attribute and
+a list index, and a SET through a nested path must hit the same ceiling as the
+plain SET of the same map.
+
+One part of the old rule is still there. UpdateItem refuses a statement whose
+SET clauses would write more than 409,600 bytes, counting each target's
+attribute name and the value it is given, even when the stored item would stay
+small. The key, operand paths, placeholder names and values used only in the
+condition are not counted, an alias counts as the name it stands for, and a
+value used twice counts twice. Six new tests pin those figures. The existing
+tests that show this check runs before the condition are unchanged. The capture
+is in `captures/2026-11-21-update-item-size.json`.
+
+SearchVectors gives specific messages for a bad comparator in a
+SearchConditionExpression. The HASH element must use `=`, and an INLINE_FILTER
+element takes a range operator only on a Number attribute. The two tests that
+pinned the old generic message now pin these, which every region that answered
+the sweep gave.
+
+ap-east-1, ap-southeast-2, ca-west-1, eu-south-2, eu-west-3, mx-central-1,
+us-east-1, us-west-1 and us-west-2 join eu-west-2 on the 32-level
+ExpressionAttributeValue and UpdateItem ReturnValues rows, and eu-north-1 joins
+it on the two Scan emoji table-name rows. Every region that answered the
+2026-11-21 sweep now gives the pinned answer on all four, except me-central-1,
+which has been out of the observed set since the 2026-10-31 sweep. It still
+gives its recorded answer on three rows. On the ReturnValues row it went back to
+reporting both errors, now listing `UPDATED_NEW`, and is recorded on that.
+
 ## 2026-11-15 (3.10.0)
 
 ca-central-1 joins eu-west-2 on the five Scan rows. It gave the new wording on

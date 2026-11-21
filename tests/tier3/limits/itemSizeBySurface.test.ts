@@ -12,7 +12,6 @@ import {
 } from '@aws-sdk/client-dynamodb'
 import type { AttributeValue } from '@aws-sdk/client-dynamodb'
 import { ddb } from '../../../src/client.js'
-import { recordObserved } from '../../../src/observation-sink.js'
 import { isUnsupportedFault, skipUnlessSupported } from '../../../src/infra.js'
 import {
   itemSizeTableDef,
@@ -20,7 +19,6 @@ import {
   longKeyNameTableDef,
   cleanupItems,
   declareTables,
-  assertDynamoError,
   expectDynamoError,
 } from '../../../src/helpers.js'
 import {
@@ -34,16 +32,14 @@ import {
 
 declareTables(itemSizeTableDef, itemSizeCompositeTableDef, longKeyNameTableDef)
 
-// Seven write surfaces reach the 400KB gate and they do not agree about it.
-// Captured against eu-west-2 on 2026-08-18 by bisecting each surface's ceiling
-// and reading the accepted item back, so every figure below is a stored size
-// rather than a predicted one.
+// Seven write surfaces reach the 400KB gate. Captured against eu-west-2 on
+// 2026-08-18 by bisecting each surface's ceiling and reading the accepted item
+// back, so every figure below is a stored size rather than a predicted one.
+// UpdateItem was re-measured on 2026-11-21.
 //
-// Six of the seven are flat: the ceiling is the item's own size, exactly
-// 409,600, with no key exclusion and no per-action term. Standalone UpdateItem
-// is the outlier in eu-west-2 and has its own describes below. It is not the
-// outlier everywhere: in some regions UpdateItem is flat too (see the note above
-// updateCeilingIs).
+// All seven cap the finished item at exactly 409,600, key included. Standalone
+// UpdateItem also sizes what its SET clauses write, which can refuse a
+// statement whose finished item is small; see the note above its describes.
 //
 // The reporting split follows whether the size can be known from the request
 // alone. A put's can, so a transacted Put over the limit is a plain
@@ -170,9 +166,6 @@ describe('Item size limit by surface — PartiQL', { tags: ['partiql', 'data-pla
     )
   })
 
-  // The discriminator against standalone UpdateItem, which refuses a finished
-  // item of 409,600 at this key: the key exclusion belongs to that operation
-  // alone rather than to updates generally.
   it('UPDATE accepts a finished item of exactly 409,600 bytes', async () => {
     const k = key('pql-upd-at')
     await updateTo(k, MAX_ITEM_BYTES)
@@ -243,9 +236,6 @@ describe('Item size limit by surface — TransactWriteItems', { tags: ['transact
     )
   })
 
-  // An Update inside a transaction is measured flat against the item too, so it
-  // accepts what standalone UpdateItem refuses at the same key: the exclusion is
-  // not inherited.
   it('an Update accepts a finished item of exactly 409,600 bytes', async () => {
     const k = key('txn-upd-at')
     await transactUpdate(k, MAX_ITEM_BYTES)
@@ -275,801 +265,277 @@ describe('Item size limit by surface — TransactWriteItems', { tags: ['transact
   })
 })
 
-// ── UpdateItem, the one surface that does not measure flat ────────────────────
+// ── UpdateItem ────────────────────────────────────────────────────────────────
 //
-// Two things differ from every surface above:
+// UpdateItem answers to two limits, and refuses whichever it breaks with the
+// update wording:
 //
-//   max(finished item, attributes the update writes + action cost) <= 409600
+//   finished item                                        <= 409600
+//   sum over SET clauses of (target name + value given)  <= 409600
 //
-// The second half is the surprise. UpdateItem does not measure the item it is
-// about to store; it measures what the statement writes, name and value, and
-// adds a fixed cost per clause. So the key is out of the figure — an update
-// never writes it — and so is every attribute the statement leaves alone. At a
-// short key that puts the ceiling *below* 400KB, and it stays there however
-// little the update touches. The first half is what stops the exclusion running
-// away: DynamoDB never stores a finished item above 409,600 at any key length.
+// The first is the cap every surface above applies: the item as stored, key and
+// untouched attributes included.
 //
-// The 2026-08-18 capture recorded this as `item - key attributes + action cost`,
-// which is the same arithmetic on the fixtures it used, because every one of
-// them held an item made of exactly the key plus what the update wrote. It comes
-// apart as soon as the item carries an attribute the update does not touch, and
-// the case below pins that: an untouched attribute measuring 11 bytes lifts the
-// ceiling by 11, where the key-exclusion reading says it should not move at all.
-// Measured against eu-west-2 on 2026-08-19.
+// The second sizes what the statement's SET clauses would write if each value
+// landed. It counts each target's attribute name, with any alias resolved, plus
+// the value operand it is given, once for every use. It does not count the key,
+// an operand path, a placeholder's name, or a value used only in the condition.
+// So a statement can be refused while the item it would leave stays tiny, which
+// is what `SET c = if_not_exists(c, :v)` on an item already holding `c` shows.
+// It is checked before the ConditionExpression (see the last describe).
 //
-// The action cost is three bytes for the update itself plus a fixed amount per
-// clause. It does not vary with the value written, its type or size, the
-// attribute name, the alias, or the expression text.
-//
-// These figures have no documented basis and look like an internal serialised
-// mutation record rather than a contract. They are asserted anyway, because a
-// correct implementation can derive every one of them from the request it was
-// given: an engine can see which clauses it has and what each one writes, and
-// getting it wrong means accepting a write AWS refuses, at the same key, with
-// the same statement.
-const UPDATE_BASE_COST = 3
-const SET_COST = 19
-const REMOVE_COST = 2
+// Measured against eu-west-2 on 2026-11-21 by bisection, with every accepted
+// item read back. Until the week before, UpdateItem sized the statement
+// differently: the key was left out of the figure and every clause carried a
+// fixed charge, so at a short key the ceiling sat below 409,600. The
+// 2026-11-21 ground-truth sweep found every region that answered storing the
+// writes that rule refused.
 
-// The rest of the clause costs, measured the same way on 2026-10-09 (eu-west-2,
-// bisected, every accepted item read back, the next byte refused; 80 probes, all
-// predicted exactly by the rules below). A clause that writes a value from the
-// request is charged 19 plus what it writes; the other kinds are charged for the
-// request, not for the item they change:
-//
-//   a path operand (`c = m.z`)      1, plus 14 and the element for each element;
-//                                   the value it reads is free
-//   a value operand (`:v`)          its size, at every use, documents included
-//   `x + y` / `x - y`               34 / 37 plus both operands; the result is free
-//   `if_not_exists(path, v)`        39 plus both operands, present or not
-//   `list_append(x, y)`             37 plus both operands
-//   ADD target :v                   19 plus the target plus v (only the members added)
-//   REMOVE target / DELETE target   1 plus the target; nothing removed is charged
-//
-// A target costs its first name, plus 4 and the element for each later element.
-// An element is a name's bytes or a list index's digits, so `REMOVE r` is the 2
-// above. The charge is checked before the ConditionExpression, which adds nothing
-// to it.
-const IF_NOT_EXISTS_COST = 39
-const PLUS_COST = 34
-const MINUS_COST = 37
-const LIST_APPEND_COST = 37
-const REMOVE_OR_DELETE_COST = 1
+/** A list's own bytes over its elements', as the 2026-10-09 capture measured. */
+const listBytes = (...elements: number[]) => 3 + elements.length + elements.reduce((a, b) => a + b, 0)
 
-const elementBytes = (element: string | number) =>
-  typeof element === 'number' ? String(element).length : utf8Bytes(element)
-/** What a path costs as an operand: `operandCost('m', 'z')` for `m.z`. */
-const operandCost = (...elements: (string | number)[]) =>
-  1 + elements.reduce<number>((total, element) => total + 14 + elementBytes(element), 0)
-/** What a path costs as a target: `targetCost('l', 10)` for `l[10]`. */
-const targetCost = (first: string, ...rest: (string | number)[]) =>
-  utf8Bytes(first) + rest.reduce<number>((total, element) => total + 4 + elementBytes(element), 0)
-
-// The statement-sized rule is regional. Some regions size an UpdateItem like
-// every other write: the finished item, capped at exactly 409,600, with no key
-// exclusion and no per-clause cost. So every case below that puts the ceiling
-// under 409,600 fails there on its first refusal, which those regions accept and
-// store. First measured across all 33 regions on 2026-09-28 and 2026-09-29, when
-// ten regions were flat; regions have moved since, so each test's registry row,
-// not this note, records which regions are on which side.
-//
-// Each such test is a split, and what it records for per-region scoring is only
-// the flat side: that the target stored an update this rule refuses, confirmed
-// by reading it back. A test that measures two ceilings hands its task to the
-// first measurement only. A flat region stores that first write and the test
-// stops there, so a target that refuses it and then stores the second has not
-// answered the way a flat region does. The refusing side needs no record, because a pass already
-// means the pinned eu-west-2 answer. Recording refusals would be wrong here,
-// since these tests go on past the refusal, and a target refusing at the right
-// point but failing a later step would be credited as matching the regions that
-// refuse.
-const STATEMENT_RULE_STORED = 'stored an update the statement-sized rule refuses'
-
-async function recordStoredDespiteRule(
-  task: Parameters<typeof recordObserved>[0] | undefined,
+const updateItem = (
   table: string,
   k: Record<string, AttributeValue>,
-  landed: (item: Record<string, AttributeValue>) => boolean,
-): Promise<void> {
-  if (!task) return
-  const got = await ddb.send(new GetItemCommand({ TableName: table, Key: { ...k }, ConsistentRead: true }))
-  if (got.Item && landed(got.Item)) {
-    recordObserved(task, { outcome: 'accepted', detail: STATEMENT_RULE_STORED })
-  }
-}
+  expression: string,
+  values: Record<string, AttributeValue>,
+  names?: Record<string, string>,
+) => ddb.send(new UpdateItemCommand({
+  TableName: table,
+  Key: { ...k },
+  UpdateExpression: expression,
+  ExpressionAttributeValues: values,
+  ExpressionAttributeNames: names,
+}))
 
 /**
- * The largest finished item UpdateItem accepts.
- *
- * `uncountedBytes` is everything in the finished item the statement does not
- * write: the key attributes, always, plus any attribute it leaves alone.
+ * Confirm `SET b = :pad` stores a finished item of exactly 409,600 at the first
+ * key and refuses one byte more at the second, then read the stored item back
+ * so the figure rests on a stored size rather than on the arithmetic.
  */
-function updateCeiling(uncountedBytes: number, actionCost: number): number {
-  return Math.min(MAX_ITEM_BYTES, MAX_ITEM_BYTES + uncountedBytes - actionCost)
-}
-
-interface UpdateShape {
-  /** The expression, which must set the padding attribute from `:pad`. */
-  expression: string
-  names?: Record<string, string>
-  values?: Record<string, AttributeValue>
-  /** Attributes further clauses write, besides the padding. */
-  extra?: Record<string, AttributeValue>
-  /** Attributes the item carries and the statement leaves alone. */
-  untouched?: Record<string, AttributeValue>
-  /** Where the padding lands. */
-  padAttribute: string
-  /**
-   * 3 for the update, plus 19 per SET or ADD, plus one byte and the path for
-   * each REMOVE or DELETE (so 2 for a one-letter name, 3 for a two-letter one).
-   */
-  actionCost: number
-  /** What the item must already carry for the expression to have something to do. */
-  seed?: Record<string, AttributeValue>
-}
-
-/**
- * Confirm UpdateItem's ceiling at this key and this shape, and return it.
- *
- * Accepted at the predicted figure and refused one byte over is the assertion;
- * the accepted item is then read back so the figure rests on a stored size
- * rather than on the arithmetic that produced it.
- */
-async function updateCeilingIs(
+async function finishedItemCapHolds(
   table: string,
   keys: { accepted: Record<string, AttributeValue>; refused: Record<string, AttributeValue> },
-  shape: UpdateShape,
-  task?: Parameters<typeof recordObserved>[0],
-): Promise<number> {
-  const uncounted = itemBytes(keys.accepted) + itemBytes(shape.untouched ?? {})
-  const ceiling = updateCeiling(uncounted, shape.actionCost)
-
+  untouched: Record<string, AttributeValue> = {},
+): Promise<void> {
   const send = async (k: Record<string, AttributeValue>, bytes: number) => {
-    const padding =
-      bytes -
-      itemBytes(k) -
-      itemBytes(shape.extra ?? {}) -
-      itemBytes(shape.untouched ?? {}) -
-      utf8Bytes(shape.padAttribute)
-    const seed = { ...shape.seed, ...shape.untouched }
-    if (Object.keys(seed).length > 0) {
-      await ddb.send(new PutItemCommand({ TableName: table, Item: { ...k, ...seed } }))
+    if (Object.keys(untouched).length > 0) {
+      await ddb.send(new PutItemCommand({ TableName: table, Item: { ...k, ...untouched } }))
     }
-    await ddb.send(new UpdateItemCommand({
-      TableName: table,
-      Key: { ...k },
-      UpdateExpression: shape.expression,
-      ExpressionAttributeNames: shape.names,
-      ExpressionAttributeValues: { ...shape.values, ':pad': { S: asciiOfBytes(padding) } },
-    }))
+    const padding = bytes - itemBytes(k) - itemBytes(untouched) - utf8Bytes('b')
+    await updateItem(table, k, 'SET b = :pad', { ':pad': { S: asciiOfBytes(padding) } })
   }
 
-  await send(keys.accepted, ceiling)
-  const stored = await ddb.send(new GetItemCommand({
-    TableName: table, Key: { ...keys.accepted }, ConsistentRead: true,
-  }))
-  expect(itemBytes(stored.Item as Record<string, AttributeValue>)).toBe(ceiling)
+  await send(keys.accepted, MAX_ITEM_BYTES)
+  const stored = await ddb.send(new GetItemCommand({ TableName: table, Key: { ...keys.accepted }, ConsistentRead: true }))
+  expect(itemBytes(stored.Item as Record<string, AttributeValue>)).toBe(MAX_ITEM_BYTES)
 
-  await expectDynamoError(
-    async () => {
-      await send(keys.refused, ceiling + 1)
-      await recordStoredDespiteRule(task, table, keys.refused, (item) => itemBytes(item) === ceiling + 1)
-    },
-    'ValidationException',
-    UPDATE_WORDING,
-  )
-  return ceiling
-}
-
-/** The plainest shape: one SET, landing the padding in `b`. */
-function oneSet(overrides: Partial<UpdateShape> = {}): UpdateShape {
-  return {
-    expression: 'SET b = :pad',
-    padAttribute: 'b',
-    actionCost: UPDATE_BASE_COST + SET_COST,
-    ...overrides,
-  }
+  await expectDynamoError(() => send(keys.refused, MAX_ITEM_BYTES + 1), 'ValidationException', UPDATE_WORDING)
 }
 
 // no negative-path: acceptance-mixed (asserts accepted and rejected cases)
-describe('Item size limit by surface — UpdateItem does not charge for the key', { tags: ['update-item', 'data-plane'] }, () => {
+describe('Item size limit by surface — UpdateItem sizes the finished item', { tags: ['update-item', 'data-plane'] }, () => {
   const pair = (id: string) => ({ accepted: key(`upd-${id}-at`), refused: key(`upd-${id}-over`) })
 
-  // Short enough that the key attributes come to less than a single SET costs,
-  // so the exclusion is what binds and the ceiling sits under 400KB.
-  const shortKey = () => ({ accepted: { pk: { S: 'K' } }, refused: { pk: { S: 'L' } } })
-
-  it('sits below 409,600 at a one-byte key, so the exclusion binds', async (ctx) => {
-    // Split behaviour (registry row update-item-size-short-key): the row
-    // records the flat regions, see the note above updateCeilingIs.
-    const keys = shortKey()
+  it('caps at exactly 409,600 at a one-byte key', async () => {
+    const keys = { accepted: { pk: { S: 'K' } }, refused: { pk: { S: 'L' } } }
     keysToClean.push(keys.accepted, keys.refused)
-    const ceiling = await updateCeilingIs(TABLE, keys, oneSet(), ctx.task)
-    expect(ceiling).toBeLessThan(MAX_ITEM_BYTES)
-    // 2 bytes of key name plus 1 of key value, against a 22-byte single SET.
-    expect(ceiling).toBe(MAX_ITEM_BYTES - 19)
+    await finishedItemCapHolds(TABLE, keys)
   })
 
-  // Past a 20-byte key the item's own size is the binding half, and it stays
-  // binding however long the key gets. Nothing ever stores a finished item above
-  // 409,600.
   it.each([100, 1_024])('caps at exactly 409,600 with a %i-byte key value', async (length) => {
     const keys = pair(`long-${length}`)
     for (const k of [keys.accepted, keys.refused]) k.pk.S = k.pk.S.padEnd(length, 'k').slice(0, length)
     expect(keys.accepted.pk.S).toHaveLength(length)
-    expect(await updateCeilingIs(TABLE, keys, oneSet())).toBe(MAX_ITEM_BYTES)
+    await finishedItemCapHolds(TABLE, keys)
   })
 
-  // The name is excluded as well as the value, so the two are interchangeable.
-  // Sixteen bytes of key name and one of value buys back what two bytes of name
-  // and fifteen of value does.
-  it('buys back the same headroom from the key name as from the key value', async (ctx) => {
-    // Split behaviour (registry row update-item-size-key-name): the row
-    // records the flat regions, see the note above updateCeilingIs.
-    const byValue = { accepted: { pk: { S: 'v'.repeat(15) } }, refused: { pk: { S: 'w'.repeat(15) } } }
-    keysToClean.push(byValue.accepted, byValue.refused)
-    const byName = {
-      accepted: { partitionKeyName: { S: 'v' } },
-      refused: { partitionKeyName: { S: 'w' } },
-    }
-    longKeyNameKeysToClean.push(byName.accepted, byName.refused)
-    expect(itemBytes(byValue.accepted)).toBe(itemBytes(byName.accepted))
-
-    const fromValue = await updateCeilingIs(TABLE, byValue, oneSet(), ctx.task)
-    const fromName = await updateCeilingIs(longKeyNameTableDef.name, byName, oneSet())
-    expect(fromName).toBe(fromValue)
-    // Both still under the cap, or the comparison would be two tables agreeing
-    // on 409,600 for reasons that have nothing to do with the key.
-    expect(fromValue).toBeLessThan(MAX_ITEM_BYTES)
+  it('counts a long key name as it counts a key value', async () => {
+    const keys = { accepted: { partitionKeyName: { S: 'v' } }, refused: { partitionKeyName: { S: 'w' } } }
+    longKeyNameKeysToClean.push(keys.accepted, keys.refused)
+    await finishedItemCapHolds(longKeyNameTableDef.name, keys)
   })
 
-  it('buys back a sort key’s own bytes as well', async (ctx) => {
-    // Split behaviour (registry row update-item-size-sort-key): the row
-    // records the flat regions, see the note above updateCeilingIs.
-    const hashOnly = { accepted: { pk: { S: 'S' } }, refused: { pk: { S: 'T' } } }
-    keysToClean.push(hashOnly.accepted, hashOnly.refused)
-    const withSort = {
-      accepted: { pk: { S: 'S' }, sk: { S: 'a' } },
-      refused: { pk: { S: 'T' }, sk: { S: 'a' } },
-    }
-    compositeKeysToClean.push(withSort.accepted, withSort.refused)
-
-    const flat = await updateCeilingIs(TABLE, hashOnly, oneSet(), ctx.task)
-    const composite = await updateCeilingIs(itemSizeCompositeTableDef.name, withSort, oneSet())
-    expect(composite - flat).toBe(itemBytes({ sk: withSort.accepted.sk }))
+  it('counts a sort key', async () => {
+    const keys = { accepted: { pk: { S: 'S' }, sk: { S: 'a' } }, refused: { pk: { S: 'T' }, sk: { S: 'a' } } }
+    compositeKeysToClean.push(keys.accepted, keys.refused)
+    await finishedItemCapHolds(itemSizeCompositeTableDef.name, keys)
   })
-})
 
-// no negative-path: acceptance-mixed (asserts accepted and rejected cases)
-describe('Item size limit by surface — UpdateItem charges per action', { tags: ['update-item', 'data-plane'] }, () => {
-  // Every case here runs at a key short enough for the exclusion to bind. Past a
-  // 20-byte key the item's own size caps the figure and the action cost stops
-  // being observable at all.
-  const shortPair = (id: string) => {
-    const keys = { accepted: { pk: { S: `A${id}` } }, refused: { pk: { S: `B${id}` } } }
+  it('counts an attribute the statement leaves alone', async () => {
+    const keys = { accepted: { pk: { S: 'U' } }, refused: { pk: { S: 'V' } } }
     keysToClean.push(keys.accepted, keys.refused)
-    return keys
-  }
-
-  it('charges a second SET clause exactly 19 bytes', async (ctx) => {
-    // Split behaviour (registry row update-item-size-second-set): the row
-    // records the flat regions, see the note above updateCeilingIs.
-    const one = await updateCeilingIs(TABLE, shortPair('1'), oneSet(), ctx.task)
-    const two = await updateCeilingIs(TABLE, shortPair('2'), oneSet({
-      expression: 'SET b = :pad, c = :c',
-      values: { ':c': { S: 'y' } },
-      extra: { c: { S: 'y' } },
-      actionCost: UPDATE_BASE_COST + SET_COST * 2,
-    }))
-    expect(one - two).toBe(SET_COST)
+    await finishedItemCapHolds(TABLE, keys, { u: { S: 'y'.repeat(999) } })
   })
 
-  it('charges a REMOVE alongside a SET exactly 2 bytes', async (ctx) => {
-    // Split behaviour (registry row update-item-size-remove): the row
-    // records the flat regions, see the note above updateCeilingIs.
-    const setOnly = await updateCeilingIs(TABLE, shortPair('3'), oneSet(), ctx.task)
-    const withRemove = await updateCeilingIs(TABLE, shortPair('4'), oneSet({
-      expression: 'SET b = :pad REMOVE r',
-      seed: { r: { S: 'z' } },
-      actionCost: UPDATE_BASE_COST + SET_COST + REMOVE_COST,
-    }))
-    expect(setOnly - withRemove).toBe(REMOVE_COST)
-  })
-
-  // The clause is charged, not what it carries. A second clause writing 500
-  // bytes costs what one writing a single byte costs, and the threshold does not
-  // move when the attribute is reached through an alias instead of by name.
-  it('charges the clause, not the value it writes', async (ctx) => {
-    // Split behaviour (registry row update-item-size-clause-not-value): the row
-    // records the flat regions, see the note above updateCeilingIs.
-    const small = await updateCeilingIs(TABLE, shortPair('5'), oneSet({
-      expression: 'SET b = :pad, c = :c',
-      values: { ':c': { S: 'y' } },
-      extra: { c: { S: 'y' } },
-      actionCost: UPDATE_BASE_COST + SET_COST * 2,
-    }), ctx.task)
-    const large = await updateCeilingIs(TABLE, shortPair('6'), oneSet({
-      expression: 'SET b = :pad, c = :c',
-      values: { ':c': { S: 'y'.repeat(500) } },
-      extra: { c: { S: 'y'.repeat(500) } },
-      actionCost: UPDATE_BASE_COST + SET_COST * 2,
-    }))
-    expect(large).toBe(small)
-    // Both sides collapse onto 409,600 the moment the key outgrows the action
-    // cost, and the equality then holds whatever the per-clause cost is. The
-    // keys here are short enough that it does not, and this says so.
-    expect(small).toBeLessThan(MAX_ITEM_BYTES)
-  })
-
-  // The half the capture's own reading missed. An attribute the statement never
-  // names is in the stored item and out of the figure, so it buys back its own
-  // bytes exactly as a key attribute does — which is what shows the exclusion is
-  // about what the update writes rather than about keys.
-  it('does not charge for an attribute the statement leaves alone', async (ctx) => {
-    // Split behaviour (registry row update-item-size-untouched-attribute): the row
-    // records the flat regions, see the note above updateCeilingIs.
-    const untouched = { u: { S: 'y'.repeat(10) } }
-    const written = await updateCeilingIs(TABLE, shortPair('9'), oneSet(), ctx.task)
-    const alongside = await updateCeilingIs(TABLE, shortPair('a'), oneSet({ untouched }))
-    expect(alongside - written).toBe(itemBytes(untouched))
-    expect(alongside).toBeLessThan(MAX_ITEM_BYTES)
-  })
-
-  it('charges the clause, not the attribute name or its alias', async (ctx) => {
-    // Split behaviour (registry row update-item-size-alias): the row
-    // records the flat regions, see the note above updateCeilingIs.
-    const byName = await updateCeilingIs(TABLE, shortPair('7'), oneSet(), ctx.task)
-    const byAlias = await updateCeilingIs(TABLE, shortPair('8'), oneSet({
-      expression: 'SET #twelvechars = :pad',
-      names: { '#twelvechars': 'b' },
-    }))
-    expect(byAlias).toBe(byName)
-    expect(byName).toBeLessThan(MAX_ITEM_BYTES)
-  })
-})
-
-// no negative-path: acceptance-mixed (asserts accepted and rejected cases)
-describe('Item size limit by surface — UpdateItem through a document path', { tags: ['update-item', 'data-plane'] }, () => {
-  // Reaching into a map or a list means the padding has to live inside the
-  // document, and no capture settles what a map or a list costs. So each case is
-  // measured against a reference clause that writes the same attribute to the
-  // same finished value the plain way — `SET d = :whole` against `SET d.leaf =`
-  // or `SET d[0] =`. The document's own bytes are then identical on both sides
-  // and cancel, and what is left is the difference between the two clause forms.
-  //
-  // The reference threshold is found by bisection rather than predicted, so
-  // nothing here asserts a document-sizing figure. Only a size rejection counts
-  // as a refusal: a throttled 400KB write read as one would return a number that
-  // looks like a measurement and is not one.
-  const k = { pk: { S: 'D' } }
-  const over = { pk: { S: 'E' } }
-
-  async function accepts(run: () => Promise<unknown>): Promise<boolean> {
-    for (let attempt = 0; ; attempt++) {
-      try {
-        await run()
-        return true
-      } catch (e: unknown) {
-        const err = e as { name?: string; message?: string }
-        if (err.name === 'ValidationException' && /Item size/.test(err.message ?? '')) return false
-        if (attempt === 4) throw e
-        await new Promise((r) => setTimeout(r, 400 * (attempt + 1)))
-      }
-    }
-  }
-
-  /** The largest padding `run` accepts, bisected inside a window both ends of which are checked. */
-  async function largestAccepted(run: (padding: number) => Promise<unknown>): Promise<number> {
-    let accepted = MAX_ITEM_BYTES - 256
-    let refused = MAX_ITEM_BYTES
-    expect(await accepts(() => run(accepted)), 'the low end of the search window').toBe(true)
-    expect(await accepts(() => run(refused)), 'the high end of the search window').toBe(false)
-    while (refused - accepted > 1) {
-      const midpoint = Math.floor((accepted + refused) / 2)
-      if (await accepts(() => run(midpoint))) accepted = midpoint
-      else refused = midpoint
-    }
-    return accepted
-  }
-
-  const update = (
-    at: Record<string, AttributeValue>,
-    expression: string,
-    values: Record<string, AttributeValue>,
-    names?: Record<string, string>,
-  ) => ddb.send(new UpdateItemCommand({
-    TableName: TABLE,
-    Key: { ...at },
-    UpdateExpression: expression,
-    ExpressionAttributeValues: values,
-    ExpressionAttributeNames: names,
-  }))
-
-  const wholeMap = (padding: number) => ({ M: { leaf: { S: asciiOfBytes(padding) } } })
-  const wholeList = (padding: number) => ({ L: [{ S: asciiOfBytes(padding) }] })
-
-  beforeAll(() => { keysToClean.push(k, over) })
-
-  it('charges a SET through a nested path the same as a plain SET', async () => {
-    const plainly = (at: Record<string, AttributeValue>) => (padding: number) =>
-      update(at, 'SET d = :whole', { ':whole': wholeMap(padding) })
-    const throughPath = (at: Record<string, AttributeValue>) => (padding: number) =>
-      update(at, 'SET d.#leaf = :pad', { ':pad': { S: asciiOfBytes(padding) } }, { '#leaf': 'leaf' })
-
-    const reference = await largestAccepted(plainly(k))
-    // The path form needs the map to exist before it can reach into it.
-    await update(k, 'SET d = :whole', { ':whole': wholeMap(1) })
-    await update(over, 'SET d = :whole', { ':whole': wholeMap(1) })
-
-    expect(await accepts(() => throughPath(k)(reference))).toBe(true)
-    expect(await accepts(() => throughPath(over)(reference + 1))).toBe(false)
-  })
-
-  // The capture measured a list-index SET at 20 bytes against 19 for a plain
-  // one. Asserted as the difference against the plain clause's own measured
-  // threshold rather than against either constant, so what fails is the one byte
-  // rather than a figure nothing else checks.
-  it('charges a SET through a list index exactly one byte more', async (ctx) => {
-    // Split behaviour (registry row update-item-size-list-index): the row
-    // records the flat regions, see the note above updateCeilingIs.
-    const plainly = (at: Record<string, AttributeValue>) => (padding: number) =>
-      update(at, 'SET d = :whole', { ':whole': wholeList(padding) })
-    const throughIndex = (at: Record<string, AttributeValue>) => (padding: number) =>
-      update(at, 'SET d[0] = :pad', { ':pad': { S: asciiOfBytes(padding) } })
-
-    const reference = await largestAccepted(plainly(k))
-    await update(k, 'SET d = :whole', { ':whole': wholeList(1) })
-    await update(over, 'SET d = :whole', { ':whole': wholeList(1) })
-
-    expect(await accepts(async () => {
-      await throughIndex(over)(reference)
-      await recordStoredDespiteRule(ctx.task, TABLE, over, (item) => item.d?.L?.[0]?.S?.length === reference)
-    })).toBe(false)
-    expect(await accepts(() => throughIndex(k)(reference - 1))).toBe(true)
-  })
-})
-
-/**
- * A key short enough that UpdateItem's ceiling falls below 409,600, seeded with
- * a small row, together with the finished item of exactly 409,600 that
- * UpdateItem will not write there.
- *
- * The refusal is asserted here rather than in each caller, because it is what
- * makes the acceptance on the other surfaces mean anything: the same item, at
- * the same key, written by an operation that measures it differently.
- */
-async function keyUpdateItemRefusesAt(id: string, task?: Parameters<typeof recordObserved>[0]) {
-  const at = { pk: { S: id } }
-  keysToClean.push(at)
-  await ddb.send(new PutItemCommand({ TableName: TABLE, Item: { ...at } }))
-  const item = itemOfBytes(MAX_ITEM_BYTES, at, 'p')
-  await expectDynamoError(
-    async () => {
-      await ddb.send(new UpdateItemCommand({
-        TableName: TABLE,
-        Key: { ...at },
-        UpdateExpression: 'SET p = :p',
-        ExpressionAttributeValues: { ':p': item.p },
-      }))
-      await recordStoredDespiteRule(task, TABLE, at, (stored) => itemBytes(stored) === MAX_ITEM_BYTES)
-    },
-    'ValidationException',
-    UPDATE_WORDING,
-  )
-  return { at, item }
-}
-
-// no negative-path: acceptance-mixed (asserts accepted and rejected cases)
-describe('Item size limit by surface — a PartiQL UPDATE does not inherit the exclusion', { tags: ['partiql', 'update-item', 'data-plane'] }, () => {
-  let supported = true
-
-  beforeAll(async () => {
-    try {
-      await ddb.send(new ExecuteStatementCommand({
-        Statement: `SELECT * FROM "${TABLE}" WHERE pk = 'excl-canary'`,
-      }))
-    } catch (e: unknown) {
-      if (isUnsupportedFault(e) || (e instanceof Error && e.name === 'UnrecognizedClientException')) {
-        supported = false
-      }
-    }
-  })
-
-  beforeEach(({ skip }) => { if (!supported) skip() })
-
-  it('writes what UpdateItem refuses at the same key', async (ctx) => {
-    // Split behaviour (registry row partiql-update-size-exclusion): the row
-    // records the flat regions, see the note above updateCeilingIs.
-    const { at, item } = await keyUpdateItemRefusesAt('X', ctx.task)
-    await ddb.send(new ExecuteStatementCommand({
-      Statement: `UPDATE "${TABLE}" SET p = ? WHERE pk = ?`,
-      Parameters: [item.p, at.pk],
-    }))
-    expect(await storedBytes(at)).toBe(MAX_ITEM_BYTES)
-  })
-})
-
-// no negative-path: acceptance-mixed (asserts accepted and rejected cases)
-describe('Item size limit by surface — a transacted Update does not inherit the exclusion', { tags: ['transactions', 'update-item', 'data-plane'] }, () => {
-  skipUnlessSupported(() => ddb.send(new TransactWriteItemsCommand({ TransactItems: [] })))
-
-  it('writes what UpdateItem refuses at the same key', async (ctx) => {
-    // Split behaviour on the UpdateItem half (registry row
-    // transact-update-size-exclusion), see the note above updateCeilingIs.
-    //
-    // The transacted half is mid-rollout. Most regions measure a transacted
-    // Update flat, like every other write, and store the item. eu-north-1 and
-    // ap-northeast-2 started applying UpdateItem's statement-sized rule to it
-    // before the transaction runs, and eu-west-2 followed on 2026-10-08, between
-    // two ground-truth runs on main 30 minutes apart. Those three refuse it with
-    // a top-level ValidationException carrying the update wording. The test
-    // accepts either until the regions settle. Its name describes what most
-    // regions still do, and changes when one answer is pinned, alongside the
-    // results refresh a rename needs.
-    const { at, item } = await keyUpdateItemRefusesAt('Y', ctx.task)
-    let refused: unknown
-    try {
-      await ddb.send(new TransactWriteItemsCommand({
-        TransactItems: [{
-          Update: {
-            TableName: TABLE,
-            Key: { ...at },
-            UpdateExpression: 'SET p = :p',
-            ExpressionAttributeValues: { ':p': item.p },
-          },
-        }],
-      }))
-    } catch (err) {
-      refused = err
-    }
-    if (refused === undefined) {
-      expect(await storedBytes(at)).toBe(MAX_ITEM_BYTES)
-    } else {
-      assertDynamoError(refused, 'ValidationException', UPDATE_WORDING)
-    }
-  })
-})
-
-
-// no negative-path: acceptance-mixed (asserts accepted and rejected cases)
-describe('Item size limit by surface — UpdateItem charges each kind of clause', { tags: ['update-item', 'data-plane'] }, () => {
-  // Each case pins one cost against the padding ceiling: `SET b = :pad` plus the
-  // clause under test is accepted at the predicted padding and refused one byte
-  // over. Keys are short and the seeds small, so the statement's charge, not the
-  // finished item, is what binds; the read-back confirms the padding landed.
-  // Split behaviour: the flat regions (see the note above updateCeilingIs)
-  // store the refused write, which is what each test records for scoring.
-  interface ChargeShape {
-    /** Runs alongside `SET b = :pad`, which is prepended. */
-    clause: string
-    names?: Record<string, string>
-    values?: Record<string, AttributeValue>
-    seed?: Record<string, AttributeValue>
-    /** The clause's own charge, on top of the base and `SET b = :pad`. */
-    charge: number
-  }
-
-  const PAD_CLAUSE_COST = UPDATE_BASE_COST + SET_COST + utf8Bytes('b')
-  let n = 0
-  const pair = () => {
-    n += 1
-    const keys = { accepted: { pk: { S: `C${n}` } }, refused: { pk: { S: `D${n}` } } }
-    keysToClean.push(keys.accepted, keys.refused)
-    return keys
-  }
-
-  async function chargeCeilingIs(
-    shape: ChargeShape,
-    task?: Parameters<typeof recordObserved>[0],
-  ): Promise<number> {
-    const keys = pair()
-    const padding = MAX_ITEM_BYTES - PAD_CLAUSE_COST - shape.charge
-    const expression = shape.clause.startsWith('SET ')
-      ? `SET b = :pad, ${shape.clause.slice(4)}`
-      : `SET b = :pad ${shape.clause}`
+  it('caps a SET through a list index at the same finished item', async () => {
+    const accepted = { pk: { S: 'D' } }
+    const refused = { pk: { S: 'E' } }
+    keysToClean.push(accepted, refused)
+    // The list holds one element before and after, so its own bytes are fixed
+    // and only the element's padding moves.
+    const padding = (k: Record<string, AttributeValue>) => MAX_ITEM_BYTES - itemBytes(k) - utf8Bytes('d') - listBytes(0)
     const send = async (k: Record<string, AttributeValue>, bytes: number) => {
-      if (shape.seed) await ddb.send(new PutItemCommand({ TableName: TABLE, Item: { ...k, ...shape.seed } }))
-      await ddb.send(new UpdateItemCommand({
-        TableName: TABLE,
-        Key: { ...k },
-        UpdateExpression: expression,
-        ExpressionAttributeNames: shape.names,
-        ExpressionAttributeValues: { ...shape.values, ':pad': { S: asciiOfBytes(bytes) } },
-      }))
+      await ddb.send(new PutItemCommand({ TableName: TABLE, Item: { ...k, d: { L: [{ S: 'x' }] } } }))
+      await updateItem(TABLE, k, 'SET d[0] = :pad', { ':pad': { S: asciiOfBytes(bytes) } })
     }
 
-    await send(keys.accepted, padding)
-    const stored = await ddb.send(new GetItemCommand({ TableName: TABLE, Key: { ...keys.accepted }, ConsistentRead: true }))
-    expect(utf8Bytes(stored.Item?.b?.S ?? '')).toBe(padding)
+    await send(accepted, padding(accepted))
+    const stored = await ddb.send(new GetItemCommand({ TableName: TABLE, Key: { ...accepted }, ConsistentRead: true }))
+    expect(stored.Item?.d?.L?.[0]?.S).toHaveLength(padding(accepted))
 
-    await expectDynamoError(
-      async () => {
-        await send(keys.refused, padding + 1)
-        await recordStoredDespiteRule(task, TABLE, keys.refused, (item) => utf8Bytes(item.b?.S ?? '') === padding + 1)
-      },
-      'ValidationException',
-      UPDATE_WORDING,
-    )
-    return padding
+    await expectDynamoError(() => send(refused, padding(refused) + 1), 'ValidationException', UPDATE_WORDING)
+  })
+
+  it('caps a SET through a nested path at the same finished item', async () => {
+    const accepted = { pk: { S: 'F' } }
+    const refused = { pk: { S: 'G' } }
+    keysToClean.push(accepted, refused)
+    // A map's bytes are not captured, so the threshold is taken from the plain
+    // SET of the same document and the path form must agree with it exactly.
+    // While bisecting, any size refusal counts: near the top of the window the
+    // whole map is refused as a value in its own right, with the value wording.
+    // Anything else is retried, so a throttled write is not read as a refusal.
+    const wholeMap = (bytes: number) => ({ M: { leaf: { S: asciiOfBytes(bytes) } } })
+    const sizeRefused = async (run: () => Promise<unknown>): Promise<boolean> => {
+      for (let attempt = 0; ; attempt++) {
+        try {
+          await run()
+          return false
+        } catch (e: unknown) {
+          const err = e as { name?: string; message?: string }
+          if (err.name === 'ValidationException' && /Item size/.test(err.message ?? '')) return true
+          if (attempt === 4) throw e
+          await new Promise((r) => setTimeout(r, 400 * (attempt + 1)))
+        }
+      }
+    }
+    let low = MAX_ITEM_BYTES - 256
+    let high = MAX_ITEM_BYTES
+    expect(await sizeRefused(() => updateItem(TABLE, accepted, 'SET d = :m', { ':m': wholeMap(low) })), 'the low end').toBe(false)
+    expect(await sizeRefused(() => updateItem(TABLE, accepted, 'SET d = :m', { ':m': wholeMap(high) })), 'the high end').toBe(true)
+    while (high - low > 1) {
+      const mid = Math.floor((low + high) / 2)
+      if (await sizeRefused(() => updateItem(TABLE, accepted, 'SET d = :m', { ':m': wholeMap(mid) }))) high = mid
+      else low = mid
+    }
+
+    for (const k of [accepted, refused]) await updateItem(TABLE, k, 'SET d = :m', { ':m': wholeMap(1) })
+    const throughPath = (k: Record<string, AttributeValue>, bytes: number) =>
+      updateItem(TABLE, k, 'SET d.#leaf = :pad', { ':pad': { S: asciiOfBytes(bytes) } }, { '#leaf': 'leaf' })
+    await throughPath(accepted, low)
+    await expectDynamoError(() => throughPath(refused, low + 1), 'ValidationException', UPDATE_WORDING)
+  })
+})
+
+// no negative-path: acceptance-mixed (asserts accepted and rejected cases)
+describe('Item size limit by surface — UpdateItem sizes what its SET clauses write', { tags: ['update-item', 'data-plane'] }, () => {
+  // Every case leaves the stored item tiny: each target already holds a value,
+  // and `if_not_exists` keeps it. So the finished item never binds and the
+  // limit found is the statement's alone. `limit` is the largest padding
+  // accepted; one byte more is refused.
+  interface Shape {
+    expression: string
+    seed: Record<string, AttributeValue>
+    values: (padding: number) => Record<string, AttributeValue>
+    names?: Record<string, string>
+    limit: number
+    at?: (id: string) => Record<string, AttributeValue>
   }
 
-  const one = (literal: string): AttributeValue => ({ N: literal })
-  const tenBytes = { S: 'y'.repeat(10) }
+  let n = 0
+  async function statementLimitIs(shape: Shape): Promise<void> {
+    n += 1
+    const at = shape.at ?? ((id: string) => ({ pk: { S: id } }))
+    const accepted = at(`W${n}`)
+    const refused = at(`X${n}`)
+    keysToClean.push(accepted, refused)
+    const send = async (k: Record<string, AttributeValue>, padding: number) => {
+      await ddb.send(new PutItemCommand({ TableName: TABLE, Item: { ...k, ...shape.seed } }))
+      await updateItem(TABLE, k, shape.expression, shape.values(padding), shape.names)
+    }
 
-  it('charges a path operand 15 bytes plus its name, not the value it copies', async (ctx) => {
-    await chargeCeilingIs({
-      clause: 'SET c = abcdefghij',
-      seed: { abcdefghij: tenBytes },
-      charge: SET_COST + targetCost('c') + operandCost('abcdefghij'),
-    }, ctx.task)
-    await chargeCeilingIs({
-      clause: 'SET c = big',
-      seed: { big: tenBytes },
-      charge: SET_COST + targetCost('c') + operandCost('big'),
+    await send(accepted, shape.limit)
+    const stored = await ddb.send(new GetItemCommand({ TableName: TABLE, Key: { ...accepted }, ConsistentRead: true }))
+    expect(stored.Item).toEqual({ ...accepted, ...shape.seed })
+
+    await expectDynamoError(() => send(refused, shape.limit + 1), 'ValidationException', UPDATE_WORDING)
+  }
+
+  const x = { S: 'x' }
+  const pad = (padding: number) => ({ S: asciiOfBytes(padding) })
+
+  it('counts the target name with the value it is given', async () => {
+    await statementLimitIs({
+      expression: 'SET c = if_not_exists(c, :v)',
+      seed: { c: x },
+      values: (p) => ({ ':v': pad(p) }),
+      limit: MAX_ITEM_BYTES - utf8Bytes('c'),
+    })
+    await statementLimitIs({
+      expression: 'SET cccccccccc = if_not_exists(cccccccccc, :v)',
+      seed: { cccccccccc: x },
+      values: (p) => ({ ':v': pad(p) }),
+      limit: MAX_ITEM_BYTES - utf8Bytes('cccccccccc'),
     })
   })
 
-  it('charges a nested path operand 14 bytes plus the element for each element', async (ctx) => {
-    await chargeCeilingIs({
-      clause: 'SET c = m.z',
-      seed: { m: { M: { z: tenBytes } } },
-      charge: SET_COST + targetCost('c') + operandCost('m', 'z'),
-    }, ctx.task)
-    await chargeCeilingIs({
-      clause: 'SET c = m.a.z',
-      seed: { m: { M: { a: { M: { z: tenBytes } } } } },
-      charge: SET_COST + targetCost('c') + operandCost('m', 'a', 'z'),
-    })
-    await chargeCeilingIs({
-      clause: 'SET c = l[10]',
-      seed: { l: { L: [...Array.from({ length: 10 }, () => ({ S: 'e' })), tenBytes] } },
-      charge: SET_COST + targetCost('c') + operandCost('l', 10),
+  it('counts the attribute an alias names, not the alias', async () => {
+    await statementLimitIs({
+      expression: 'SET #nnnnnnnnnn = if_not_exists(#nnnnnnnnnn, :v)',
+      names: { '#nnnnnnnnnn': 'c' },
+      seed: { c: x },
+      values: (p) => ({ ':v': pad(p) }),
+      limit: MAX_ITEM_BYTES - utf8Bytes('c'),
     })
   })
 
-  // A document value costs 3, plus 1 per element, plus each element (a map
-  // element's key included).
-  const listOf = (...sizes: number[]) => 3 + sizes.length + sizes.reduce((a, b) => a + b, 0)
-  const mapOf = (entries: Record<string, number>) =>
-    3 + Object.entries(entries).reduce((total, [k, size]) => total + 1 + utf8Bytes(k) + size, 0)
-
-  it('charges list_append 37 bytes plus its operands', async (ctx) => {
-    await chargeCeilingIs({
-      clause: 'SET l = list_append(l, :new)',
-      seed: { l: { L: [{ S: 'e' }] } },
-      values: { ':new': { L: [tenBytes] } },
-      charge: SET_COST + targetCost('l') + LIST_APPEND_COST + operandCost('l') + listOf(10),
-    }, ctx.task)
-    await chargeCeilingIs({
-      clause: 'SET l = list_append(:a, :c)',
-      seed: { l: { L: [{ S: 'e' }] } },
-      values: { ':a': { L: [{ S: 'e' }] }, ':c': { L: [tenBytes] } },
-      charge: SET_COST + targetCost('l') + LIST_APPEND_COST + listOf(1) + listOf(10),
+  it('does not count the key, an operand path or a placeholder name', async () => {
+    await statementLimitIs({
+      expression: 'SET c = if_not_exists(zzzzzzzzzz, :vvvvvvvvvv)',
+      seed: { c: x, zzzzzzzzzz: x },
+      values: (p) => ({ ':vvvvvvvvvv': pad(p) }),
+      at: (id) => ({ pk: { S: id.padEnd(100, 'k') } }),
+      limit: MAX_ITEM_BYTES - utf8Bytes('c'),
     })
   })
 
-  it('charges a document value operand at its size, at every use', async (ctx) => {
-    const ifNotExists = (value: number) => SET_COST + targetCost('c') + IF_NOT_EXISTS_COST + operandCost('c') + value
-    await chargeCeilingIs({
-      clause: 'SET c = if_not_exists(c, :m)',
-      seed: { c: { S: 'c' } },
-      values: { ':m': { M: { a: { S: 'y'.repeat(100) } } } },
-      charge: ifNotExists(mapOf({ a: 100 })),
-    }, ctx.task)
-    // One value used in two clauses is charged twice.
-    const hundred = { S: 's'.repeat(100) }
-    await chargeCeilingIs({
-      clause: 'SET c = if_not_exists(c, :s), d = if_not_exists(d, :s)',
-      seed: { c: { S: 'c' }, d: { S: 'd' } },
-      values: { ':s': hundred },
-      charge:
-        ifNotExists(100) +
-        SET_COST + targetCost('d') + IF_NOT_EXISTS_COST + operandCost('d') + 100,
+  it('counts a value at every use', async () => {
+    await statementLimitIs({
+      expression: 'SET c = if_not_exists(c, :v), d = if_not_exists(d, :v)',
+      seed: { c: x, d: x },
+      values: (p) => ({ ':v': pad(p) }),
+      limit: MAX_ITEM_BYTES / 2 - utf8Bytes('c'),
     })
   })
 
-  it('charges an addition 34 bytes plus its operands, whatever the result', async (ctx) => {
-    const charge = SET_COST + targetCost('n') + PLUS_COST + operandCost('n') + attributeValueBytes(one('1'))
-    await chargeCeilingIs({ clause: 'SET n = n + :one', seed: { n: one('1') }, values: { ':one': one('1') }, charge }, ctx.task)
-    // A 20-digit sum costs the same as 1 + 1.
-    await chargeCeilingIs({
-      clause: 'SET n = n + :one',
-      seed: { n: one('12345678901234567890') },
-      values: { ':one': one('1') },
-      charge,
+  it('adds the clauses together', async () => {
+    await statementLimitIs({
+      expression: 'SET c = if_not_exists(c, :v), d = if_not_exists(d, :one)',
+      seed: { c: x, d: x },
+      values: (p) => ({ ':v': pad(p), ':one': { N: '1' } }),
+      limit: MAX_ITEM_BYTES - utf8Bytes('c') - utf8Bytes('d') - attributeValueBytes({ N: '1' }),
     })
   })
 
-  it('charges a subtraction 37 bytes plus its operands', async (ctx) => {
-    await chargeCeilingIs({
-      clause: 'SET n = n - :one',
-      seed: { n: one('1') },
-      values: { ':one': one('1') },
-      charge: SET_COST + targetCost('n') + MINUS_COST + operandCost('n') + attributeValueBytes(one('1')),
-    }, ctx.task)
-  })
-
-  it('charges if_not_exists 39 bytes plus its operands, whether or not the path exists', async (ctx) => {
-    const ifNotExists = (v: AttributeValue) =>
-      SET_COST + targetCost('c') + IF_NOT_EXISTS_COST + operandCost('c') + attributeValueBytes(v)
-    await chargeCeilingIs({
-      clause: 'SET c = if_not_exists(c, :v)',
-      seed: { c: tenBytes },
-      values: { ':v': { S: 'v' } },
-      charge: ifNotExists({ S: 'v' }),
-    }, ctx.task)
-    await chargeCeilingIs({
-      clause: 'SET c = if_not_exists(c, :v)',
-      values: { ':v': tenBytes },
-      charge: ifNotExists(tenBytes),
-    })
-  })
-
-  it('charges an ADD 19 bytes plus its path and the value added', async (ctx) => {
-    await chargeCeilingIs({
-      clause: 'ADD abcdefghij :one',
-      seed: { abcdefghij: one('1') },
-      values: { ':one': one('1') },
-      charge: SET_COST + targetCost('abcdefghij') + attributeValueBytes(one('1')),
-    }, ctx.task)
-  })
-
-  it('charges an ADD to a set only for the members it adds', async (ctx) => {
-    await chargeCeilingIs({
-      clause: 'ADD ss :new',
-      seed: { ss: { SS: ['p'.repeat(5)] } },
-      values: { ':new': { SS: ['s'.repeat(500)] } },
-      charge: SET_COST + targetCost('ss') + 500,
-    }, ctx.task)
-  })
-
-  it('charges a REMOVE one byte plus its path', async (ctx) => {
-    await chargeCeilingIs({
-      clause: 'REMOVE abcdefghij',
-      seed: { abcdefghij: { S: 'r'.repeat(5) } },
-      charge: REMOVE_OR_DELETE_COST + targetCost('abcdefghij'),
-    }, ctx.task)
-    // A map step adds 4 and the key.
-    await chargeCeilingIs({
-      clause: 'REMOVE m.yyyyyyyyyy',
-      seed: { m: { M: { x: tenBytes, yyyyyyyyyy: { S: 'r' } } } },
-      charge: REMOVE_OR_DELETE_COST + targetCost('m', 'yyyyyyyyyy'),
-    })
-  })
-
-  it('charges a REMOVE through a list index 4 bytes plus its digits', async (ctx) => {
-    await chargeCeilingIs({
-      clause: 'REMOVE abcdefghij[1]',
-      seed: { abcdefghij: { L: [tenBytes, { S: 'r' }] } },
-      charge: REMOVE_OR_DELETE_COST + targetCost('abcdefghij', 1),
-    }, ctx.task)
-    await chargeCeilingIs({
-      clause: 'REMOVE l[10]',
-      seed: { l: { L: Array.from({ length: 11 }, () => ({ S: 'e' })) } },
-      charge: REMOVE_OR_DELETE_COST + targetCost('l', 10),
-    })
-  })
-
-  it('charges a DELETE one byte plus its path, not the members it removes', async (ctx) => {
-    await chargeCeilingIs({
-      clause: 'DELETE abcdefghij :rm',
-      seed: { abcdefghij: { SS: ['p'.repeat(5), 'q'.repeat(20)] } },
-      values: { ':rm': { SS: ['q'.repeat(20)] } },
-      charge: REMOVE_OR_DELETE_COST + targetCost('abcdefghij'),
-    }, ctx.task)
-    await chargeCeilingIs({
-      clause: 'DELETE ss :rm',
-      seed: { ss: { SS: ['p'.repeat(5), 'q'.repeat(20), 'r'.repeat(30)] } },
-      values: { ':rm': { SS: ['q'.repeat(20), 'r'.repeat(30)] } },
-      charge: REMOVE_OR_DELETE_COST + targetCost('ss'),
-    })
+  it('does not count a value used only in the condition', async () => {
+    const k = key('cond-value')
+    await ddb.send(new PutItemCommand({ TableName: TABLE, Item: { ...k, c: x } }))
+    await ddb.send(new UpdateItemCommand({
+      TableName: TABLE,
+      Key: { ...k },
+      UpdateExpression: 'SET b = :s',
+      ConditionExpression: 'c <> :v',
+      ExpressionAttributeValues: { ':s': x, ':v': pad(MAX_ITEM_BYTES + 100) },
+    }))
+    expect(await storedBytes(k)).toBe(itemBytes({ ...k, c: x, b: x }))
   })
 })
 
 // no negative-path: acceptance-mixed (asserts accepted and rejected cases)
 describe('Item size limit by surface — AttributeUpdates sizes the finished item', { tags: ['update-item', 'legacy', 'data-plane'] }, () => {
-  // The legacy parameter has none of the statement sizing: the ceiling is the
-  // finished item, key and untouched attributes included, exactly 409,600.
+  // The legacy parameter is sized by the finished item alone, key and untouched
+  // attributes included, exactly 409,600.
   // Captured in eu-west-2 on 2026-10-09 with and without an untouched attribute.
   for (const [label, untouched] of [['alone', {}], ['beside an untouched attribute', { u: { S: 'y'.repeat(10) } }]] as const) {
     it(`caps the finished item at exactly 409,600 ${label}`, async () => {
@@ -1098,12 +564,11 @@ describe('Item size limit by surface — AttributeUpdates sizes the finished ite
 // no negative-path: acceptance-mixed (asserts accepted and rejected cases)
 describe('Item size limit by surface — UpdateItem checks the charge before the condition', { tags: ['update-item', 'data-plane'] }, () => {
   // `SET c = if_not_exists(c, :huge)` on an item that already holds `c` leaves
-  // the item tiny, but the statement carries 409,700 bytes. The charge is
-  // refused before the ConditionExpression is evaluated: a failing condition
+  // the item tiny, but the statement carries 409,700 bytes. The statement's size
+  // is refused before the ConditionExpression is evaluated: a failing condition
   // still gets the size refusal, not ConditionalCheckFailedException, and a
-  // passing one is refused too. Captured in eu-west-2, 2026-10-09. A region that
-  // sizes the finished item answers the failing condition and stores the rest,
-  // which is what the passing case records.
+  // passing one is refused too. Captured in eu-west-2 on 2026-10-09, and still
+  // the answer on 2026-11-21.
   const huge = { S: 'h'.repeat(409_700) }
   const send = async (k: Record<string, AttributeValue>, condition?: string) => {
     await ddb.send(new PutItemCommand({ TableName: TABLE, Item: { ...k, c: { S: 'x' } } }))
@@ -1117,23 +582,11 @@ describe('Item size limit by surface — UpdateItem checks the charge before the
   }
 
   it('refuses an over-limit charge even when the condition would fail', async () => {
-    // Records nothing. A flat region answers ConditionalCheckFailedException
-    // here, and this file records a flat side only from a stored write, so
-    // that answer goes unrecorded and the test fails there. Nothing credits
-    // it until this describe has a registry row.
     await expectDynamoError(() => send(key('order-fails'), 'attribute_exists(nope)'), 'ValidationException', UPDATE_WORDING)
   })
 
-  it('refuses an over-limit charge when the condition passes, and with no condition', async (ctx) => {
-    const passing = key('order-passes')
-    await expectDynamoError(
-      async () => {
-        await send(passing, 'attribute_exists(c)')
-        await recordStoredDespiteRule(ctx.task, TABLE, passing, () => true)
-      },
-      'ValidationException',
-      UPDATE_WORDING,
-    )
+  it('refuses an over-limit charge when the condition passes, and with no condition', async () => {
+    await expectDynamoError(() => send(key('order-passes'), 'attribute_exists(c)'), 'ValidationException', UPDATE_WORDING)
     await expectDynamoError(() => send(key('order-none')), 'ValidationException', UPDATE_WORDING)
   })
 })

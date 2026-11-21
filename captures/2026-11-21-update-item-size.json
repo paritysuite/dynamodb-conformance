@@ -1,0 +1,114 @@
+{
+ "capturedAt": "2026-11-21",
+ "region": "eu-west-2",
+ "note": "Re-measurement of UpdateItem's size limits after the 2026-11-21 ground-truth sweep found all 33 regions storing updates the statement-sized rule refused. Each figure was bisected against a fresh on-demand table with string attributes only, and the accepted side read back where noted. `max` is the largest size accepted; one more is refused with `refusal`. Item sizes count names plus values, key included. Two runs from one process on 2026-11-21: run 1 sizes the finished item on each update surface, run 2 sizes what the SET clauses write while the stored item stays tiny (each target already holds a value and if_not_exists keeps it).",
+ "sources": {
+  "sweep1121": "https://github.com/paritysuite/dynamodb-conformance/actions/runs/44893907171"
+ },
+ "run1": {
+  "what": {
+   "p1_setShortKey": "SET b = :pad at a 2-3 byte key; max is the finished item size",
+   "p1_readBack": "stored size of the item accepted at p1's max",
+   "p2_setLongKey": "the same at a 100-byte key value",
+   "p3_ifNotExistsValue": "SET c = if_not_exists(c, :v) on an item holding c; max is the length of :v",
+   "p4_overWithFailingCondition": "p3 one byte over, with ConditionExpression attribute_exists(nope)",
+   "p5_padCeilingWithUnusedValue_N": "SET b = :p, c = if_not_exists(c, :v) with :v of N bytes on an item holding c; max is the length of :p",
+   "p6_listIndex": "SET l[0] = :p on an item holding a one-element list; max is the length of :p",
+   "p7_partiql": "PartiQL UPDATE SET b = ?; max is the finished item size",
+   "p7_transact": "TransactWriteItems Update SET b = :p; max is the finished item size",
+   "p8_withUntouched": "SET b = :p beside a 1,000-byte untouched attribute; max is the finished item size"
+  },
+  "results": {
+   "p1_setShortKey": {
+    "max": 409600,
+    "refusal": "ValidationException: Item size to update has exceeded the maximum allowed size"
+   },
+   "p1_readBack": 409600,
+   "p2_setLongKey": {
+    "max": 409600,
+    "refusal": "ValidationException: Item size to update has exceeded the maximum allowed size"
+   },
+   "p3_ifNotExistsValue": {
+    "max": 409599,
+    "refusal": "ValidationException: Item size to update has exceeded the maximum allowed size"
+   },
+   "p4_overWithFailingCondition": "ValidationException: Item size to update has exceeded the maximum allowed size",
+   "p5_padCeilingWithUnusedValue_1000": {
+    "max": 408598,
+    "refusal": "ValidationException: Item size to update has exceeded the maximum allowed size"
+   },
+   "p5_padCeilingWithUnusedValue_100000": {
+    "max": 309598,
+    "refusal": "ValidationException: Item size to update has exceeded the maximum allowed size"
+   },
+   "p5_padCeilingWithUnusedValue_200000": {
+    "max": 209598,
+    "refusal": "ValidationException: Item size to update has exceeded the maximum allowed size"
+   },
+   "p6_listIndex": {
+    "max": 409590,
+    "refusal": "ValidationException: Item size to update has exceeded the maximum allowed size"
+   },
+   "p7_partiql": {
+    "max": 409600,
+    "refusal": "ValidationException: Item size to update has exceeded the maximum allowed size"
+   },
+   "p7_transact": {
+    "max": 409600,
+    "refusal": "TransactionCanceledException: Transaction cancelled, please refer cancellation reasons for specific reasons [ValidationError]"
+   },
+   "p8_withUntouched": {
+    "max": 409600,
+    "refusal": "ValidationException: Item size to update has exceeded the maximum allowed size"
+   }
+  }
+ },
+ "run2": {
+  "what": {
+   "q0_baseline_c": "SET c = if_not_exists(c, :v); max is the length of :v",
+   "q1_target10": "the same with a 10-byte target name",
+   "q2_operand10": "SET c = if_not_exists(zzzzzzzzzz, :v), a 10-byte operand path",
+   "q3_valueTwice": "SET c = if_not_exists(c, :v), d = if_not_exists(d, :v), one value used twice",
+   "q4_conditionValue": "SET b = :s with ConditionExpression c <> :v and :v of 409,700 bytes",
+   "q5_longKey": "q0 at a 100-byte key value",
+   "q6_aliasName10": "q0 with the target written as a 10-byte alias for c",
+   "q7_valueNameLong": "q0 with a 10-byte value placeholder name",
+   "q8_numberSetPlusString": "SET c = if_not_exists(c, :v), d = if_not_exists(d, :one) with :one the number 1"
+  },
+  "results": {
+   "q0_baseline_c": {
+    "max": 409599,
+    "refusal": "ValidationException: Item size to update has exceeded the maximum allowed size"
+   },
+   "q1_target10": {
+    "max": 409590,
+    "refusal": "ValidationException: Item size to update has exceeded the maximum allowed size"
+   },
+   "q2_operand10": {
+    "max": 409599,
+    "refusal": "ValidationException: Item size to update has exceeded the maximum allowed size"
+   },
+   "q3_valueTwice": {
+    "max": 204799,
+    "refusal": "ValidationException: Item size to update has exceeded the maximum allowed size"
+   },
+   "q4_conditionValue": "ok",
+   "q5_longKey": {
+    "max": 409599,
+    "refusal": "ValidationException: Item size to update has exceeded the maximum allowed size"
+   },
+   "q6_aliasName10": {
+    "max": 409599,
+    "refusal": "ValidationException: Item size to update has exceeded the maximum allowed size"
+   },
+   "q7_valueNameLong": {
+    "max": 409599,
+    "refusal": "ValidationException: Item size to update has exceeded the maximum allowed size"
+   },
+   "q8_numberSetPlusString": {
+    "max": 409596,
+    "refusal": "ValidationException: Item size to update has exceeded the maximum allowed size"
+   }
+  }
+ }
+}

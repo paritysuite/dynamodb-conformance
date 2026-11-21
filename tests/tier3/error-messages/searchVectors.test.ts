@@ -18,11 +18,12 @@ import {
 //
 // - The TopK message embeds the offending value and the range; the docs quote
 //   only the leading fragment.
-// - The comparator message carries an "Invalid SearchConditionExpression: "
-//   prefix the docs omit, and it fires for non-equality operators on BOTH
-//   element kinds. The developer guide (equality only, everywhere) wins over
-//   the API reference's claim that INLINE_FILTER attributes accept comparison
-//   and range operators.
+// - The comparator messages name the rule that was broken. Until 2026-11 one
+//   generic "Invalid SearchConditionExpression: Invalid comparator used in
+//   SearchConditionExpression" covered both element kinds. The 2026-11-21
+//   ground-truth sweep found every answering region giving two specific
+//   messages instead: the HASH element must use =, and an INLINE_FILTER
+//   element takes a range operator only on a Number attribute.
 
 const tableName = uniqueTableName('vec_smsg')
 const vec = (...ns: number[]) => ns.map((n) => ({ N: String(n) }))
@@ -131,7 +132,7 @@ describe('SearchVectors — exact error messages', { tags: ['search-vectors', 'd
         SearchConditionExpression: 'tenant < :t',
         ExpressionAttributeValues: { ':t': { S: 't9' } },
       },
-      'Invalid SearchConditionExpression: Invalid comparator used in SearchConditionExpression',
+      'SearchConditionExpression must use = on the HASH attribute, not inside OR or NOT; HASH attribute: tenant',
     )
   })
 
@@ -145,7 +146,7 @@ describe('SearchVectors — exact error messages', { tags: ['search-vectors', 'd
         SearchConditionExpression: 'tenant = :t AND category < :c',
         ExpressionAttributeValues: { ':t': { S: 't1' }, ':c': { S: 'c9' } },
       },
-      'Invalid SearchConditionExpression: Invalid comparator used in SearchConditionExpression',
+      'SearchConditionExpression allows this operator only on Number (N) attributes; operator: <, attribute: category, attribute type: S',
     )
   })
 
