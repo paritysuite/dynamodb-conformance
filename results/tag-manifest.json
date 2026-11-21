@@ -1511,29 +1511,11 @@
         "transactions",
         "data-plane"
       ],
-      "Item size limit by surface — UpdateItem does not charge for the key": [
+      "Item size limit by surface — UpdateItem sizes the finished item": [
         "update-item",
         "data-plane"
       ],
-      "Item size limit by surface — UpdateItem charges per action": [
-        "update-item",
-        "data-plane"
-      ],
-      "Item size limit by surface — UpdateItem through a document path": [
-        "update-item",
-        "data-plane"
-      ],
-      "Item size limit by surface — a PartiQL UPDATE does not inherit the exclusion": [
-        "partiql",
-        "update-item",
-        "data-plane"
-      ],
-      "Item size limit by surface — a transacted Update does not inherit the exclusion": [
-        "transactions",
-        "update-item",
-        "data-plane"
-      ],
-      "Item size limit by surface — UpdateItem charges each kind of clause": [
+      "Item size limit by surface — UpdateItem sizes what its SET clauses write": [
         "update-item",
         "data-plane"
       ],

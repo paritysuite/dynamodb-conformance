@@ -2,7 +2,8 @@
 #
 # Stand up a local ExtendDB and emit the env the conformance suite needs.
 #
-# ExtendDB ships no binaries, so this builds it from source, initialises its
+# ExtendDB publishes no production binary outside its container images (its
+# npm binaries are dev-mode builds), so this builds it from source, initialises its
 # storage, mints a dynamodb:* IAM access key, and starts the server. It is used
 # by every ExtendDB CI job and is runnable locally.
 #
@@ -120,10 +121,8 @@ echo "==> extenddb init ($BACKEND)" >&2
 # documents, and it turns a binary built with the wrong features into a clear
 # error here rather than a silent run against the wrong storage.
 #
-# SQLite takes no path argument. ExtendDB documents `serve --sqlite-path <p>`
-# for that, but v0.1.3 declares it on no subcommand and rejects it, so the
-# config file is the only way to set the path and the database lands at the
-# compiled-in default, $EXTENDDB_DIR/extenddb.sqlite. init records that
+# SQLite is given no path, so the database lands at the compiled-in default,
+# $EXTENDDB_DIR/extenddb.sqlite. init records that
 # relative path in the generated config and serve resolves it against the same
 # working directory, so the two agree.
 case "$BACKEND" in

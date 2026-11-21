@@ -338,8 +338,8 @@ export const TARGETS = {
     url: 'https://github.com/ExtendDB/extenddb',
     licence: { name: 'Apache-2.0', spdx: 'Apache-2.0', url: 'https://github.com/ExtendDB/extenddb/blob/main/LICENSE' },
     requires: 'PostgreSQL 14+, and Docker for the image or a Rust toolchain to build it',
-    // Docker is the official extenddb-postgres image. No binary is published,
-    // so the other route is a source build, which is how the suite runs it, at
+    // Docker is the official extenddb-postgres image. Its npm binaries are
+    // dev-mode builds and no other binary is published, so the other route is a source build, which is how the suite runs it, at
     // the release tag.
     note:
       'An adapter over an external PostgreSQL rather than a self-contained ' +
@@ -381,8 +381,8 @@ export const TARGETS = {
     // because the backend writes through multi-document transactions. Built
     // without `dev-mode`, as the SQLite row is.
     //
-    // Docker is the official extenddb-mongodb image. No binary is published,
-    // so the other route is a source build, which is how the suite runs it, at
+    // Docker is the official extenddb-mongodb image. Its npm binaries are
+    // dev-mode builds and no other binary is published, so the other route is a source build, which is how the suite runs it, at
     // the release tag.
     note:
       'The PostgreSQL build\'s server over an external MongoDB replica set ' +
