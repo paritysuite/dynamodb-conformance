@@ -1,6 +1,6 @@
 {
  "capturedAt": "2026-11-21T11:57:00Z",
- "note": "Per-region answers from the 2026-11-21 weekly sweep for the four rows whose drift issues it opened (#355, #356, #357, #358). Each region ran the committed test against real tables; answer is the observation the test recorded, and status is the Vitest result. A pass means the region gave the pinned eu-west-2 answer. ap-southeast-4 and me-central-1 were marked unresolved for the sweep as a whole, but both ran these tests: ap-southeast-4 passed all four and me-central-1 gave its recorded answer on all four. me-south-1 never provisioned, so it has no answer here.",
+ "note": "Per-region answers from the 2026-11-21 weekly sweep for the four rows whose drift issues it opened (#355, #356, #357, #358). Each region ran the committed test against real tables; answer is the observation the test recorded, and status is the Vitest result. A pass means the region gave the pinned eu-west-2 answer. ap-southeast-4 and me-central-1 were marked unresolved for the sweep as a whole, but both ran these tests: ap-southeast-4 passed all four. me-central-1 gave its recorded answer on three, and on the UpdateItem ReturnValues row went back to reporting both errors, now listing UPDATED_NEW. me-south-1 never provisioned, so it has no answer here.",
  "sources": {
   "sweep1121": "https://github.com/paritysuite/dynamodb-conformance/actions/runs/44893907171"
  },

@@ -502,10 +502,9 @@ cargo build --release -p extenddb --no-default-features --features sqlite
 ./target/release/extenddb init --backend sqlite
 ```
 
-The database path comes from the config file. ExtendDB documents
-`serve --sqlite-path <path>` for overriding it, but v0.1.3 declares that flag
-on no subcommand and rejects it, so `[storage.sqlite].path` is the only way in.
-Checked against v0.1.3 rather than assumed.
+The database lands at the compiled-in default, `extenddb.sqlite` in the
+ExtendDB checkout, and `init` records that path in the config file it writes.
+`init --sqlite-path` can move it, but the suite leaves it at the default.
 
 `init` refuses to overwrite an existing database, so a repeat local run wants
 `extenddb destroy` first.

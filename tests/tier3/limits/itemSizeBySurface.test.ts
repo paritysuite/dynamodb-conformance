@@ -19,7 +19,6 @@ import {
   longKeyNameTableDef,
   cleanupItems,
   declareTables,
-  assertDynamoError,
   expectDynamoError,
 } from '../../../src/helpers.js'
 import {
@@ -396,14 +395,19 @@ describe('Item size limit by surface — UpdateItem sizes the finished item', { 
     // SET of the same document and the path form must agree with it exactly.
     // While bisecting, any size refusal counts: near the top of the window the
     // whole map is refused as a value in its own right, with the value wording.
+    // Anything else is retried, so a throttled write is not read as a refusal.
     const wholeMap = (bytes: number) => ({ M: { leaf: { S: asciiOfBytes(bytes) } } })
     const sizeRefused = async (run: () => Promise<unknown>): Promise<boolean> => {
-      try {
-        await run()
-        return false
-      } catch (e: unknown) {
-        assertDynamoError(e, 'ValidationException', 'Item size')
-        return true
+      for (let attempt = 0; ; attempt++) {
+        try {
+          await run()
+          return false
+        } catch (e: unknown) {
+          const err = e as { name?: string; message?: string }
+          if (err.name === 'ValidationException' && /Item size/.test(err.message ?? '')) return true
+          if (attempt === 4) throw e
+          await new Promise((r) => setTimeout(r, 400 * (attempt + 1)))
+        }
       }
     }
     let low = MAX_ITEM_BYTES - 256
