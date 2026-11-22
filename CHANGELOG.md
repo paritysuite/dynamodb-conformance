@@ -8,6 +8,8 @@ section its date and version, so several branches can write ahead of one.
 
 ## Unreleased
 
+## 2026-11-22 (3.11.0)
+
 UpdateItem now caps the finished item at exactly 409,600 bytes, key included,
 like every other write. The 2026-11-21 sweep found all 33 regions that ran the
 tests storing the updates the old rule refused, and a re-measurement in eu-west-2 the same day
