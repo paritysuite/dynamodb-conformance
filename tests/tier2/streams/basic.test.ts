@@ -58,7 +58,10 @@ describe('DynamoDB Streams — basic', { tags: ['streams', 'control-plane'] }, (
   let streamArn: string
 
   beforeAll(async () => {
-    streamTableName = uniqueTableName('streams')
+    // Long enough that the whole name is over 48 characters under either
+    // prefix, so a ShardId built from the table name would pass the 65
+    // characters the API model allows.
+    streamTableName = uniqueTableName('stream_shard_id_length')
     try {
       await ddb.send(new CreateTableCommand({
         TableName: streamTableName,
@@ -150,11 +153,15 @@ describe('DynamoDB Streams — basic', { tags: ['streams', 'control-plane'] }, (
   })
 
   it('each shard has a ShardId', async () => {
+    // The model bounds ShardId to 28-65 characters, and boto3 and the PHP SDK
+    // refuse a GetShardIterator request outside that before sending it. The
+    // shape inside the bounds is undocumented, so only the length is pinned.
+    expect(streamTableName.length).toBeGreaterThan(48)
     const res = await ddbStreams.send(new DescribeStreamCommand({ StreamArn: streamArn }))
     for (const shard of res.StreamDescription!.Shards!) {
-      expect(shard.ShardId).toBeDefined()
       expect(typeof shard.ShardId).toBe('string')
-      expect(shard.ShardId!.length).toBeGreaterThan(0)
+      expect(shard.ShardId!.length).toBeGreaterThanOrEqual(28)
+      expect(shard.ShardId!.length).toBeLessThanOrEqual(65)
     }
   })
 
