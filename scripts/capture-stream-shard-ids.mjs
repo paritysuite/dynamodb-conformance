@@ -9,8 +9,10 @@
 //   - UpdateTable with StreamEnabled=true on the enabled stream, once with the
 //     same StreamViewType and once with a different one (the error, or the
 //     response and whether the stream ARN moved);
+//   - GetShardIterator with a ShardId the stream never had;
 //   - the stream after disabling and re-enabling it: the new ARN and label, the
-//     new ShardIds, and DescribeStream on the old ARN.
+//     new ShardIds, DescribeStream on the old ARN, and what reading the old
+//     shard returns through the old ARN and through the new one.
 //
 // Output is one JSON document on stdout, with account IDs in ARNs replaced by
 // 000000000000. The table is deleted by exact name at the end of each region.
@@ -30,8 +32,14 @@ import {
   DeleteTableCommand,
   DescribeTableCommand,
   UpdateTableCommand,
+  PutItemCommand,
 } from '@aws-sdk/client-dynamodb'
-import { DynamoDBStreamsClient, DescribeStreamCommand } from '@aws-sdk/client-dynamodb-streams'
+import {
+  DynamoDBStreamsClient,
+  DescribeStreamCommand,
+  GetShardIteratorCommand,
+  GetRecordsCommand,
+} from '@aws-sdk/client-dynamodb-streams'
 import { resolveTablePrefix } from './capture-validation-messages.mjs'
 
 const args = process.argv.slice(2)
@@ -98,6 +106,31 @@ async function describeStream(streams, arn) {
   }
 }
 
+/** GetShardIterator at TRIM_HORIZON, then one GetRecords: the error, or the keys read. */
+async function readShard(streams, arn, shardId) {
+  const request = { StreamArn: arn, ShardId: shardId, ShardIteratorType: 'TRIM_HORIZON' }
+  let iterator
+  try {
+    iterator = (await streams.send(new GetShardIteratorCommand(request))).ShardIterator
+  } catch (e) {
+    return { request, getShardIterator: failure(e) }
+  }
+  try {
+    const res = await streams.send(new GetRecordsCommand({ ShardIterator: iterator }))
+    return {
+      request,
+      getShardIterator: { ok: true },
+      getRecords: {
+        ok: true,
+        keys: (res.Records ?? []).map((r) => r.dynamodb?.Keys?.pk?.S ?? null),
+        nextShardIterator: res.NextShardIterator ? 'present' : 'absent',
+      },
+    }
+  } catch (e) {
+    return { request, getShardIterator: { ok: true }, getRecords: failure(e) }
+  }
+}
+
 async function updateStream(ddb, name, spec) {
   const request = { TableName: name, StreamSpecification: spec }
   try {
@@ -139,6 +172,11 @@ async function captureRegion(region, tablePrefix) {
       describeStream: await describeStream(streams, firstArn),
       describeStreamAgain: await describeStream(streams, firstArn),
     }
+    const firstShard = out.created.describeStream.shards?.[0]?.ShardId
+
+    await ddb.send(new PutItemCommand({ TableName: name, Item: { pk: { S: 'before-disable' } } }))
+    // Shaped like a real ID, so only its absence from the stream can be refused.
+    out.unknownShardId = await readShard(streams, firstArn, 'shardId-00000000000000000000-00000000')
 
     out.enableWhileEnabled = {}
     for (const viewType of ['NEW_AND_OLD_IMAGES', 'KEYS_ONLY']) {
@@ -170,6 +208,18 @@ async function captureRegion(region, tablePrefix) {
       streamArnChanged: secondArn !== firstArn,
       describeNewStream: secondArn ? await describeStream(streams, secondArn) : null,
       describeOldStream: await describeStream(streams, firstArn),
+    }
+    if (secondArn) {
+      await ddb.send(new PutItemCommand({ TableName: name, Item: { pk: { S: 'after-reenable' } } }))
+    }
+    // Stream records can take a moment to appear, so give them one.
+    await sleep(5000)
+    out.readAfterReenable = {
+      oldArnOldShard: firstShard ? await readShard(streams, firstArn, firstShard) : null,
+      newArnOldShard: firstShard && secondArn ? await readShard(streams, secondArn, firstShard) : null,
+      newArnNewShard: secondArn
+        ? await readShard(streams, secondArn, out.afterReenable.describeNewStream?.shards?.[0]?.ShardId)
+        : null,
     }
   } finally {
     await ddb.send(new DeleteTableCommand({ TableName: name })).catch((e) => {
