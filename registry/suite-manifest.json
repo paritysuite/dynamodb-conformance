@@ -1,7 +1,7 @@
 {
-  "generated": "2026-11-21",
-  "commit": "877cb480db6aec6d935924728f471f681584249b",
-  "count": 1908,
+  "generated": "2026-11-26",
+  "commit": "6d9886b6c578fdbd90c5cb26d28e8c22941d3429",
+  "count": 1910,
   "tests": [
     "tests/tier1/batchGetItem/basic.test.ts::BatchGetItem — ProjectionExpression returns only projected attributes",
     "tests/tier1/batchGetItem/basic.test.ts::BatchGetItem — basic handles a mix of existing and non-existing keys",
@@ -899,6 +899,7 @@
     "tests/tier2/streams/basic.test.ts::DynamoDB Streams — basic GetRecords after DeleteItem contains old image (REMOVE event)",
     "tests/tier2/streams/basic.test.ts::DynamoDB Streams — basic GetRecords after PutItem contains the new image (INSERT event)",
     "tests/tier2/streams/basic.test.ts::DynamoDB Streams — basic GetRecords after UpdateItem contains both old and new images (MODIFY event)",
+    "tests/tier2/streams/basic.test.ts::DynamoDB Streams — basic GetShardIterator refuses a ShardId the stream does not have",
     "tests/tier2/streams/basic.test.ts::DynamoDB Streams — basic INSERT record dynamodb.Keys contains the item key",
     "tests/tier2/streams/basic.test.ts::DynamoDB Streams — basic INSERT record dynamodb.NewImage contains the full item",
     "tests/tier2/streams/basic.test.ts::DynamoDB Streams — basic INSERT record has eventName INSERT",
@@ -908,6 +909,7 @@
     "tests/tier2/streams/basic.test.ts::DynamoDB Streams — basic ListStreams with TableName filter returns only our table's stream",
     "tests/tier2/streams/basic.test.ts::DynamoDB Streams — basic NEW_IMAGE view type records have NewImage but no OldImage on MODIFY",
     "tests/tier2/streams/basic.test.ts::DynamoDB Streams — basic TRIM_HORIZON returns a valid iterator string",
+    "tests/tier2/streams/basic.test.ts::DynamoDB Streams — basic UpdateTable refuses to enable a stream that is already enabled",
     "tests/tier2/streams/basic.test.ts::DynamoDB Streams — basic each shard has a ShardId",
     "tests/tier2/streams/basic.test.ts::DynamoDB Streams — basic table StreamSpecification.StreamEnabled is true",
     "tests/tier2/streams/basic.test.ts::DynamoDB Streams — basic table StreamSpecification.StreamViewType matches what was requested",
